@@ -50,7 +50,7 @@ const SavedSchedulePage: React.FC<SavedSchedulePageProps> = () => {
   }
 
   return (
-    <div className="p-5">
+    <div className="py-5">
       <Table
         className="w-[97vw] border"
         columns={columns}

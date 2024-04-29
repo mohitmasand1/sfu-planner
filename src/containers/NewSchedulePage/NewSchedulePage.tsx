@@ -1,8 +1,8 @@
-import React, { useState, CSSProperties } from 'react';
-import { Button, Collapse, Select, theme, Modal } from 'antd';
+import React, { useState } from 'react';
+import { Button, Collapse, Select, theme, Modal, Tooltip } from 'antd';
 import type { CollapseProps } from 'antd';
 import { useQuery } from '@tanstack/react-query';
-import { fetchMajorCourses, fetchMajors } from './fetchMajors';
+import { fetchMajorCourses, fetchMajors } from './fetch-course-data';
 import {
   CloudUploadOutlined,
   DeleteOutlined,
@@ -33,6 +33,9 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = () => {
 
   const updateMajorSelectionMade = (value: string | number) => {
     setMajorSelected(value);
+    if (numberSelected) {
+      setNumberSelected(null);
+    }
   };
 
   const updateNumberSelectionMade = (value: string | number) => {
@@ -77,109 +80,85 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = () => {
   };
 
   const getItems: (
-    panelStyle: CSSProperties,
-  ) => CollapseProps['items'] = panelStyle => [
-    {
-      key: '1',
-      label: (
-        <div className="flex gap-3">
-          <div className="flex flex-col gap-1 w-full">
-            <div className="flex justify-between items-center">
-              <label>CMPT 120</label>
-              <label>Gregory Baker</label>
-            </div>
-            <div className="flex">
-              <label className="text-xs">Burnaby</label>
-            </div>
+    panelStyle: React.CSSProperties,
+  ) => CollapseProps['items'] = panelStyle => {
+    const label = (
+      <div className="flex gap-3">
+        <div className="flex flex-col gap-1 w-full">
+          <div className="flex justify-between items-center">
+            <label>CMPT 120</label>
+            <label>Gregory Baker (4.6/5)</label>
           </div>
-          {/* <div className=" h-fit bg-slate-200 w-px" /> */}
-          <DeleteOutlined style={deleteIconStyle} onClick={showModal} />
-        </div>
-      ),
-      children: (
-        <p>
-          An elementary introduction to computing science and computer
-          programming, suitable for students with little or no programming
-          background. Students will learn fundamental concepts and terminology
-          of computing science, acquire elementary skills for programming in a
-          high-level language, e.g. Python. The students will be exposed to
-          diverse fields within, and applications of computing science. Topics
-          will include: pseudocode; data types and control structures;
-          fundamental algorithms; recursion; reading and writing files;
-          measuring performance of algorithms; debugging tools; basic terminal
-          navigation using shell commands. Treatment is informal and programming
-          is presented as a problem-solving tool. Students with credit for CMPT
-          102, 128, 130 or 166 may not take this course for further credit.
-          Students who have taken CMPT 125, 129, 130 or 135 first may not then
-          take this course for further credit. Quantitative/Breadth-Science.
-        </p>
-      ),
-      style: panelStyle,
-    },
-    {
-      key: '2',
-      label: (
-        <div className="flex gap-3">
-          <div className="flex flex-col gap-1 w-full">
-            <div className="flex justify-between items-center">
-              <label>CMPT 120</label>
-              <label>Gregory Baker</label>
-            </div>
-            <div className="flex">
-              <label className="text-xs">Burnaby</label>
-            </div>
+          <div className="flex justify-between items-center">
+            <label className="text-xs">Burnaby</label>
           </div>
-          {/* <div className=" h-fit bg-slate-200 w-px" /> */}
-          <DeleteOutlined style={deleteIconStyle} onClick={showModal} />
         </div>
-      ),
-      children: (
-        <p>
-          A rigorous introduction to computing science and computer programming,
-          suitable for students who already have some background in computing
-          science and programming. Intended for students who will major in
-          computing science or a related program. Topics include: memory
-          management; fundamental algorithms; formally analyzing the running
-          time of algorithms; abstract data types and elementary data
-          structures; object-oriented programming and software design;
-          specification and program correctness; reading and writing files;
-          debugging tools; shell commands. Students with credit for CMPT 126,
-          129, 135 or CMPT 200 or higher may not take this course for further
-          credit. Quantitative.
-        </p>
-      ),
-      style: panelStyle,
-    },
-    {
-      key: '3',
-      label: (
-        <div className="flex gap-3">
-          <div className="flex flex-col gap-1 w-full">
-            <div className="flex justify-between items-center">
-              <label>CMPT 120</label>
-              <label>Gregory Baker</label>
-            </div>
-            <div className="flex">
-              <label className="text-xs">Burnaby</label>
-            </div>
-          </div>
-          {/* <div className=" h-fit bg-slate-200 w-px" /> */}
-          <DeleteOutlined style={deleteIconStyle} onClick={showModal} />
-        </div>
-      ),
-      children: (
-        <p>
-          Introduction to a variety of practical and important data structures
-          and methods for implementation and for experimental and analytical
-          evaluation. Topics include: stacks, queues and lists; search trees;
-          hash tables and algorithms; efficient sorting; object-oriented
-          programming; time and space efficiency analysis; and experimental
-          evaluation. Quantitative.
-        </p>
-      ),
-      style: panelStyle,
-    },
-  ];
+        {/* <div className=" h-fit bg-slate-200 w-px" /> */}
+        <DeleteOutlined style={deleteIconStyle} onClick={showModal} />
+      </div>
+    );
+    return [
+      {
+        key: '1',
+        label,
+        children: (
+          <p>
+            An elementary introduction to computing science and computer
+            programming, suitable for students with little or no programming
+            background. Students will learn fundamental concepts and terminology
+            of computing science, acquire elementary skills for programming in a
+            high-level language, e.g. Python. The students will be exposed to
+            diverse fields within, and applications of computing science. Topics
+            will include: pseudocode; data types and control structures;
+            fundamental algorithms; recursion; reading and writing files;
+            measuring performance of algorithms; debugging tools; basic terminal
+            navigation using shell commands. Treatment is informal and
+            programming is presented as a problem-solving tool. Students with
+            credit for CMPT 102, 128, 130 or 166 may not take this course for
+            further credit. Students who have taken CMPT 125, 129, 130 or 135
+            first may not then take this course for further credit.
+            Quantitative/Breadth-Science.
+          </p>
+        ),
+        style: panelStyle,
+      },
+      {
+        key: '2',
+        label,
+        children: (
+          <p>
+            A rigorous introduction to computing science and computer
+            programming, suitable for students who already have some background
+            in computing science and programming. Intended for students who will
+            major in computing science or a related program. Topics include:
+            memory management; fundamental algorithms; formally analyzing the
+            running time of algorithms; abstract data types and elementary data
+            structures; object-oriented programming and software design;
+            specification and program correctness; reading and writing files;
+            debugging tools; shell commands. Students with credit for CMPT 126,
+            129, 135 or CMPT 200 or higher may not take this course for further
+            credit. Quantitative.
+          </p>
+        ),
+        style: panelStyle,
+      },
+      {
+        key: '3',
+        label,
+        children: (
+          <p>
+            Introduction to a variety of practical and important data structures
+            and methods for implementation and for experimental and analytical
+            evaluation. Topics include: stacks, queues and lists; search trees;
+            hash tables and algorithms; efficient sorting; object-oriented
+            programming; time and space efficiency analysis; and experimental
+            evaluation. Quantitative.
+          </p>
+        ),
+        style: panelStyle,
+      },
+    ];
+  };
 
   return (
     <div className="flex flex-col justify-center items-center w-full h-full overflow-hidden">
@@ -215,6 +194,7 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = () => {
           }
           options={majorNumbers}
           disabled={!majorSelected}
+          value={numberSelected}
           onSelect={updateNumberSelectionMade}
         />
         <Button
@@ -239,36 +219,38 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = () => {
             items={getItems(panelStyle)}
           />
           {getItems(panelStyle)?.length && (
-            <div className="flex self-center gap-4">
-              <CloudUploadOutlined
-                style={{
-                  cursor: 'pointer',
-                  fontSize: SAVE_ICON_SIZE,
-                  color: 'grey',
-                }}
-                onClick={showModal}
-              />
-              <CloseOutlined
-                style={{
-                  cursor: 'pointer',
-                  fontSize: CLOSE_ICON_SIZE,
-                  color: 'grey',
-                }}
-                onClick={showModal}
-              />
+            <div className="flex self-center gap-6">
+              <Tooltip title="Save schedule">
+                <CloudUploadOutlined
+                  style={{
+                    cursor: 'pointer',
+                    fontSize: SAVE_ICON_SIZE,
+                    color: 'grey',
+                  }}
+                  onClick={showModal}
+                />
+              </Tooltip>
+              <Tooltip title="Delete all selections">
+                <CloseOutlined
+                  style={{
+                    cursor: 'pointer',
+                    fontSize: CLOSE_ICON_SIZE,
+                    color: 'grey',
+                  }}
+                  onClick={showModal}
+                />
+              </Tooltip>
             </div>
           )}
         </div>
       </div>
       <Modal
-        title="Basic Modal"
+        title="Title passed as param"
         open={isModalOpen}
         onOk={handleOk}
         onCancel={handleCancel}
       >
-        <p>Some contents...</p>
-        <p>Some contents...</p>
-        <p>Some contents...</p>
+        <p>Content passed as param</p>
       </Modal>
     </div>
   );
