@@ -14,7 +14,7 @@ const items: MenuProps['items'] = [
   },
   {
     key: 'ai',
-    label: <Link to="/courseai">CourseAI</Link>,
+    label: <Link to="/courseai">Course</Link>,
   },
 ];
 
@@ -30,14 +30,15 @@ const NavBar: React.FC = () => {
     'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png';
 
   return (
-    <div className="flex justify-center items-center w-full">
+    <div className="flex justify-between items-center w-full">
+      <div className="m-4">LOGO</div>
       <Menu
         onClick={onClick}
         selectedKeys={[current]}
         mode="horizontal"
         items={items}
       />
-      <div className="">
+      <div className="flex-none m-4">
         <Avatar src={<img src={url} alt="avatar" />} />
       </div>
     </div>

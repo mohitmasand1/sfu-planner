@@ -1,73 +1,200 @@
-import React, { useState } from 'react';
-import Search, { Option } from '../../components/Search';
-import { Button, Divider } from 'antd';
+import React, { useState, CSSProperties } from 'react';
+import { Button, Collapse, Select, theme } from 'antd';
+import type { CollapseProps } from 'antd';
 import { useQuery } from '@tanstack/react-query';
-import { fetchMajors } from './fetchMajors';
+import { fetchMajorCourses, fetchMajors } from './fetchMajors';
 
-const numbers = [
-  {
-    value: '100',
-    label: '100',
-  },
-  {
-    value: '101',
-    label: '101',
-  },
-  {
-    value: '102',
-    label: '102',
-  },
-  {
-    value: '103',
-    label: '103',
-  },
-];
+export interface Option {
+  value: string;
+  label: string;
+}
 
 interface NewSchedulePageProps {}
 
+const getItems: (
+  panelStyle: CSSProperties,
+) => CollapseProps['items'] = panelStyle => [
+  {
+    key: '1',
+    label: (
+      <div className="flex flex-col gap-1">
+        <div className="flex justify-between items-center">
+          <label>CMPT 120</label>
+          <label>Gregory Baker</label>
+        </div>
+        <div className="flex justify-start">
+          <label className="text-xs">Burnaby</label>
+        </div>
+      </div>
+    ),
+    children: (
+      <p>
+        An elementary introduction to computing science and computer
+        programming, suitable for students with little or no programming
+        background. Students will learn fundamental concepts and terminology of
+        computing science, acquire elementary skills for programming in a
+        high-level language, e.g. Python. The students will be exposed to
+        diverse fields within, and applications of computing science. Topics
+        will include: pseudocode; data types and control structures; fundamental
+        algorithms; recursion; reading and writing files; measuring performance
+        of algorithms; debugging tools; basic terminal navigation using shell
+        commands. Treatment is informal and programming is presented as a
+        problem-solving tool. Students with credit for CMPT 102, 128, 130 or 166
+        may not take this course for further credit. Students who have taken
+        CMPT 125, 129, 130 or 135 first may not then take this course for
+        further credit. Quantitative/Breadth-Science.
+      </p>
+    ),
+    style: panelStyle,
+  },
+  {
+    key: '2',
+    label: (
+      <div className="flex flex-col gap-1">
+        <div className="flex justify-between items-center">
+          <label>CMPT 120</label>
+          <label>Gregory Baker</label>
+        </div>
+        <div className="flex justify-start">
+          <label className="text-xs">Burnaby</label>
+        </div>
+      </div>
+    ),
+    children: (
+      <p>
+        A rigorous introduction to computing science and computer programming,
+        suitable for students who already have some background in computing
+        science and programming. Intended for students who will major in
+        computing science or a related program. Topics include: memory
+        management; fundamental algorithms; formally analyzing the running time
+        of algorithms; abstract data types and elementary data structures;
+        object-oriented programming and software design; specification and
+        program correctness; reading and writing files; debugging tools; shell
+        commands. Students with credit for CMPT 126, 129, 135 or CMPT 200 or
+        higher may not take this course for further credit. Quantitative.
+      </p>
+    ),
+    style: panelStyle,
+  },
+  {
+    key: '3',
+    label: (
+      <div className="flex flex-col gap-1">
+        <div className="flex justify-between items-center">
+          <label>CMPT 120</label>
+          <label>Gregory Baker</label>
+        </div>
+        <div className="flex justify-start">
+          <label className="text-xs">Burnaby</label>
+        </div>
+      </div>
+    ),
+    children: (
+      <p>
+        Introduction to a variety of practical and important data structures and
+        methods for implementation and for experimental and analytical
+        evaluation. Topics include: stacks, queues and lists; search trees; hash
+        tables and algorithms; efficient sorting; object-oriented programming;
+        time and space efficiency analysis; and experimental evaluation.
+        Quantitative.
+      </p>
+    ),
+    style: panelStyle,
+  },
+];
+
 const NewSchedulePage: React.FC<NewSchedulePageProps> = () => {
-  const [majorSelected, setMajorSelected] = useState<boolean>(false);
-  const [numberSelected, setNumberSelected] = useState<boolean>(false);
+  const { token } = theme.useToken();
 
-  const updateMajorSelectionMade = () => {
-    setMajorSelected(true);
+  const [majorSelected, setMajorSelected] = useState<
+    string | number | null | undefined
+  >(null);
+  const [numberSelected, setNumberSelected] = useState<
+    string | number | null | undefined
+  >(null);
+
+  const updateMajorSelectionMade = (value: string | number) => {
+    setMajorSelected(value);
   };
 
-  const updateNumberSelectionMade = () => {
-    setNumberSelected(true);
+  const updateNumberSelectionMade = (value: string | number) => {
+    setNumberSelected(value);
   };
 
-  const { data } = useQuery<Option[], Error>({
-    queryKey: [],
+  const { data: majorNames } = useQuery<Option[], Error>({
+    queryKey: ['majors'],
     queryFn: () => fetchMajors('2024', 'spring'),
   });
 
+  const { data: majorNumbers } = useQuery<Option[], Error>({
+    queryKey: ['numbers', majorSelected],
+    queryFn: () => fetchMajorCourses('2024', 'spring', majorSelected),
+  });
+
+  const panelStyle: React.CSSProperties = {
+    marginBottom: 24,
+    background: token.colorFillAlter,
+    borderRadius: token.borderRadiusLG,
+    border: 'none',
+  };
+
   return (
-    <div className="flex flex-col justify-center items-center w-full h-full">
+    <div className="flex flex-col justify-center items-center w-full h-full overflow-hidden">
       <div className="flex justify-center items-center gap-4 flex-wrap grow m-4">
-        <Search
+        <Select
+          showSearch
+          style={{ width: 200 }}
           placeholder="Select major"
-          data={data}
+          optionFilterProp="children"
+          filterOption={(input, option) =>
+            (option?.label ?? '').includes(input)
+          }
+          filterSort={(optionA, optionB) =>
+            (optionA?.label ?? '')
+              .toLowerCase()
+              .localeCompare((optionB?.label ?? '').toLowerCase())
+          }
+          options={majorNames}
           onSelect={updateMajorSelectionMade}
         />
-        <Search
+        <Select
+          showSearch
+          style={{ width: 200 }}
           placeholder="Select course number"
-          data={numbers}
+          optionFilterProp="children"
+          filterOption={(input, option) =>
+            (option?.label ?? '').includes(input)
+          }
+          filterSort={(optionA, optionB) =>
+            (optionA?.label ?? '')
+              .toLowerCase()
+              .localeCompare((optionB?.label ?? '').toLowerCase())
+          }
+          options={majorNumbers}
           disabled={!majorSelected}
           onSelect={updateNumberSelectionMade}
         />
         <Button
           type="primary"
           size="middle"
-          disabled={!numberSelected && !majorSelected}
+          disabled={!numberSelected || !majorSelected}
         >
           Search
         </Button>
       </div>
-      <div className="flex justify-center items-center gap-2 w-full h-full">
-        <div className="h-full">calender</div>
-        <Divider type="vertical" />
-        <div className="h-full">list of selection</div>
+      <div className="flex flex-wrap justify-center items-center gap-2 w-full h-full">
+        <div className="flex h-full flex-1 grow justify-center min-w-96">
+          calender
+        </div>
+        <div className="w-px bg-slate-600" />
+        <div className="h-full flex-1 grow justify-center min-w-96 p-4 overflow-y-auto">
+          <Collapse
+            bordered={false}
+            defaultActiveKey={['1']}
+            style={{ background: token.colorBgContainer }}
+            items={getItems(panelStyle)}
+          />
+        </div>
       </div>
     </div>
   );
