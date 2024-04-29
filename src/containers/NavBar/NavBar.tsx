@@ -1,25 +1,27 @@
 import React, { useState } from 'react';
 import type { MenuProps } from 'antd';
 import { Menu, Avatar } from 'antd';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 
 const items: MenuProps['items'] = [
   {
-    key: 'new',
-    label: <Link to="/create">New</Link>,
+    key: 'create',
+    label: <Link to="/create">Create</Link>,
   },
   {
     key: 'saved',
     label: <Link to="/saved">Saved</Link>,
   },
   {
-    key: 'ai',
+    key: 'courseai',
     label: <Link to="/courseai">Course</Link>,
   },
 ];
 
 const NavBar: React.FC = () => {
-  const [current, setCurrent] = useState('new');
+  const location = useLocation();
+  const pathWithoutSlash = location.pathname.substring(1);
+  const [current, setCurrent] = useState(pathWithoutSlash);
 
   const onClick: MenuProps['onClick'] = e => {
     console.log('click ', e);

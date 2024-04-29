@@ -3,7 +3,15 @@ import { Button, Collapse, Select, theme, Modal } from 'antd';
 import type { CollapseProps } from 'antd';
 import { useQuery } from '@tanstack/react-query';
 import { fetchMajorCourses, fetchMajors } from './fetchMajors';
-import { CloudUploadOutlined, DeleteOutlined } from '@ant-design/icons';
+import {
+  CloudUploadOutlined,
+  DeleteOutlined,
+  CloseOutlined,
+} from '@ant-design/icons';
+
+const DELETE_ICON_SIZE = 18;
+const SAVE_ICON_SIZE = 20;
+const CLOSE_ICON_SIZE = 18;
 
 export interface Option {
   value: string;
@@ -61,6 +69,13 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = () => {
     border: 'none',
   };
 
+  const deleteIconStyle: React.CSSProperties = {
+    padding: 1,
+    cursor: 'pointer',
+    fontSize: DELETE_ICON_SIZE,
+    color: 'grey',
+  };
+
   const getItems: (
     panelStyle: CSSProperties,
   ) => CollapseProps['items'] = panelStyle => [
@@ -78,7 +93,7 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = () => {
             </div>
           </div>
           {/* <div className=" h-fit bg-slate-200 w-px" /> */}
-          <DeleteOutlined onClick={showModal} />
+          <DeleteOutlined style={deleteIconStyle} onClick={showModal} />
         </div>
       ),
       children: (
@@ -115,7 +130,7 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = () => {
             </div>
           </div>
           {/* <div className=" h-fit bg-slate-200 w-px" /> */}
-          <DeleteOutlined onClick={showModal} />
+          <DeleteOutlined style={deleteIconStyle} onClick={showModal} />
         </div>
       ),
       children: (
@@ -149,7 +164,7 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = () => {
             </div>
           </div>
           {/* <div className=" h-fit bg-slate-200 w-px" /> */}
-          <DeleteOutlined onClick={showModal} />
+          <DeleteOutlined style={deleteIconStyle} onClick={showModal} />
         </div>
       ),
       children: (
@@ -224,10 +239,24 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = () => {
             items={getItems(panelStyle)}
           />
           {getItems(panelStyle)?.length && (
-            <CloudUploadOutlined
-              className="self-center cursor-pointer"
-              onClick={showModal}
-            />
+            <div className="flex self-center gap-4">
+              <CloudUploadOutlined
+                style={{
+                  cursor: 'pointer',
+                  fontSize: SAVE_ICON_SIZE,
+                  color: 'grey',
+                }}
+                onClick={showModal}
+              />
+              <CloseOutlined
+                style={{
+                  cursor: 'pointer',
+                  fontSize: CLOSE_ICON_SIZE,
+                  color: 'grey',
+                }}
+                onClick={showModal}
+              />
+            </div>
           )}
         </div>
       </div>
