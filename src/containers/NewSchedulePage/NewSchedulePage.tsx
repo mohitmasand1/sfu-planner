@@ -143,7 +143,7 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = () => {
       <div className="flex justify-center items-center gap-4 flex-wrap grow m-4">
         <Select
           showSearch
-          style={{ width: 200 }}
+          style={{ width: 300 }}
           placeholder="Select major"
           optionFilterProp="children"
           filterOption={(input, option) =>
@@ -159,7 +159,7 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = () => {
         />
         <Select
           showSearch
-          style={{ width: 200 }}
+          style={{ width: 300 }}
           placeholder="Select course number"
           optionFilterProp="children"
           filterOption={(input, option) =>

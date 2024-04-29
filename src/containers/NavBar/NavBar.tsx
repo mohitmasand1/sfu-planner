@@ -26,13 +26,18 @@ const NavBar: React.FC = () => {
     setCurrent(e.key);
   };
 
+  const handleSemesterChange = (value: string) => {
+    console.log(`selected ${value}`);
+  };
+
   const url =
     'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png';
 
   return (
-    <div className="flex justify-between items-center w-full">
-      <div className="m-4">LOGO</div>
+    <div className="flex justify-between items-center w-full border-b">
+      <div className="m-4">Logo</div>
       <Menu
+        className="border-b-0"
         onClick={onClick}
         selectedKeys={[current]}
         mode="horizontal"
