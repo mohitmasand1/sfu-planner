@@ -3,6 +3,7 @@ import { Button, Collapse, Select, theme } from 'antd';
 import type { CollapseProps } from 'antd';
 import { useQuery } from '@tanstack/react-query';
 import { fetchMajorCourses, fetchMajors } from './fetchMajors';
+import { CloudUploadOutlined, DeleteOutlined } from '@ant-design/icons';
 
 export interface Option {
   value: string;
@@ -22,8 +23,9 @@ const getItems: (
           <label>CMPT 120</label>
           <label>Gregory Baker</label>
         </div>
-        <div className="flex justify-start">
+        <div className="flex justify-between">
           <label className="text-xs">Burnaby</label>
+          <DeleteOutlined />
         </div>
       </div>
     ),
@@ -55,8 +57,9 @@ const getItems: (
           <label>CMPT 120</label>
           <label>Gregory Baker</label>
         </div>
-        <div className="flex justify-start">
+        <div className="flex justify-between">
           <label className="text-xs">Burnaby</label>
+          <DeleteOutlined />
         </div>
       </div>
     ),
@@ -84,8 +87,9 @@ const getItems: (
           <label>CMPT 120</label>
           <label>Gregory Baker</label>
         </div>
-        <div className="flex justify-start">
+        <div className="flex justify-between">
           <label className="text-xs">Burnaby</label>
+          <DeleteOutlined />
         </div>
       </div>
     ),
@@ -187,13 +191,16 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = () => {
           calender
         </div>
         <div className="w-px bg-slate-600" />
-        <div className="h-full flex-1 grow justify-center min-w-96 p-4 overflow-y-auto">
+        <div className="flex flex-col h-full flex-1 grow justify-center min-w-96 p-4 overflow-y-auto">
           <Collapse
             bordered={false}
             defaultActiveKey={['1']}
             style={{ background: token.colorBgContainer }}
             items={getItems(panelStyle)}
           />
+          {getItems(panelStyle)?.length && (
+            <CloudUploadOutlined className="self-center cursor-pointer" />
+          )}
         </div>
       </div>
     </div>
