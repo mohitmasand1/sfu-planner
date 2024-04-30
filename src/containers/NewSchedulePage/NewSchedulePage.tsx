@@ -30,6 +30,7 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = () => {
     string | number | null | undefined
   >(null);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [modalContent, setModalContent] = useState<React.ReactNode>(null);
 
   const updateMajorSelectionMade = (value: string | number) => {
     setMajorSelected(value);
@@ -42,8 +43,16 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = () => {
     setNumberSelected(value);
   };
 
-  const showModal = (event: React.MouseEvent<HTMLSpanElement>) => {
+  const showModal = (
+    event: React.MouseEvent<HTMLSpanElement>,
+    modalContent?: React.ReactNode,
+  ) => {
     event.stopPropagation();
+    if (modalContent) {
+      setModalContent(modalContent);
+    } else {
+      setModalContent(<label>No modal data</label>);
+    }
     setIsModalOpen(true);
   };
 
@@ -227,7 +236,7 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = () => {
                     fontSize: SAVE_ICON_SIZE,
                     color: 'grey',
                   }}
-                  onClick={showModal}
+                  onClick={event => showModal(event, <div>Save schedule?</div>)}
                 />
               </Tooltip>
               <Tooltip title="Delete all selections">
@@ -237,7 +246,9 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = () => {
                     fontSize: CLOSE_ICON_SIZE,
                     color: 'grey',
                   }}
-                  onClick={showModal}
+                  onClick={event =>
+                    showModal(event, <div>Delete all selections?</div>)
+                  }
                 />
               </Tooltip>
             </div>
@@ -250,7 +261,7 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = () => {
         onOk={handleOk}
         onCancel={handleCancel}
       >
-        <p>Content passed as param</p>
+        {modalContent}
       </Modal>
     </div>
   );
