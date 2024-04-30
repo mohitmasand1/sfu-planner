@@ -7,7 +7,10 @@ import {
   CloudUploadOutlined,
   DeleteOutlined,
   CloseOutlined,
+  LeftOutlined,
+  RightOutlined,
 } from '@ant-design/icons';
+import TextWithToggle from '../../components/TextWithToggle/TextWithToggle';
 
 const DELETE_ICON_SIZE = 18;
 const SAVE_ICON_SIZE = 20;
@@ -92,14 +95,42 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = () => {
     panelStyle: React.CSSProperties,
   ) => CollapseProps['items'] = panelStyle => {
     const label = (
-      <div className="flex gap-3">
+      <div className="flex gap-3 pb-2">
         <div className="flex flex-col gap-1 w-full">
           <div className="flex justify-between items-center">
-            <label>CMPT 120</label>
-            <label>Gregory Baker (4.6/5)</label>
+            <label>
+              <b>CMPT 120</b>
+            </label>
+            <label>Gregory Baker</label>
           </div>
-          <div className="flex justify-between items-center">
-            <label className="text-xs">Burnaby</label>
+          <div>
+            <div className="flex justify-between items-center">
+              <label className="text-xs">D100</label>
+              <a
+                className="text-sky-500 text-xs"
+                href="http://greenteapress.com/thinkpython2/thinkpython2.pdf"
+              >
+                (4.6/5)
+              </a>
+            </div>
+            <div className="flex justify-between">
+              <label className="text-xs">3 credits</label>
+              <div className="flex gap-2">
+                <LeftOutlined
+                  style={{
+                    cursor: 'pointer',
+                    color: 'grey',
+                  }}
+                />
+                <RightOutlined
+                  style={{
+                    cursor: 'pointer',
+                    color: 'black',
+                  }}
+                />
+              </div>
+              <label className="text-xs">Burnaby</label>
+            </div>
           </div>
         </div>
         {/* <div className=" h-fit bg-slate-200 w-px" /> */}
@@ -111,23 +142,48 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = () => {
         key: '1',
         label,
         children: (
-          <p>
-            An elementary introduction to computing science and computer
-            programming, suitable for students with little or no programming
-            background. Students will learn fundamental concepts and terminology
-            of computing science, acquire elementary skills for programming in a
-            high-level language, e.g. Python. The students will be exposed to
-            diverse fields within, and applications of computing science. Topics
-            will include: pseudocode; data types and control structures;
-            fundamental algorithms; recursion; reading and writing files;
-            measuring performance of algorithms; debugging tools; basic terminal
-            navigation using shell commands. Treatment is informal and
-            programming is presented as a problem-solving tool. Students with
-            credit for CMPT 102, 128, 130 or 166 may not take this course for
-            further credit. Students who have taken CMPT 125, 129, 130 or 135
-            first may not then take this course for further credit.
-            Quantitative/Breadth-Science.
-          </p>
+          <div className="flex flex-col gap-3">
+            <div className="flex flex-col">
+              <label>
+                <b>Course name:</b>
+              </label>
+              <label>Introduction to Computing Science and Programming I</label>
+            </div>
+            <div>
+              <label>
+                <b>Description:</b>
+              </label>
+              <TextWithToggle
+                max={200}
+                text="An elementary introduction to computing science and computer
+        programming, suitable for students with little or no programming
+        background. Students will learn fundamental concepts and terminology
+        of computing science, acquire elementary skills for programming in a
+        high-level language, e.g. Python. The students will be exposed to
+        diverse fields within, and applications of computing science. Topics
+        will include: pseudocode; data types and control structures;
+        fundamental algorithms; recursion; reading and writing files;
+        measuring performance of algorithms; debugging tools; basic terminal
+        navigation using shell commands. Treatment is informal and
+        programming is presented as a problem-solving tool. Students with
+        credit for CMPT 102, 128, 130 or 166 may not take this course for
+        further credit. Students who have taken CMPT 125, 129, 130 or 135
+        first may not then take this course for further credit.
+        Quantitative/Breadth-Science."
+              />
+            </div>
+            <div className="flex flex-col">
+              <label>
+                <b>Required Readings:</b>
+              </label>
+              <a
+                className="text-sky-500"
+                href="http://greenteapress.com/thinkpython2/thinkpython2.pdf"
+              >
+                Think Python - How to Think Like a Computer Scientist
+              </a>
+            </div>
+          </div>
         ),
         style: panelStyle,
       },
@@ -135,19 +191,44 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = () => {
         key: '2',
         label,
         children: (
-          <p>
-            A rigorous introduction to computing science and computer
-            programming, suitable for students who already have some background
-            in computing science and programming. Intended for students who will
-            major in computing science or a related program. Topics include:
-            memory management; fundamental algorithms; formally analyzing the
-            running time of algorithms; abstract data types and elementary data
-            structures; object-oriented programming and software design;
-            specification and program correctness; reading and writing files;
-            debugging tools; shell commands. Students with credit for CMPT 126,
-            129, 135 or CMPT 200 or higher may not take this course for further
-            credit. Quantitative.
-          </p>
+          <div className="flex flex-col gap-3">
+            <div className="flex flex-col">
+              <label>
+                <b>Course name:</b>
+              </label>
+              <label>Introduction to Computing Science and Programming I</label>
+            </div>
+            <div>
+              <label>
+                <b>Description:</b>
+              </label>
+              <TextWithToggle
+                max={200}
+                text="A rigorous introduction to computing science and computer
+          programming, suitable for students who already have some background
+          in computing science and programming. Intended for students who will
+          major in computing science or a related program. Topics include:
+          memory management; fundamental algorithms; formally analyzing the
+          running time of algorithms; abstract data types and elementary data
+          structures; object-oriented programming and software design;
+          specification and program correctness; reading and writing files;
+          debugging tools; shell commands. Students with credit for CMPT 126,
+          129, 135 or CMPT 200 or higher may not take this course for further
+          credit. Quantitative."
+              />
+            </div>
+            <div className="flex flex-col">
+              <label>
+                <b>Required Readings:</b>
+              </label>
+              <a
+                className="text-sky-500"
+                href="http://greenteapress.com/thinkpython2/thinkpython2.pdf"
+              >
+                Think Python - How to Think Like a Computer Scientist
+              </a>
+            </div>
+          </div>
         ),
         style: panelStyle,
       },
@@ -155,14 +236,39 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = () => {
         key: '3',
         label,
         children: (
-          <p>
-            Introduction to a variety of practical and important data structures
+          <div className="flex flex-col gap-3">
+            <div className="flex flex-col">
+              <label>
+                <b>Course name:</b>
+              </label>
+              <label>Introduction to Computing Science and Programming I</label>
+            </div>
+            <div>
+              <label>
+                <b>Description:</b>
+              </label>
+              <TextWithToggle
+                max={200}
+                text="Introduction to a variety of practical and important data structures
             and methods for implementation and for experimental and analytical
             evaluation. Topics include: stacks, queues and lists; search trees;
             hash tables and algorithms; efficient sorting; object-oriented
             programming; time and space efficiency analysis; and experimental
-            evaluation. Quantitative.
-          </p>
+            evaluation. Quantitative."
+              />
+            </div>
+            <div className="flex flex-col">
+              <label>
+                <b>Required Readings:</b>
+              </label>
+              <a
+                className="text-sky-500"
+                href="http://greenteapress.com/thinkpython2/thinkpython2.pdf"
+              >
+                Think Python - How to Think Like a Computer Scientist
+              </a>
+            </div>
+          </div>
         ),
         style: panelStyle,
       },
@@ -216,15 +322,15 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = () => {
         </Button>
       </div>
       <div className="flex flex-wrap justify-center items-center gap-2 w-full h-full">
-        <div className="flex h-full flex-1 grow justify-center min-w-96">
-          calender
-        </div>
+        <div className="flex h-full flex-1 grow justify-center min-w-96"></div>
         <div className="w-px bg-slate-600" />
         <div className="flex flex-col h-full flex-1 grow justify-center min-w-96 p-4 overflow-y-auto">
           <Collapse
             bordered={false}
             defaultActiveKey={['1']}
-            style={{ background: token.colorBgContainer }}
+            style={{
+              background: token.colorBgContainer,
+            }}
             items={getItems(panelStyle)}
           />
           {getItems(panelStyle)?.length && (
