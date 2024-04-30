@@ -1,6 +1,15 @@
 import React, { useState } from 'react';
-import { Button, Collapse, Select, theme, Modal, Tooltip } from 'antd';
-import type { CollapseProps } from 'antd';
+import {
+  Button,
+  Collapse,
+  Select,
+  theme,
+  Modal,
+  Tooltip,
+  Popconfirm,
+  message,
+} from 'antd';
+import type { CollapseProps, PopconfirmProps } from 'antd';
 import { useQuery } from '@tanstack/react-query';
 import { fetchMajorCourses, fetchMajors } from './fetch-course-data';
 import {
@@ -44,6 +53,31 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = () => {
 
   const updateNumberSelectionMade = (value: string | number) => {
     setNumberSelected(value);
+  };
+
+  const handleRightArrowClick = (event: React.MouseEvent<HTMLSpanElement>) => {
+    event.stopPropagation();
+    // if enabled (not end of list), then change class and update enable/disable state
+  };
+
+  const handleLeftArrowClick = (event: React.MouseEvent<HTMLSpanElement>) => {
+    event.stopPropagation();
+    // if enabled (not end of list), then change class and update enable/disable state
+  };
+
+  const showConfirm = (event: React.MouseEvent<HTMLSpanElement>) => {
+    event.stopPropagation();
+  };
+
+  const confirm: PopconfirmProps['onConfirm'] = e => {
+    console.log(e);
+    e?.stopPropagation();
+    message.success('Removed');
+  };
+
+  const cancel: PopconfirmProps['onCancel'] = e => {
+    console.log(e);
+    e?.stopPropagation();
   };
 
   const showModal = (
@@ -109,6 +143,7 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = () => {
               <a
                 className="text-sky-500 text-xs"
                 href="http://greenteapress.com/thinkpython2/thinkpython2.pdf"
+                target="_blank"
               >
                 (4.6/5)
               </a>
@@ -121,12 +156,14 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = () => {
                     cursor: 'pointer',
                     color: 'grey',
                   }}
+                  onClick={handleLeftArrowClick}
                 />
                 <RightOutlined
                   style={{
                     cursor: 'pointer',
                     color: 'black',
                   }}
+                  onClick={handleRightArrowClick}
                 />
               </div>
               <label className="text-xs">Burnaby</label>
@@ -134,7 +171,17 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = () => {
           </div>
         </div>
         {/* <div className=" h-fit bg-slate-200 w-px" /> */}
-        <DeleteOutlined style={deleteIconStyle} onClick={showModal} />
+        <Popconfirm
+          placement="left"
+          title="Remove CMPT 120?"
+          description="Are you sure to remove this course?"
+          okText="Yes"
+          cancelText="No"
+          onConfirm={confirm}
+          onCancel={cancel}
+        >
+          <DeleteOutlined style={deleteIconStyle} onClick={showConfirm} />
+        </Popconfirm>
       </div>
     );
     return [
@@ -179,6 +226,7 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = () => {
               <a
                 className="text-sky-500"
                 href="http://greenteapress.com/thinkpython2/thinkpython2.pdf"
+                target="_blank"
               >
                 Think Python - How to Think Like a Computer Scientist
               </a>
@@ -224,6 +272,7 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = () => {
               <a
                 className="text-sky-500"
                 href="http://greenteapress.com/thinkpython2/thinkpython2.pdf"
+                target="_blank"
               >
                 Think Python - How to Think Like a Computer Scientist
               </a>
@@ -264,6 +313,7 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = () => {
               <a
                 className="text-sky-500"
                 href="http://greenteapress.com/thinkpython2/thinkpython2.pdf"
+                target="_blank"
               >
                 Think Python - How to Think Like a Computer Scientist
               </a>
@@ -366,6 +416,7 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = () => {
         open={isModalOpen}
         onOk={handleOk}
         onCancel={handleCancel}
+        closable={false}
       >
         {modalContent}
       </Modal>
