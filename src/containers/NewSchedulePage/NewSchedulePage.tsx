@@ -9,9 +9,14 @@ import {
   Popconfirm,
   message,
 } from 'antd';
-import type { CollapseProps, PopconfirmProps } from 'antd';
+import type { CollapseProps, ModalProps, PopconfirmProps } from 'antd';
 import { useQuery } from '@tanstack/react-query';
-import { fetchMajorCourses, fetchMajors } from './fetch-course-data';
+import {
+  fetchMajorCourses,
+  fetchMajors,
+  fetchCourseOfferings,
+  CourseOffering,
+} from './fetch-course-data';
 import {
   CloudUploadOutlined,
   DeleteOutlined,
@@ -20,6 +25,8 @@ import {
   RightOutlined,
 } from '@ant-design/icons';
 import TextWithToggle from '../../components/TextWithToggle/TextWithToggle';
+import CourseSelectionPage from '../CourseSelectionPage/CourseSelectionPage';
+import SaveInstancePage from '../SaveInstanceModal/SaveInstancePage';
 
 const DELETE_ICON_SIZE = 18;
 const SAVE_ICON_SIZE = 20;
@@ -30,21 +37,30 @@ export interface Option {
   label: string;
 }
 
+interface modalData {
+  title: string;
+  content: React.ReactNode;
+  modalProps?: ModalProps;
+}
+
 interface NewSchedulePageProps {}
 
 const NewSchedulePage: React.FC<NewSchedulePageProps> = () => {
   const { token } = theme.useToken();
 
-  const [majorSelected, setMajorSelected] = useState<
-    string | number | null | undefined
-  >(null);
+  const [majorSelected, setMajorSelected] = useState<string | null | undefined>(
+    null,
+  );
   const [numberSelected, setNumberSelected] = useState<
     string | number | null | undefined
   >(null);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-  const [modalContent, setModalContent] = useState<React.ReactNode>(null);
+  const [modalContent, setModalContent] = useState<modalData>({
+    title: '',
+    content: <></>,
+  });
 
-  const updateMajorSelectionMade = (value: string | number) => {
+  const updateMajorSelectionMade = (value: string) => {
     setMajorSelected(value);
     if (numberSelected) {
       setNumberSelected(null);
@@ -82,19 +98,25 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = () => {
 
   const showModal = (
     event: React.MouseEvent<HTMLSpanElement>,
-    modalContent?: React.ReactNode,
+    title: string,
+    content?: React.ReactNode,
+    modalProps?: ModalProps,
   ) => {
     event.stopPropagation();
     if (modalContent) {
-      setModalContent(modalContent);
+      setModalContent({ title, content, modalProps });
     } else {
-      setModalContent(<label>No modal data</label>);
+      setModalContent({
+        title: 'Default title',
+        content: <label>No modal data</label>,
+      });
     }
     setIsModalOpen(true);
   };
 
   const handleOk = () => {
     setIsModalOpen(false);
+    message.success('Saved');
   };
 
   const handleCancel = () => {
@@ -103,12 +125,18 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = () => {
 
   const { data: majorNames } = useQuery<Option[], Error>({
     queryKey: ['majors'],
-    queryFn: () => fetchMajors('2024', 'spring'),
+    queryFn: () => fetchMajors('2024', 'summer'),
   });
 
   const { data: majorNumbers } = useQuery<Option[], Error>({
     queryKey: ['numbers', majorSelected],
-    queryFn: () => fetchMajorCourses('2024', 'spring', majorSelected),
+    queryFn: () => fetchMajorCourses('2024', 'summer', majorSelected),
+  });
+
+  const { data: courseOfferings } = useQuery<CourseOffering[], Error>({
+    queryKey: ['courseOfferings', majorSelected, numberSelected],
+    queryFn: () =>
+      fetchCourseOfferings('2024', 'summer', majorSelected, numberSelected),
   });
 
   const panelStyle: React.CSSProperties = {
@@ -123,6 +151,29 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = () => {
     cursor: 'pointer',
     fontSize: DELETE_ICON_SIZE,
     color: 'grey',
+  };
+
+  const onClickSearch = (event: React.MouseEvent<HTMLButtonElement>) => {
+    const fullCourseName = `${majorNames?.filter(major => majorSelected == major.value)[0].label} ${majorNumbers?.filter(number => number.value == numberSelected)[0].label}`;
+    showModal(
+      event,
+      fullCourseName,
+      <CourseSelectionPage offerings={courseOfferings} />,
+      { okText: 'Add' },
+    );
+  };
+
+  const onClickSave = (event: React.MouseEvent<HTMLSpanElement>) => {
+    showModal(event, 'Save', <SaveInstancePage />, { okText: 'Confirm' });
+  };
+
+  const onClickDeleteAll = (event: React.MouseEvent<HTMLSpanElement>) => {
+    showModal(
+      event,
+      'Delete all selections',
+      <div>Delete all selections?</div>,
+      { okText: 'Yes' },
+    );
   };
 
   const getItems: (
@@ -366,7 +417,7 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = () => {
           type="primary"
           size="middle"
           disabled={!numberSelected || !majorSelected}
-          onClick={showModal}
+          onClick={onClickSearch}
         >
           Search
         </Button>
@@ -392,7 +443,7 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = () => {
                     fontSize: SAVE_ICON_SIZE,
                     color: 'grey',
                   }}
-                  onClick={event => showModal(event, <div>Save schedule?</div>)}
+                  onClick={onClickSave}
                 />
               </Tooltip>
               <Tooltip title="Delete all selections">
@@ -402,9 +453,7 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = () => {
                     fontSize: CLOSE_ICON_SIZE,
                     color: 'grey',
                   }}
-                  onClick={event =>
-                    showModal(event, <div>Delete all selections?</div>)
-                  }
+                  onClick={onClickDeleteAll}
                 />
               </Tooltip>
             </div>
@@ -412,13 +461,14 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = () => {
         </div>
       </div>
       <Modal
-        title="Title passed as param"
+        title={modalContent.title}
         open={isModalOpen}
         onOk={handleOk}
         onCancel={handleCancel}
         closable={false}
+        {...modalContent.modalProps}
       >
-        {modalContent}
+        {modalContent.content}
       </Modal>
     </div>
   );
