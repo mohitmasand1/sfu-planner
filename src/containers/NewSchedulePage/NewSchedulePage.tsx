@@ -27,6 +27,7 @@ import {
 import TextWithToggle from '../../components/TextWithToggle/TextWithToggle';
 import CourseSelectionPage from '../CourseSelectionPage/CourseSelectionPage';
 import SaveInstancePage from '../SaveInstanceModal/SaveInstancePage';
+import Calender from '../../components/Calender/Calender';
 
 const DELETE_ICON_SIZE = 18;
 const SAVE_ICON_SIZE = 20;
@@ -377,8 +378,8 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = () => {
   };
 
   return (
-    <div className="flex flex-col justify-center items-center w-full h-full overflow-hidden">
-      <div className="flex justify-center items-center gap-4 flex-wrap grow m-4">
+    <div className="flex flex-col items-center w-full h-full md:max-h-[calc(100%-65px)] overflow-hidden">
+      <div className="flex justify-center items-center gap-4 flex-wrap grow p-4">
         <Select
           showSearch
           style={{ width: 300 }}
@@ -422,15 +423,17 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = () => {
           Search
         </Button>
       </div>
-      <div className="flex flex-wrap justify-center items-center gap-2 w-full h-full">
-        <div className="flex h-full flex-1 grow justify-center min-w-96"></div>
-        <div className="w-px bg-slate-600" />
-        <div className="flex flex-col h-full flex-1 grow justify-center min-w-96 p-4 overflow-y-auto">
+      <div className="flex flex-wrap justify-center items-start gap-2 w-full h-full md:max-h-full">
+        <div className="flex h-full flex-1 grow justify-center md:max-h-full p-4 md:p-7">
+          <Calender termCode="1244" />
+        </div>
+        <div className="flex flex-col h-full md:max-h-full flex-1 justify-start min-w-96 p-4 md:p-7">
           <Collapse
             bordered={false}
             defaultActiveKey={['1']}
             style={{
               background: token.colorBgContainer,
+              overflowY: 'auto',
             }}
             items={getItems(panelStyle)}
           />
@@ -467,6 +470,7 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = () => {
         onCancel={handleCancel}
         closable={false}
         {...modalContent.modalProps}
+        className="!w-full top-12"
       >
         {modalContent.content}
       </Modal>

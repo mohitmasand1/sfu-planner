@@ -13,7 +13,7 @@ function App() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <div className="flex flex-col w-full justify-center items-center h-full">
+      <div className="flex flex-col w-full items-center md:h-screen md:max-h-screen overflow-hidden">
         <NavBar />
         <Outlet />
       </div>

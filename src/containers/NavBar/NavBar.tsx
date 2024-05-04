@@ -37,7 +37,7 @@ const NavBar: React.FC = () => {
 
   return (
     <div className="flex justify-between items-center w-full border-b">
-      <div className="m-4">Logo</div>
+      <div className="p-4">Logo</div>
       <Menu
         className="border-b-0"
         onClick={onClick}
@@ -45,7 +45,7 @@ const NavBar: React.FC = () => {
         mode="horizontal"
         items={items}
       />
-      <div className="flex-none m-4">
+      <div className="flex-none p-4">
         <Avatar src={<img src={url} alt="avatar" />} />
       </div>
     </div>
