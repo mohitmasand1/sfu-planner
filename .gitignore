@@ -11,6 +11,9 @@ node_modules
 dist
 dist-ssr
 *.local
+sfu-planner-be/venv
+sfu-planner-be/.env
+sfu-planner-be/plan.txt
 
 # Editor directories and files
 .vscode/*
