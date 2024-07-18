@@ -4,12 +4,14 @@ import os
 from dotenv import load_dotenv
 import datetime
 import ratemyprofessor
+from flask_cors import CORS
 
 
 load_dotenv()
 SFU_API_BASE_URL = os.getenv('SFU_API_BASE_URL')
 
 app = Flask(__name__)
+CORS(app)
 
 
 @app.route("/termcodes", methods=["GET"])
@@ -51,7 +53,7 @@ def get_professor_rating():
     professor = ratemyprofessor.get_professor_by_school_and_name(
     ratemyprofessor.get_school_by_name("Simon Fraser University"), name)
     if (professor is None):
-        return jsonify(0)
+        return jsonify({})
                        
     return jsonify(
         {

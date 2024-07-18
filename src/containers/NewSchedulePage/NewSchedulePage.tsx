@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, createContext } from 'react';
 import {
   Button,
   Collapse,
@@ -11,12 +11,7 @@ import {
 } from 'antd';
 import type { CollapseProps, ModalProps, PopconfirmProps } from 'antd';
 import { useQuery } from '@tanstack/react-query';
-import {
-  fetchMajorCourses,
-  fetchMajors,
-  fetchCourseOfferings,
-  CourseOffering,
-} from './fetch-course-data';
+import { fetchMajorCourses, fetchMajors } from './fetch-course-data';
 import {
   CloudUploadOutlined,
   DeleteOutlined,
@@ -47,7 +42,10 @@ interface modalData {
 interface NewSchedulePageProps {}
 
 const NewSchedulePage: React.FC<NewSchedulePageProps> = () => {
+  const ReachableContext = createContext<string | null>(null);
+  const UnreachableContext = createContext<string | null>(null);
   const { token } = theme.useToken();
+  const [modal, contextHolder] = Modal.useModal();
 
   const [majorSelected, setMajorSelected] = useState<string | null | undefined>(
     null,
@@ -60,6 +58,12 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = () => {
     title: '',
     content: <></>,
   });
+  const [userSelectedCourseData, setUserSelectedCourseData] = useState({});
+
+  // const { data: selectedCourseData } = useQuery({
+  //   queryKey: ['selectedCourse'],
+  //   queryFn: () => fetchSelectedCourse(),
+  // });
 
   const updateMajorSelectionMade = (value: string) => {
     setMajorSelected(value);
@@ -131,13 +135,11 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = () => {
 
   const { data: majorNumbers } = useQuery<Option[], Error>({
     queryKey: ['numbers', majorSelected],
-    queryFn: () => fetchMajorCourses('2024', 'summer', majorSelected),
-  });
-
-  const { data: courseOfferings } = useQuery<CourseOffering[], Error>({
-    queryKey: ['courseOfferings', majorSelected, numberSelected],
-    queryFn: () =>
-      fetchCourseOfferings('2024', 'summer', majorSelected, numberSelected),
+    queryFn: () => {
+      if (majorSelected)
+        return fetchMajorCourses('2024', 'summer', majorSelected);
+      return Promise.resolve([]);
+    },
   });
 
   const panelStyle: React.CSSProperties = {
@@ -159,7 +161,10 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = () => {
     showModal(
       event,
       fullCourseName,
-      <CourseSelectionPage offerings={courseOfferings} />,
+      <CourseSelectionPage
+        majorSelected={majorSelected}
+        numberSelected={numberSelected}
+      />,
       { okText: 'Add' },
     );
   };
@@ -169,13 +174,26 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = () => {
   };
 
   const onClickDeleteAll = (event: React.MouseEvent<HTMLSpanElement>) => {
-    showModal(
-      event,
-      'Delete all selections',
-      <div>Delete all selections?</div>,
-      { okText: 'Yes' },
-    );
+    // showModal(
+    //   event,
+    //   'Delete all selections',
+    //   <div>Delete all selections?</div>,
+    //   { okText: 'Yes' },
+    // );
+    modal.warning({
+      title: 'Delete all selections',
+      content: <div>Delete all selections?</div>,
+      onOk() {
+        message.success('Deleted');
+      },
+    });
   };
+
+  const onCourseOfferingSelect = (
+    major: string,
+    number: string,
+    section: string,
+  ) => {};
 
   const getItems: (
     panelStyle: React.CSSProperties,
@@ -463,6 +481,7 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = () => {
           )}
         </div>
       </div>
+      {contextHolder}
       <Modal
         title={modalContent.title}
         open={isModalOpen}

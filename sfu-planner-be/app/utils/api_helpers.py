@@ -3,7 +3,7 @@ import datetime
 import pytz
 from dateutil.rrule import rrule, WEEKLY
 from dateutil.parser import parse
-from dateutil.rrule import MO, TU, WE, TH, FR, SA, SU
+from constants.days import days_mapping
 from constants.holidays import bc_holidays_2024
 
 def parse_custom_date(date_str):
@@ -65,7 +65,7 @@ def process_course_number_data(data):
 
     # Group lectures
     for cls in data:
-        if cls['sectionCode'] == 'LEC':
+        if cls['sectionCode'] != 'TUT' and cls['sectionCode'] != 'LAB':
             lectures[cls['associatedClass']] = cls
             lectures[cls['associatedClass']]['labs'] = []
             lectures[cls['associatedClass']]['tutorials'] = []
@@ -90,26 +90,26 @@ def process_course_section_data(data):
     formatted_data['professor'] = []
     formatted_data['schedule'] = []
     formatted_data['info'] = {}
-    formatted_data['requiredText'] = data['requiredText']
+    formatted_data['requiredText'] = data.get('requiredText', [])
 
-    instructor = data['instructor']
+    instructor = data.get('instructor', [])
     for i in range(len(instructor)):
         formatted_data['professor'].append({
             'firstName': instructor[i]['firstName'],
             'lastName': instructor[i]['lastName'],
         })
 
-    info = data['info']
+    info = data.get('info', {})
     formatted_data['info'] = {
-            'description': info['description'],
-            'deliveryMethod': info['deliveryMethod'],
-            'section': info['section'],
-            'term': info['term'],
-            'prerequisites': info['prerequisites'],
-            'designation': info['designation'],
-            'title': info['title'],
-            'units': info['units'],
-            'corequisites': info['corequisites'],
+            'description': info.get('description', None),
+            'deliveryMethod': info.get('deliveryMethod', None),
+            'section': info.get('section', None),
+            'term': info.get('term', None),
+            'prerequisites': info.get('prerequisites', None),
+            'designation': info.get('designation', None),
+            'title': info.get('title', None),
+            'units': info.get('units', None),
+            'corequisites': info.get('corequisites', None),
         }
     
     schedule = data['courseSchedule']
@@ -122,14 +122,13 @@ def create_events(course_schedule):
     events = []
     timezone = pytz.timezone('America/Vancouver')  # Specific to BC, Canada
     for course in course_schedule:
-        start_date = parse(course['startDate'])
-        end_date = parse(course['endDate'])
+        start_date = parse(course.get('startDate', ''))
+        end_date = parse(course.get('endDate', ''))
         start_date = timezone.localize(start_date)
         end_date = timezone.localize(end_date)
-        start_time = datetime.datetime.strptime(course['startTime'], '%H:%M').time()
-        end_time = datetime.datetime.strptime(course['endTime'], '%H:%M').time()
-        days_mapping = {'Mo': MO, 'Tu': TU, 'We': WE, 'Th': TH, 'Fr': FR, 'Sa': SA, 'Su': SU}
-        days = course['days'].replace(',', '').split()
+        start_time = datetime.datetime.strptime(course.get('startTime', ''), '%H:%M').time()
+        end_time = datetime.datetime.strptime(course.get('endTime', ''), '%H:%M').time()
+        days = course.get('days', '').replace(',', '').split()
         rrule_days = [days_mapping[day] for day in days]
 
         for dt in rrule(freq=WEEKLY, byweekday=rrule_days, dtstart=start_date, until=end_date):
@@ -138,8 +137,8 @@ def create_events(course_schedule):
                 event_start = datetime.datetime.combine(event_date, start_time, dt.tzinfo)
                 event_end = datetime.datetime.combine(event_date, end_time, dt.tzinfo)
                 events.append({
-                    'campus': course['campus'],
-                    'sectionCode': course['sectionCode'],
+                    'campus': course.get('campus', 'Burnaby'),
+                    'sectionCode': course.get('sectionCode', ''),
                     'start': event_start.isoformat(),
                     'end': event_end.isoformat()
                 })

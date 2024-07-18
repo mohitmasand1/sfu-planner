@@ -1,78 +1,179 @@
 import React, { useState } from 'react';
-import { Tabs, Radio } from 'antd';
+import { Radio } from 'antd';
 import type { RadioChangeEvent } from 'antd';
-
-import { CourseOffering } from '../NewSchedulePage/fetch-course-data';
+import { useQuery, useQueries, UseQueryResult } from '@tanstack/react-query';
+import {
+  CourseOffering,
+  CourseSection,
+  fetchCourseOfferings,
+  fetchCourseSection,
+} from '../NewSchedulePage/fetch-course-data';
 import Calender from '../../components/Calender/Calender';
+import SelectionPreview from './SectionPreview';
 
+interface TabState {
+  [key: string]: string;
+}
 interface CourseSelectionPageProps {
-  offerings?: CourseOffering[];
+  majorSelected?: string | null;
+  numberSelected?: string | number | null;
 }
 
 const CourseSelectionPage: React.FC<CourseSelectionPageProps> = props => {
-  const { offerings } = props;
-  const [value, setValue] = useState(1);
+  const { majorSelected = '', numberSelected = '' } = props;
+  const [value, setValue] = useState<string>('');
+  const [tabStates, setTabStates] = useState<TabState>({});
+  const [lastClickedTab, setLastClickedTab] = useState<string>('');
 
-  const onChange = (e: RadioChangeEvent) => {
+  const onSectionChange = (e: RadioChangeEvent) => {
     console.log('radio checked', e.target.value);
     setValue(e.target.value);
   };
 
-  const onTabChange = (key: string) => {
-    console.log(key);
+  const handleTabChange = (id: string, newTabKey: string) => {
+    setTabStates(prev => ({ ...prev, [id]: newTabKey }));
+    setLastClickedTab(newTabKey);
   };
+
+  const { data: courseOfferings = [] } = useQuery<CourseOffering[], Error>({
+    // [{D100}, {D200}, {D300}]
+    queryKey: ['courseOfferings', majorSelected, numberSelected],
+    queryFn: () =>
+      fetchCourseOfferings('2023', 'fall', majorSelected, numberSelected),
+    placeholderData: [],
+  });
+
+  // const { data: selectedCourseOfferingData } = useQuery<CourseSection, Error>({
+  //   queryKey: ['courseOfferings', majorSelected, numberSelected, value],
+  //   queryFn: () => {
+  //     if (value) {
+  //       return fetchCourseSection(
+  //         '2023',
+  //         'fall',
+  //         majorSelected,
+  //         numberSelected,
+  //         value,
+  //       );
+  //     }
+  //     return Promise.resolve({} as CourseSection);
+  //   },
+  // });
+
+  const results = useQueries({
+    queries: courseOfferings.map(courseOffering => ({
+      queryKey: [
+        'courseOfferings',
+        majorSelected,
+        numberSelected,
+        courseOffering.value,
+      ],
+      queryFn: () => {
+        if (tabStates[courseOffering.value]) {
+          return fetchCourseSection(
+            '2023',
+            'fall',
+            majorSelected,
+            numberSelected,
+            tabStates[courseOffering.value],
+          );
+        }
+        return Promise.resolve({} as CourseSection);
+      },
+    })),
+  });
+
+  const courseSections: (CourseSection | undefined)[] = results
+    .map((result: UseQueryResult<CourseSection>) => result.data)
+    .filter(Boolean);
+
+  const { data: courseSection } = useQuery<CourseSection, Error>({
+    queryKey: [
+      'courseOfferings',
+      majorSelected,
+      numberSelected,
+      lastClickedTab,
+    ],
+    queryFn: () => {
+      if (lastClickedTab) {
+        return fetchCourseSection(
+          '2023',
+          'fall',
+          majorSelected,
+          numberSelected,
+          lastClickedTab,
+        );
+      }
+      return Promise.resolve({} as CourseSection);
+    },
+  });
+
+  const getCourseSectionEvents = () => {
+    return courseSection?.schedule?.map(event => ({
+      title: event.sectionCode,
+      start: new Date(event.start),
+      end: new Date(event.end),
+    }));
+  };
+
+  /**
+  [
+    {
+      info: {
+        section: 'd100',
+      }
+    },
+    // ...
+  ]
+
+  [
+    {
+      value: 'd100',
+      // ...
+    }
+  ]
+   */
+
+  const getCombinedCourseList = () => {
+    return courseSections.map(sectionInfo => {
+      const sectionDetails = courseOfferings.find(
+        sectionDetails => sectionDetails.value === sectionInfo?.info?.section,
+      );
+      return { sectionInfo, sectionDetails };
+    });
+  };
+
+  console.log(JSON.stringify(getCombinedCourseList()));
 
   return (
     <div className="flex flex-wrap gap-10">
       <div className="flex flex-1">
-        <Calender termCode="1244" />
+        <Calender termCode="1237" events={getCourseSectionEvents()} />
       </div>
-      <div className="flex-1 min-w-[50%]">
+      <div className="flex-1 min-w-[50%] overflow-auto">
         <Radio.Group
           className="flex flex-col gap-10"
-          onChange={onChange}
+          onChange={onSectionChange}
           value={value}
         >
-          <Radio value={1}>
-            <div className="flex flex-col">
-              <label>D100</label>
-              <Tabs
-                onChange={onTabChange}
-                type="card"
-                items={new Array(3).fill(null).map((_, i) => {
-                  const id = String(i + 1);
-                  return {
-                    label: `TUT ${id}`,
-                    key: id,
-                    children: `Content of Tab Pane ${id}`,
-                  };
-                })}
+          {courseOfferings?.map(courseOffering => (
+            <Radio key={courseOffering.value} value={courseOffering.value}>
+              <SelectionPreview
+                courseOffering={courseOffering}
+                courseOfferingDetails={getCombinedCourseList().find(
+                  a =>
+                    a?.sectionInfo?.info?.section ===
+                    courseOffering.value.toUpperCase(),
+                )}
+                tabKey={tabStates[courseOffering.value]}
+                onChangeTabKey={newTabKey =>
+                  handleTabChange(courseOffering.value, newTabKey)
+                }
+                majorSelected={majorSelected}
+                numberSelected={numberSelected}
               />
-            </div>
-          </Radio>
-          <Radio value={2}>
-            <div className="flex flex-col">
-              <label>D200</label>
-              <Tabs
-                onChange={onTabChange}
-                type="card"
-                items={new Array(3).fill(null).map((_, i) => {
-                  const id = String(i + 1);
-                  return {
-                    label: `LAB ${id}`,
-                    key: id,
-                    children: `Content of Tab Pane ${id}`,
-                  };
-                })}
-              />
-            </div>
-          </Radio>
+            </Radio>
+          ))}
         </Radio.Group>
-
-        {/* {offerings &&
-          offerings.map(courseOfferings => (
-            <label>{Object.values(courseOfferings).join(', ')}</label>
-          ))} */}
       </div>
     </div>
   );
