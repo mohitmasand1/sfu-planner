@@ -1,5 +1,5 @@
 from flask import Flask, jsonify, request
-from utils.api_helpers import parse_term_code, fetch_data_from_api, process_course_number_data, process_course_section_data
+from utils.api_helpers import parse_term_code, fetch_data_from_api, process_course_number_data, process_course_section_data, process_course_number_and_section_data
 import os
 from dotenv import load_dotenv
 import datetime
@@ -84,7 +84,7 @@ def get_api_response():
         response = process_course_section_data(response)
     elif course_number:
         response = fetch_data_from_api(f"{SFU_API_BASE_URL}{year}/{term}/{major}/{course_number}")
-        response = process_course_number_data(response)
+        response = process_course_number_and_section_data(response, year, term, major, course_number)
     elif major:
         response = fetch_data_from_api(f"{SFU_API_BASE_URL}{year}/{term}/{major}")
     elif termCode:

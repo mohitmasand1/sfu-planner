@@ -1,4 +1,4 @@
-import React, { useState, createContext } from 'react';
+import React, { useState } from 'react';
 import {
   Button,
   Collapse,
@@ -10,8 +10,13 @@ import {
   message,
 } from 'antd';
 import type { CollapseProps, ModalProps, PopconfirmProps } from 'antd';
-import { useQuery } from '@tanstack/react-query';
-import { fetchMajorCourses, fetchMajors } from './fetch-course-data';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  fetchMajorCourses,
+  fetchMajors,
+  fetchCourseOfferings,
+  CourseOffering,
+} from './fetch-course-data';
 import {
   CloudUploadOutlined,
   DeleteOutlined,
@@ -42,8 +47,9 @@ interface modalData {
 interface NewSchedulePageProps {}
 
 const NewSchedulePage: React.FC<NewSchedulePageProps> = () => {
-  const ReachableContext = createContext<string | null>(null);
-  const UnreachableContext = createContext<string | null>(null);
+  const queryClient = useQueryClient();
+  // const ReachableContext = createContext<string | null>(null);
+  // const UnreachableContext = createContext<string | null>(null);
   const { token } = theme.useToken();
   const [modal, contextHolder] = Modal.useModal();
 
@@ -58,11 +64,17 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = () => {
     title: '',
     content: <></>,
   });
-  const [userSelectedCourseData, setUserSelectedCourseData] = useState({});
 
-  // const { data: selectedCourseData } = useQuery({
+  const [allSelectedCourses, setAllSelectedCourses] = useState([]);
+  const [currentlySelectedCourseData, setCurrentlySelectedCourseData] =
+    useState<CourseOffering[] | undefined>([]);
+  const [searchClicked, setSearchClicked] = useState(false);
+
+  // const { data: PreviewingCourseData } = useQuery<CourseOffering[], Error>({
   //   queryKey: ['selectedCourse'],
-  //   queryFn: () => fetchSelectedCourse(),
+  //   queryFn: () =>
+  //     fetchCourseOfferings('2023', 'fall', majorSelected, numberSelected),
+  //   enabled: searchClicked,
   // });
 
   const updateMajorSelectionMade = (value: string) => {
@@ -130,14 +142,14 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = () => {
 
   const { data: majorNames } = useQuery<Option[], Error>({
     queryKey: ['majors'],
-    queryFn: () => fetchMajors('2024', 'summer'),
+    queryFn: () => fetchMajors('2023', 'fall'),
   });
 
   const { data: majorNumbers } = useQuery<Option[], Error>({
     queryKey: ['numbers', majorSelected],
     queryFn: () => {
       if (majorSelected)
-        return fetchMajorCourses('2024', 'summer', majorSelected);
+        return fetchMajorCourses('2023', 'fall', majorSelected);
       return Promise.resolve([]);
     },
   });
@@ -156,12 +168,23 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = () => {
     color: 'grey',
   };
 
-  const onClickSearch = (event: React.MouseEvent<HTMLButtonElement>) => {
+  const onClickSearch = async (event: React.MouseEvent<HTMLButtonElement>) => {
+    setSearchClicked(true);
+    const PreviewingCourseData = await queryClient.fetchQuery<
+      CourseOffering[],
+      Error
+    >({
+      queryKey: ['selectedCourse'],
+      queryFn: () =>
+        fetchCourseOfferings('2023', 'fall', majorSelected, numberSelected),
+    });
+    console.log(JSON.stringify(PreviewingCourseData));
     const fullCourseName = `${majorNames?.filter(major => majorSelected == major.value)[0].label} ${majorNumbers?.filter(number => number.value == numberSelected)[0].label}`;
     showModal(
       event,
       fullCourseName,
       <CourseSelectionPage
+        PreviewingCourseData={PreviewingCourseData}
         majorSelected={majorSelected}
         numberSelected={numberSelected}
       />,

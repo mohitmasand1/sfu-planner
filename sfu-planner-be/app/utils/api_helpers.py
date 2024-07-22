@@ -5,6 +5,11 @@ from dateutil.rrule import rrule, WEEKLY
 from dateutil.parser import parse
 from constants.days import days_mapping
 from constants.holidays import bc_holidays_2024
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+SFU_API_BASE_URL = os.getenv('SFU_API_BASE_URL')
 
 def parse_custom_date(date_str):
     # Extract the timezone abbreviation and date-time part
@@ -144,3 +149,26 @@ def create_events(course_schedule):
                 })
 
     return events
+
+def process_course_number_and_section_data(course_number_data, year, term, major, course_number):
+    nested_classes = process_course_number_data(course_number_data)
+
+    for cls in nested_classes:
+        section = cls['text']
+        section_data = fetch_data_from_api(f"{SFU_API_BASE_URL}{year}/{term}/{major}/{course_number}/{section}")
+        specific_data = process_course_section_data(section_data)
+        cls['specificData'] = specific_data
+
+        for lab in cls.get('labs', []):
+            lab_section = lab['text']
+            lab_section_data = fetch_data_from_api(f"{SFU_API_BASE_URL}{year}/{term}/{major}/{course_number}/{lab_section}")
+            lab_specific_data = process_course_section_data(lab_section_data)
+            lab['specificData'] = lab_specific_data
+
+        for tut in cls.get('tutorials', []):
+            tut_section = tut['text']
+            tut_section_data = fetch_data_from_api(f"{SFU_API_BASE_URL}{year}/{term}/{major}/{course_number}/{tut_section}")
+            tut_specific_data = process_course_section_data(tut_section_data)
+            tut['specificData'] = tut_specific_data
+
+    return nested_classes

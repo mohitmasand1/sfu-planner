@@ -75,6 +75,7 @@ export interface CourseOffering {
   associatedClass?: string;
   tutorials: CourseOffering[];
   labs: CourseOffering[];
+  specificData: CourseSection;
 }
 
 export async function fetchCourseOfferings(

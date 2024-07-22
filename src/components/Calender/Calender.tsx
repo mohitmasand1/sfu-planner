@@ -9,6 +9,8 @@ import {
   ViewsProps,
 } from 'react-big-calendar';
 import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import './index.css';
 import { useCallback, useMemo, useState } from 'react';
@@ -16,6 +18,8 @@ import { LeftOutlined, RightOutlined } from '@ant-design/icons';
 import CustomEvent from './CustomEvent';
 import CustomToolbar from './CustomToolbar';
 
+dayjs.extend(utc);
+dayjs.extend(timezone);
 const localizer = dayjsLocalizer(dayjs);
 
 const convertTermCodeToDate = (code: string): Date => {
