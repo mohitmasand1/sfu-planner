@@ -13,7 +13,7 @@ import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import './index.css';
-import { useCallback, useMemo, useState } from 'react';
+import { ReactNode, useCallback, useMemo, useState } from 'react';
 import { LeftOutlined, RightOutlined } from '@ant-design/icons';
 import CustomEvent from './CustomEvent';
 import CustomToolbar from './CustomToolbar';
@@ -152,8 +152,10 @@ const Calender: React.FC<CalenderProps> = props => {
             dateText={dateText}
           />
         ),
-        event: ({ event }: EventProps<Event>) => {
-          return <CustomEvent title={event.title} />;
+        event: ({ event }: EventProps<Event & { description?: ReactNode }>) => {
+          return (
+            <CustomEvent title={event.title} description={event?.description} />
+          );
         },
       },
     }),

@@ -1,18 +1,12 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Radio } from 'antd';
 import type { RadioChangeEvent } from 'antd';
-import { useQuery, useQueries, UseQueryResult } from '@tanstack/react-query';
-import {
-  CourseOffering,
-  CourseSection,
-  fetchCourseOfferings,
-  fetchCourseSection,
-} from '../NewSchedulePage/fetch-course-data';
+import { CourseOffering } from '../NewSchedulePage/fetch-course-data';
 import Calender from '../../components/Calender/Calender';
 import SelectionPreview from './SectionPreview';
 
 interface TabState {
-  [key: string]: string;
+  [key: string]: { labtab?: string; tuttab?: string };
 }
 interface CourseSelectionPageProps {
   majorSelected?: string | null;
@@ -26,154 +20,97 @@ const CourseSelectionPage: React.FC<CourseSelectionPageProps> = props => {
     numberSelected = '',
     PreviewingCourseData = [],
   } = props;
-  const [value, setValue] = useState<string>('');
-  const [tabStates, setTabStates] = useState<TabState>({});
-  const [lastClickedTab, setLastClickedTab] = useState<string>('');
-  const [selectedSectedData, setSelectedData] = useState<string>('');
+  console.log(`init lab value - ${PreviewingCourseData[0]?.labs[0]?.value}`);
+  const [value, setValue] = useState<string>(PreviewingCourseData[0]?.value);
+  console.log(`init value - ${value}`);
+  const [tabStates, setTabStates] = useState<TabState>(() => {
+    const initialState: TabState = {};
+    PreviewingCourseData.forEach(course => {
+      initialState[course.value] = {
+        labtab: course.labs[0]?.value || '',
+        tuttab: course.tutorials[0]?.value || '',
+      };
+    });
+    return initialState;
+  });
+
+  console.log(`init tabStates - ${JSON.stringify(tabStates)}`);
+  // const [selectedSectedData, setSelectedData] = useState<string>('');
+
+  useEffect(() => {
+    setValue(PreviewingCourseData[0]?.value);
+    setTabStates(() => {
+      const initialState: TabState = {};
+      PreviewingCourseData.forEach(course => {
+        initialState[course.value] = {
+          labtab: course.labs[0]?.value || '',
+          tuttab: course.tutorials[0]?.value || '',
+        };
+      });
+      return initialState;
+    });
+  }, [PreviewingCourseData]);
 
   const onSectionChange = (e: RadioChangeEvent) => {
     console.log('radio checked', e.target.value);
     setValue(e.target.value);
   };
 
-  const handleTabChange = useCallback((id: string, newTabKey: string) => {
+  const handleLabTabChange = useCallback((id: string, newTabKey: string) => {
     console.log('tab checked', newTabKey);
-    setTabStates(prev => ({ ...prev, [id]: newTabKey }));
-    setLastClickedTab(newTabKey);
+    setTabStates(prev => ({
+      ...prev,
+      [id]: {
+        ...prev[id],
+        labtab: newTabKey,
+      },
+    }));
+  }, []);
+
+  const handleTutTabChange = useCallback((id: string, newTabKey: string) => {
+    console.log('tab checked', newTabKey);
+    setTabStates(prev => ({
+      ...prev,
+      [id]: {
+        ...prev[id],
+        tuttab: newTabKey,
+      },
+    }));
   }, []);
 
   const getPreviewScheduleFromSelection = () => {
     const selectedSectionData = PreviewingCourseData.find(
       section => section.value === value,
     );
+
+    const createEvents = (schedule: any[], text: any) =>
+      schedule.map(occ => ({
+        title: occ.sectionCode,
+        description: text,
+        start: new Date(occ.start),
+        end: new Date(occ.end),
+      }));
+
     const schedule = selectedSectionData?.specificData?.schedule || [];
-    const labSchedule =
-      selectedSectionData?.labs.find(lab => lab.value === lastClickedTab)
-        ?.specificData.schedule || [];
-    const tutSchedule =
-      selectedSectionData?.tutorials.find(
-        tutorial => tutorial.value === lastClickedTab,
-      )?.specificData.schedule || [];
-    return (
-      schedule
-        .concat(labSchedule)
-        .concat(tutSchedule)
-        .map(occ => ({
-          title: occ.sectionCode,
-          start: new Date(occ.start),
-          end: new Date(occ.end),
-        })) || []
+    const lecEvents = createEvents(schedule, selectedSectionData?.text);
+
+    console.log(`tab state lab - ${tabStates[value]?.labtab}`);
+    const labData = selectedSectionData?.labs.find(
+      lab => lab.value === tabStates[value]?.labtab,
     );
+    const labSchedule = labData?.specificData.schedule || [];
+    const labEvents = createEvents(labSchedule, labData?.text);
+
+    const tutData = selectedSectionData?.tutorials.find(
+      tutorial => tutorial.value === tabStates[value]?.tuttab,
+    );
+    const tutSchedule = tutData?.specificData.schedule || [];
+    const tutEvents = createEvents(tutSchedule, tutData?.text);
+
+    console.log(`labEvents = ${JSON.stringify(labEvents)}`);
+
+    return [...lecEvents, ...labEvents, ...tutEvents];
   };
-
-  // const { data: courseOfferings = [] } = useQuery<CourseOffering[], Error>({
-  //   // [{D100}, {D200}, {D300}]
-  //   queryKey: ['courseOfferings', majorSelected, numberSelected],
-  //   queryFn: () =>
-  //     fetchCourseOfferings('2023', 'fall', majorSelected, numberSelected),
-  //   placeholderData: [],
-  // });
-
-  // const { data: selectedCourseOfferingData } = useQuery<CourseSection, Error>({
-  //   queryKey: ['courseOfferings', majorSelected, numberSelected, value],
-  //   queryFn: () => {
-  //     if (value) {
-  //       return fetchCourseSection(
-  //         '2023',
-  //         'fall',
-  //         majorSelected,
-  //         numberSelected,
-  //         value,
-  //       );
-  //     }
-  //     return Promise.resolve({} as CourseSection);
-  //   },
-  // });
-
-  // const results = useQueries({
-  //   queries: courseOfferings.map(courseOffering => ({
-  //     queryKey: [
-  //       'courseOfferings',
-  //       majorSelected,
-  //       numberSelected,
-  //       courseOffering.value,
-  //     ],
-  //     queryFn: () => {
-  //       if (tabStates[courseOffering.value]) {
-  //         return fetchCourseSection(
-  //           '2023',
-  //           'fall',
-  //           majorSelected,
-  //           numberSelected,
-  //           tabStates[courseOffering.value],
-  //         );
-  //       }
-  //       return Promise.resolve({} as CourseSection);
-  //     },
-  //   })),
-  // });
-
-  // const courseSections: (CourseSection | undefined)[] = results
-  //   .map((result: UseQueryResult<CourseSection>) => result.data)
-  //   .filter(Boolean);
-
-  // const { data: courseSection } = useQuery<CourseSection, Error>({
-  //   queryKey: [
-  //     'courseOfferings',
-  //     majorSelected,
-  //     numberSelected,
-  //     lastClickedTab,
-  //   ],
-  //   queryFn: () => {
-  //     if (lastClickedTab) {
-  //       return fetchCourseSection(
-  //         '2023',
-  //         'fall',
-  //         majorSelected,
-  //         numberSelected,
-  //         lastClickedTab,
-  //       );
-  //     }
-  //     return Promise.resolve({} as CourseSection);
-  //   },
-  // });
-
-  // const getCourseSectionEvents = () => {
-  //   return courseSection?.schedule?.map(event => ({
-  //     title: event.sectionCode,
-  //     start: new Date(event.start),
-  //     end: new Date(event.end),
-  //   }));
-  // };
-
-  /**
-  [
-    {
-      info: {
-        section: 'd100',
-      }
-    },
-    // ...
-  ]
-
-  [
-    {
-      value: 'd100',
-      // ...
-    }
-  ]
-   */
-
-  // const getCombinedCourseList = () => {
-  //   return courseSections.map(sectionInfo => {
-  //     const sectionDetails = courseOfferings.find(
-  //       sectionDetails => sectionDetails.value === sectionInfo?.info?.section,
-  //     );
-  //     return { sectionInfo, sectionDetails };
-  //   });
-  // };
-
-  // console.log(JSON.stringify(getCombinedCourseList()));
 
   return (
     <div className="flex flex-wrap gap-10">
@@ -185,14 +122,18 @@ const CourseSelectionPage: React.FC<CourseSelectionPageProps> = props => {
           className="flex flex-col gap-10"
           onChange={onSectionChange}
           value={value}
+          defaultValue={value}
         >
           {PreviewingCourseData?.map(courseOffering => (
             <Radio key={courseOffering.value} value={courseOffering.value}>
               <SelectionPreview
                 courseOffering={courseOffering}
-                tabKey={tabStates[courseOffering.value]}
-                onChangeTabKey={newTabKey =>
-                  handleTabChange(courseOffering.value, newTabKey)
+                tabKeys={tabStates[courseOffering.value]}
+                onChangeLabTabKey={newTabKey =>
+                  handleLabTabChange(courseOffering.value, newTabKey)
+                }
+                onChangeTutTabKey={newTabKey =>
+                  handleTutTabChange(courseOffering.value, newTabKey)
                 }
                 majorSelected={majorSelected}
                 numberSelected={numberSelected}

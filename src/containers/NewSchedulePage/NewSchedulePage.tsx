@@ -28,6 +28,7 @@ import TextWithToggle from '../../components/TextWithToggle/TextWithToggle';
 import CourseSelectionPage from '../CourseSelectionPage/CourseSelectionPage';
 import SaveInstancePage from '../SaveInstanceModal/SaveInstancePage';
 import Calender from '../../components/Calender/Calender';
+import LoadingOverlay from '../../components/Loading/LoadingOverlay';
 
 const DELETE_ICON_SIZE = 18;
 const SAVE_ICON_SIZE = 20;
@@ -48,8 +49,6 @@ interface NewSchedulePageProps {}
 
 const NewSchedulePage: React.FC<NewSchedulePageProps> = () => {
   const queryClient = useQueryClient();
-  // const ReachableContext = createContext<string | null>(null);
-  // const UnreachableContext = createContext<string | null>(null);
   const { token } = theme.useToken();
   const [modal, contextHolder] = Modal.useModal();
 
@@ -64,19 +63,9 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = () => {
     title: '',
     content: <></>,
   });
+  const [loading, setLoading] = useState(false);
 
-  const [allSelectedCourses, setAllSelectedCourses] = useState([]);
-  const [currentlySelectedCourseData, setCurrentlySelectedCourseData] =
-    useState<CourseOffering[] | undefined>([]);
-  const [searchClicked, setSearchClicked] = useState(false);
-
-  // const { data: PreviewingCourseData } = useQuery<CourseOffering[], Error>({
-  //   queryKey: ['selectedCourse'],
-  //   queryFn: () =>
-  //     fetchCourseOfferings('2023', 'fall', majorSelected, numberSelected),
-  //   enabled: searchClicked,
-  // });
-
+  
   const updateMajorSelectionMade = (value: string) => {
     setMajorSelected(value);
     if (numberSelected) {
@@ -169,15 +158,16 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = () => {
   };
 
   const onClickSearch = async (event: React.MouseEvent<HTMLButtonElement>) => {
-    setSearchClicked(true);
+    setLoading(true);
     const PreviewingCourseData = await queryClient.fetchQuery<
       CourseOffering[],
       Error
     >({
-      queryKey: ['selectedCourse'],
+      queryKey: ['2023', 'fall', majorSelected, numberSelected],
       queryFn: () =>
         fetchCourseOfferings('2023', 'fall', majorSelected, numberSelected),
     });
+    setLoading(false);
     console.log(JSON.stringify(PreviewingCourseData));
     const fullCourseName = `${majorNames?.filter(major => majorSelected == major.value)[0].label} ${majorNumbers?.filter(number => number.value == numberSelected)[0].label}`;
     showModal(
@@ -211,12 +201,6 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = () => {
       },
     });
   };
-
-  const onCourseOfferingSelect = (
-    major: string,
-    number: string,
-    section: string,
-  ) => {};
 
   const getItems: (
     panelStyle: React.CSSProperties,
@@ -505,6 +489,7 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = () => {
         </div>
       </div>
       {contextHolder}
+      {loading && <LoadingOverlay />}{' '}
       <Modal
         title={modalContent.title}
         open={isModalOpen}
