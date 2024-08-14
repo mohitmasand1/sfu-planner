@@ -1,9 +1,17 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, {
+  Dispatch,
+  SetStateAction,
+  useCallback,
+  useEffect,
+  useState,
+} from 'react';
 import { Radio } from 'antd';
 import type { RadioChangeEvent } from 'antd';
 import { CourseOffering } from '../NewSchedulePage/fetch-course-data';
 import Calender from '../../components/Calender/Calender';
 import SelectionPreview from './SectionPreview';
+import { Event } from 'react-big-calendar';
+import { SelectedCourseKey } from '../NewSchedulePage/NewSchedulePage';
 
 interface TabState {
   [key: string]: { labtab?: string; tuttab?: string };
@@ -11,7 +19,9 @@ interface TabState {
 interface CourseSelectionPageProps {
   majorSelected?: string | null;
   numberSelected?: string | number | null;
+  setSelectedCourse: Dispatch<SetStateAction<SelectedCourseKey>>;
   PreviewingCourseData?: CourseOffering[];
+  appliedSchedule?: Event[];
 }
 
 const CourseSelectionPage: React.FC<CourseSelectionPageProps> = props => {
@@ -19,6 +29,8 @@ const CourseSelectionPage: React.FC<CourseSelectionPageProps> = props => {
     majorSelected = '',
     numberSelected = '',
     PreviewingCourseData = [],
+    appliedSchedule = [],
+    setSelectedCourse,
   } = props;
   console.log(`init lab value - ${PreviewingCourseData[0]?.labs[0]?.value}`);
   const [value, setValue] = useState<string>(PreviewingCourseData[0]?.value);
@@ -49,11 +61,26 @@ const CourseSelectionPage: React.FC<CourseSelectionPageProps> = props => {
       });
       return initialState;
     });
+    setSelectedCourse(course => ({
+      ...course,
+      key: PreviewingCourseData[0]?.value,
+      lab: PreviewingCourseData[0]?.labs[0]?.value || '',
+      tut: PreviewingCourseData[0]?.tutorials[0]?.value || '',
+    }));
+    console.log(
+      'currently selected course key' + PreviewingCourseData[0]?.value,
+    );
   }, [PreviewingCourseData]);
 
   const onSectionChange = (e: RadioChangeEvent) => {
     console.log('radio checked', e.target.value);
     setValue(e.target.value);
+    setSelectedCourse(course => ({
+      ...course,
+      key: e.target.value,
+      lab: tabStates[e.target.value].labtab || '',
+      tut: tabStates[e.target.value].tuttab || '',
+    }));
   };
 
   const handleLabTabChange = useCallback((id: string, newTabKey: string) => {
@@ -65,6 +92,10 @@ const CourseSelectionPage: React.FC<CourseSelectionPageProps> = props => {
         labtab: newTabKey,
       },
     }));
+    setSelectedCourse(course => ({
+      ...course,
+      lab: newTabKey,
+    }));
   }, []);
 
   const handleTutTabChange = useCallback((id: string, newTabKey: string) => {
@@ -75,6 +106,10 @@ const CourseSelectionPage: React.FC<CourseSelectionPageProps> = props => {
         ...prev[id],
         tuttab: newTabKey,
       },
+    }));
+    setSelectedCourse(course => ({
+      ...course,
+      tut: newTabKey,
     }));
   }, []);
 
@@ -109,7 +144,7 @@ const CourseSelectionPage: React.FC<CourseSelectionPageProps> = props => {
 
     console.log(`labEvents = ${JSON.stringify(labEvents)}`);
 
-    return [...lecEvents, ...labEvents, ...tutEvents];
+    return [...appliedSchedule, ...lecEvents, ...labEvents, ...tutEvents];
   };
 
   return (

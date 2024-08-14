@@ -152,9 +152,17 @@ const Calender: React.FC<CalenderProps> = props => {
             dateText={dateText}
           />
         ),
-        event: ({ event }: EventProps<Event & { description?: ReactNode }>) => {
+        event: ({
+          event,
+        }: EventProps<
+          Event & { description?: ReactNode; className?: string }
+        >) => {
           return (
-            <CustomEvent title={event.title} description={event?.description} />
+            <CustomEvent
+              title={event.title}
+              description={event?.description}
+              className={event?.className}
+            />
           );
         },
       },

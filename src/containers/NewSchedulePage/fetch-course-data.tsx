@@ -115,6 +115,7 @@ interface Info {
   prerequisites: string;
   designation: string;
   title: string;
+  name: string;
   units: string;
   corequisites: string;
 }
