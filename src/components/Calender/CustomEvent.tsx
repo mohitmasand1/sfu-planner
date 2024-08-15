@@ -12,8 +12,8 @@ const CustomEvent: React.FC<EventProps> = props => {
     <div
       className={`flex flex-col h-full justify-center items-center bg-selection-1 ${className}`}
     >
-      <label className="text-xs md:text-sm">{title}</label>
-      <label className="text-[10px] md:text-xs">{description}</label>
+      <label className="text-xs md:text-sm text-black">{title}</label>
+      <label className="text-[10px] md:text-xs text-black">{description}</label>
     </div>
   );
 };

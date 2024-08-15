@@ -114,6 +114,8 @@ def process_course_section_data(data):
             'designation': info.get('designation', None),
             'title': info.get('title', None),
             'name': info.get('dept', None) + ' ' + info.get('number', None),
+            'major': info.get('dept', None),
+            'number': info.get('number', None),
             'units': info.get('units', None),
             'corequisites': info.get('corequisites', None),
         }

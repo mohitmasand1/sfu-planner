@@ -116,6 +116,8 @@ interface Info {
   designation: string;
   title: string;
   name: string;
+  major: string;
+  number: string;
   units: string;
   corequisites: string;
 }

@@ -93,6 +93,14 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = () => {
     },
   );
 
+  const isAppliedCourseReSelected = () => {
+    return !!appliedCourses.find(
+      course =>
+        course.specificData.info.major === majorSelected?.toUpperCase() &&
+        course.specificData.info.number === numberSelected,
+    );
+  };
+
   const updateMajorSelectionMade = (value: string) => {
     setMajorSelected(value);
     if (numberSelected) {
@@ -246,18 +254,13 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = () => {
     });
   };
 
-  const onClickDeleteAll = (event: React.MouseEvent<HTMLSpanElement>) => {
-    // showModal(
-    //   event,
-    //   'Delete all selections',
-    //   <div>Delete all selections?</div>,
-    //   { okText: 'Yes' },
-    // );
+  const onClickDeleteAll = () => {
     modal.warning({
       title: 'Delete all selections',
       content: <div>Delete all selections?</div>,
       onOk() {
-        message.success('Deleted');
+        message.success('Deleted all');
+        setAppliedCourses([]);
       },
     });
   };
@@ -331,7 +334,11 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = () => {
                 <label>
                   <b>{course.specificData.info.name}</b>
                 </label>
-                <label>Gregory Baker</label>
+                <label>
+                  {course.specificData?.professor[0]?.firstName +
+                    ' ' +
+                    course.specificData?.professor[0]?.lastName}
+                </label>
               </div>
               <div>
                 <div className="flex justify-between items-center">
@@ -345,7 +352,9 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = () => {
                   </a>
                 </div>
                 <div className="flex justify-between">
-                  <label className="text-xs">3 credits</label>
+                  <label className="text-xs">
+                    {course.specificData.info?.units || 'N/A'} credits
+                  </label>
                   <div className="flex gap-2">
                     <LeftOutlined
                       style={{
@@ -362,7 +371,9 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = () => {
                       onClick={handleRightArrowClick}
                     />
                   </div>
-                  <label className="text-xs">Burnaby</label>
+                  <label className="text-xs">
+                    {course.specificData?.schedule[0]?.campus} Campus
+                  </label>
                 </div>
               </div>
             </div>
@@ -373,7 +384,7 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = () => {
               description="Are you sure to remove this course?"
               okText="Yes"
               cancelText="No"
-              onConfirm={confirm(courseKey)} // Pass courseKey to confirm function
+              onConfirm={confirm(courseKey)}
               onCancel={cancel}
             >
               <DeleteOutlined style={deleteIconStyle} onClick={showConfirm} />
@@ -456,7 +467,9 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = () => {
         <Button
           type="primary"
           size="middle"
-          disabled={!numberSelected || !majorSelected}
+          disabled={
+            !numberSelected || !majorSelected || isAppliedCourseReSelected()
+          }
           onClick={onClickSearch}
         >
           Search
@@ -467,16 +480,18 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = () => {
           <Calender termCode="1237" events={generateAppliedSchedule()} />
         </div>
         <div className="flex flex-col h-full md:max-h-full flex-1 justify-start min-w-96 p-4 md:p-7">
-          <Collapse
-            bordered={false}
-            defaultActiveKey={['1']}
-            style={{
-              background: token.colorBgContainer,
-              overflowY: 'auto',
-            }}
-            items={getItems(panelStyle)}
-          />
-          {getItems(panelStyle)?.length && (
+          {appliedCourses.length > 0 && (
+            <Collapse
+              bordered={false}
+              defaultActiveKey={['1']}
+              style={{
+                background: token.colorBgContainer,
+                overflowY: 'auto',
+              }}
+              items={getItems(panelStyle)}
+            />
+          )}
+          {(getItems(panelStyle)?.length || 0) > 0 && (
             <div className="flex self-center gap-6">
               <Tooltip title="Save schedule">
                 <CloudUploadOutlined
