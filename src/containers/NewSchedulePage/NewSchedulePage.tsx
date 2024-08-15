@@ -118,9 +118,16 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = () => {
     event.stopPropagation();
   };
 
-  const confirm: PopconfirmProps['onConfirm'] = e => {
-    console.log(e);
-    e?.stopPropagation();
+  const confirm = (courseKey: string) => () => {
+    setAppliedCourses(prevCourses =>
+      prevCourses.filter(course => course.title !== courseKey),
+    );
+    // Optionally restore the color to the available pool
+    const removedColor = courseColorMapRef.current[courseKey];
+    if (removedColor) {
+      availableColorsRef.current.push(removedColor);
+      delete courseColorMapRef.current[courseKey];
+    }
     message.success('Removed');
   };
 
@@ -274,8 +281,8 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = () => {
 
       // Extract schedules and apply the color
       const courseSchedule = course.specificData.schedule.map(occ => ({
-        title: occ.sectionCode,
-        description: '',
+        title: course.specificData.info.name,
+        description: occ.sectionCode + ' ' + course.text,
         start: new Date(occ.start),
         end: new Date(occ.end),
         className: classColor,
@@ -283,8 +290,8 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = () => {
 
       const labSchedule =
         course.labs[0]?.specificData.schedule.map(occ => ({
-          title: occ.sectionCode,
-          description: '',
+          title: course.specificData.info.name,
+          description: occ.sectionCode + ' ' + course.labs[0].text,
           start: new Date(occ.start),
           end: new Date(occ.end),
           className: classColor,
@@ -292,8 +299,8 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = () => {
 
       const tutSchedule =
         course.tutorials[0]?.specificData.schedule.map(occ => ({
-          title: occ.sectionCode,
-          description: '',
+          title: course.specificData.info.name,
+          description: occ.sectionCode + ' ' + course.tutorials[0].text,
           start: new Date(occ.start),
           end: new Date(occ.end),
           className: classColor,
@@ -307,97 +314,106 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = () => {
   const getItems: (
     panelStyle: React.CSSProperties,
   ) => CollapseProps['items'] = panelStyle => {
-    return appliedCourses.map((course, index) => ({
-      key: index,
-      label: (
-        <div className="flex gap-3 pb-2">
-          <div className="flex flex-col gap-1 w-full">
-            <div className="flex justify-between items-center">
+    return appliedCourses.map((course, index) => {
+      const courseKey = course.title;
+      const courseColor = courseColorMapRef.current[courseKey];
+
+      const itemPanelStyle: React.CSSProperties = {
+        ...panelStyle,
+        background: courseColor ? `var(--${courseColor})` : 'transparent',
+      };
+      return {
+        key: index,
+        label: (
+          <div className="flex gap-3 pb-2">
+            <div className="flex flex-col gap-1 w-full">
+              <div className="flex justify-between items-center">
+                <label>
+                  <b>{course.specificData.info.name}</b>
+                </label>
+                <label>Gregory Baker</label>
+              </div>
+              <div>
+                <div className="flex justify-between items-center">
+                  <label className="text-xs">{course.text}</label>
+                  <a
+                    className="text-sky-500 text-xs"
+                    href="http://greenteapress.com/thinkpython2/thinkpython2.pdf"
+                    target="_blank"
+                  >
+                    (4.6/5)
+                  </a>
+                </div>
+                <div className="flex justify-between">
+                  <label className="text-xs">3 credits</label>
+                  <div className="flex gap-2">
+                    <LeftOutlined
+                      style={{
+                        cursor: 'pointer',
+                        color: 'grey',
+                      }}
+                      onClick={handleLeftArrowClick}
+                    />
+                    <RightOutlined
+                      style={{
+                        cursor: 'pointer',
+                        color: 'black',
+                      }}
+                      onClick={handleRightArrowClick}
+                    />
+                  </div>
+                  <label className="text-xs">Burnaby</label>
+                </div>
+              </div>
+            </div>
+            {/* <div className=" h-fit bg-slate-200 w-px" /> */}
+            <Popconfirm
+              placement="left"
+              title={`Remove ${course.specificData.info.name}?`}
+              description="Are you sure to remove this course?"
+              okText="Yes"
+              cancelText="No"
+              onConfirm={confirm(courseKey)} // Pass courseKey to confirm function
+              onCancel={cancel}
+            >
+              <DeleteOutlined style={deleteIconStyle} onClick={showConfirm} />
+            </Popconfirm>
+          </div>
+        ),
+        children: (
+          <div className="flex flex-col gap-3">
+            <div className="flex flex-col">
               <label>
-                <b>{course.specificData.info.name}</b>
+                <b>Course name:</b>
               </label>
-              <label>Gregory Baker</label>
+              <label>{course.title}</label>
             </div>
             <div>
-              <div className="flex justify-between items-center">
-                <label className="text-xs">{course.text}</label>
-                <a
-                  className="text-sky-500 text-xs"
-                  href="http://greenteapress.com/thinkpython2/thinkpython2.pdf"
-                  target="_blank"
-                >
-                  (4.6/5)
-                </a>
-              </div>
-              <div className="flex justify-between">
-                <label className="text-xs">3 credits</label>
-                <div className="flex gap-2">
-                  <LeftOutlined
-                    style={{
-                      cursor: 'pointer',
-                      color: 'grey',
-                    }}
-                    onClick={handleLeftArrowClick}
-                  />
-                  <RightOutlined
-                    style={{
-                      cursor: 'pointer',
-                      color: 'black',
-                    }}
-                    onClick={handleRightArrowClick}
-                  />
-                </div>
-                <label className="text-xs">Burnaby</label>
-              </div>
+              <label>
+                <b>Description:</b>
+              </label>
+              <TextWithToggle
+                max={200}
+                text={course.specificData.info.description}
+              />
+            </div>
+            <div className="flex flex-col">
+              <label>
+                <b>Required Readings:</b>
+              </label>
+              <a
+                className="text-sky-500"
+                href="http://greenteapress.com/thinkpython2/thinkpython2.pdf"
+                target="_blank"
+              >
+                Think Python - How to Think Like a Computer Scientist
+              </a>
             </div>
           </div>
-          {/* <div className=" h-fit bg-slate-200 w-px" /> */}
-          <Popconfirm
-            placement="left"
-            title="Remove CMPT 120?"
-            description="Are you sure to remove this course?"
-            okText="Yes"
-            cancelText="No"
-            onConfirm={confirm}
-            onCancel={cancel}
-          >
-            <DeleteOutlined style={deleteIconStyle} onClick={showConfirm} />
-          </Popconfirm>
-        </div>
-      ),
-      children: (
-        <div className="flex flex-col gap-3">
-          <div className="flex flex-col">
-            <label>
-              <b>Course name:</b>
-            </label>
-            <label>{course.title}</label>
-          </div>
-          <div>
-            <label>
-              <b>Description:</b>
-            </label>
-            <TextWithToggle
-              max={200}
-              text={course.specificData.info.description}
-            />
-          </div>
-          <div className="flex flex-col">
-            <label>
-              <b>Required Readings:</b>
-            </label>
-            <a
-              className="text-sky-500"
-              href="http://greenteapress.com/thinkpython2/thinkpython2.pdf"
-              target="_blank"
-            >
-              Think Python - How to Think Like a Computer Scientist
-            </a>
-          </div>
-        </div>
-      ),
-      style: panelStyle,
-    }));
+        ),
+        style: itemPanelStyle,
+      };
+    });
   };
 
   return (
