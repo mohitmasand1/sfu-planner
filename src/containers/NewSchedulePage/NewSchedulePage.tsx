@@ -1,14 +1,5 @@
 import React, { useRef, useState } from 'react';
-import {
-  Button,
-  Collapse,
-  Select,
-  theme,
-  Modal,
-  Tooltip,
-  Popconfirm,
-  message,
-} from 'antd';
+import { Button, Collapse, Select, theme, Modal, Tooltip, message } from 'antd';
 import type { CollapseProps, ModalProps, PopconfirmProps } from 'antd';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
@@ -17,20 +8,14 @@ import {
   fetchCourseOfferings,
   CourseOffering,
 } from './fetch-course-data';
-import {
-  CloudUploadOutlined,
-  DeleteOutlined,
-  CloseOutlined,
-  LeftOutlined,
-  RightOutlined,
-} from '@ant-design/icons';
-import TextWithToggle from '../../components/TextWithToggle/TextWithToggle';
+import { CloudUploadOutlined, CloseOutlined } from '@ant-design/icons';
 import CourseSelectionPage from '../CourseSelectionPage/CourseSelectionPage';
 import SaveInstancePage from '../SaveInstanceModal/SaveInstancePage';
 import Calender from '../../components/Calender/Calender';
 import LoadingOverlay from '../../components/Loading/LoadingOverlay';
+import CourseItemLabel from '../../components/CourseItem/CourseItemLabel';
+import CourseItemContent from '../../components/CourseItem/CourseItemContent';
 
-const DELETE_ICON_SIZE = 18;
 const SAVE_ICON_SIZE = 20;
 const CLOSE_ICON_SIZE = 18;
 
@@ -211,13 +196,6 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = () => {
     border: 'none',
   };
 
-  const deleteIconStyle: React.CSSProperties = {
-    padding: 1,
-    cursor: 'pointer',
-    fontSize: DELETE_ICON_SIZE,
-    color: 'grey',
-  };
-
   const onClickSearch = async (event: React.MouseEvent<HTMLButtonElement>) => {
     setLoading(true);
     const PreviewingCourseData = await queryClient.fetchQuery<
@@ -328,100 +306,16 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = () => {
       return {
         key: index,
         label: (
-          <div className="flex gap-3 pb-2">
-            <div className="flex flex-col gap-1 w-full">
-              <div className="flex justify-between items-center">
-                <label>
-                  <b>{course.specificData.info.name}</b>
-                </label>
-                <label>
-                  {course.specificData?.professor[0]?.firstName +
-                    ' ' +
-                    course.specificData?.professor[0]?.lastName}
-                </label>
-              </div>
-              <div>
-                <div className="flex justify-between items-center">
-                  <label className="text-xs">{course.text}</label>
-                  <a
-                    className="text-sky-500 text-xs"
-                    href="http://greenteapress.com/thinkpython2/thinkpython2.pdf"
-                    target="_blank"
-                  >
-                    (4.6/5)
-                  </a>
-                </div>
-                <div className="flex justify-between">
-                  <label className="text-xs">
-                    {course.specificData.info?.units || 'N/A'} credits
-                  </label>
-                  <div className="flex gap-2">
-                    <LeftOutlined
-                      style={{
-                        cursor: 'pointer',
-                        color: 'grey',
-                      }}
-                      onClick={handleLeftArrowClick}
-                    />
-                    <RightOutlined
-                      style={{
-                        cursor: 'pointer',
-                        color: 'black',
-                      }}
-                      onClick={handleRightArrowClick}
-                    />
-                  </div>
-                  <label className="text-xs">
-                    {course.specificData?.schedule[0]?.campus} Campus
-                  </label>
-                </div>
-              </div>
-            </div>
-            {/* <div className=" h-fit bg-slate-200 w-px" /> */}
-            <Popconfirm
-              placement="left"
-              title={`Remove ${course.specificData.info.name}?`}
-              description="Are you sure to remove this course?"
-              okText="Yes"
-              cancelText="No"
-              onConfirm={confirm(courseKey)}
-              onCancel={cancel}
-            >
-              <DeleteOutlined style={deleteIconStyle} onClick={showConfirm} />
-            </Popconfirm>
-          </div>
+          <CourseItemLabel
+            course={course}
+            handleLeftArrowClick={handleLeftArrowClick}
+            handleRightArrowClick={handleRightArrowClick}
+            cancel={cancel}
+            showConfirm={showConfirm}
+            confirm={confirm}
+          />
         ),
-        children: (
-          <div className="flex flex-col gap-3">
-            <div className="flex flex-col">
-              <label>
-                <b>Course name:</b>
-              </label>
-              <label>{course.title}</label>
-            </div>
-            <div>
-              <label>
-                <b>Description:</b>
-              </label>
-              <TextWithToggle
-                max={200}
-                text={course.specificData.info.description}
-              />
-            </div>
-            <div className="flex flex-col">
-              <label>
-                <b>Required Readings:</b>
-              </label>
-              <a
-                className="text-sky-500"
-                href="http://greenteapress.com/thinkpython2/thinkpython2.pdf"
-                target="_blank"
-              >
-                Think Python - How to Think Like a Computer Scientist
-              </a>
-            </div>
-          </div>
-        ),
+        children: <CourseItemContent course={course} />,
         style: itemPanelStyle,
       };
     });

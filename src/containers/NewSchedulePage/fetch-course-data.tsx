@@ -100,7 +100,7 @@ interface Professor {
   lastName: string;
 }
 
-interface Event {
+export interface Event {
   campus: string;
   sectionCode: string;
   start: string;

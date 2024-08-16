@@ -16,8 +16,17 @@ const SelectionPreview: React.FC<SelectionPreviewProps> = props => {
 
   return (
     <div className="flex flex-col">
-      <label>{courseOffering.text}</label>
-      <label>{courseOffering?.specificData?.professor?.[0]?.firstName}</label>
+      <div className="flex flex-row justify-between">
+        <label>Section: {courseOffering.text}</label>
+        <label>
+          Professor:
+          {' ' +
+            courseOffering?.specificData?.professor?.[0]?.firstName +
+            ' ' +
+            courseOffering?.specificData?.professor?.[0]?.lastName}
+        </label>
+        <label>{courseOffering?.specificData.info.units} credits</label>
+      </div>
       {courseOffering.tutorials.length > 0 && (
         <Tabs
           onChange={(key: string) => onChangeTutTabKey(key)}
