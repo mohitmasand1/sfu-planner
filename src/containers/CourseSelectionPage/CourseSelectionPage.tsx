@@ -22,6 +22,7 @@ interface CourseSelectionPageProps {
   setSelectedCourse: Dispatch<SetStateAction<SelectedCourseKey>>;
   PreviewingCourseData?: CourseOffering[];
   appliedSchedule?: Event[];
+  termCode: string;
 }
 
 const CourseSelectionPage: React.FC<CourseSelectionPageProps> = props => {
@@ -31,6 +32,7 @@ const CourseSelectionPage: React.FC<CourseSelectionPageProps> = props => {
     PreviewingCourseData = [],
     appliedSchedule = [],
     setSelectedCourse,
+    termCode,
   } = props;
   console.log(`init lab value - ${PreviewingCourseData[0]?.labs[0]?.value}`);
   const [value, setValue] = useState<string>(PreviewingCourseData[0]?.value);
@@ -118,29 +120,45 @@ const CourseSelectionPage: React.FC<CourseSelectionPageProps> = props => {
       section => section.value === value,
     );
 
-    const createEvents = (schedule: any[], text: any) =>
+    const createEvents = (
+      schedule: any[],
+      title: string,
+      description: string,
+    ) =>
       schedule.map(occ => ({
-        title: occ.sectionCode,
-        description: text,
+        title,
+        description,
         start: new Date(occ.start),
         end: new Date(occ.end),
       }));
 
     const schedule = selectedSectionData?.specificData?.schedule || [];
-    const lecEvents = createEvents(schedule, selectedSectionData?.text);
+    const lecEvents = createEvents(
+      schedule,
+      selectedSectionData?.specificData?.info?.name || '',
+      selectedSectionData?.sectionCode + ' ' + selectedSectionData?.text,
+    );
 
     console.log(`tab state lab - ${tabStates[value]?.labtab}`);
     const labData = selectedSectionData?.labs.find(
       lab => lab.value === tabStates[value]?.labtab,
     );
     const labSchedule = labData?.specificData.schedule || [];
-    const labEvents = createEvents(labSchedule, labData?.text);
+    const labEvents = createEvents(
+      labSchedule,
+      labData?.specificData?.info?.name || '',
+      labData?.text || '',
+    );
 
     const tutData = selectedSectionData?.tutorials.find(
       tutorial => tutorial.value === tabStates[value]?.tuttab,
     );
     const tutSchedule = tutData?.specificData.schedule || [];
-    const tutEvents = createEvents(tutSchedule, tutData?.text);
+    const tutEvents = createEvents(
+      tutSchedule,
+      tutData?.specificData?.info?.name || '',
+      tutData?.text || '',
+    );
 
     console.log(`labEvents = ${JSON.stringify(labEvents)}`);
 
@@ -150,7 +168,10 @@ const CourseSelectionPage: React.FC<CourseSelectionPageProps> = props => {
   return (
     <div className="flex flex-wrap gap-10">
       <div className="flex flex-1">
-        <Calender termCode="1237" events={getPreviewScheduleFromSelection()} />
+        <Calender
+          termCode={termCode}
+          events={getPreviewScheduleFromSelection()}
+        />
       </div>
       <div className="flex-1 min-w-[50%] overflow-auto">
         <Radio.Group

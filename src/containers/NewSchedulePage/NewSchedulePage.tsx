@@ -1,4 +1,5 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import { useOutletContext } from 'react-router-dom';
 import { Button, Collapse, Select, theme, Modal, Tooltip, message } from 'antd';
 import type { CollapseProps, ModalProps, PopconfirmProps } from 'antd';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -15,6 +16,7 @@ import Calender from '../../components/Calender/Calender';
 import LoadingOverlay from '../../components/Loading/LoadingOverlay';
 import CourseItemLabel from '../../components/CourseItem/CourseItemLabel';
 import CourseItemContent from '../../components/CourseItem/CourseItemContent';
+import { parseTermCode } from '../../utils/parseTermCode';
 
 const SAVE_ICON_SIZE = 20;
 const CLOSE_ICON_SIZE = 18;
@@ -47,9 +49,16 @@ export interface SelectedCourseKey {
   tut: string;
 }
 
+interface SharedContext {
+  termCode: string;
+}
+
 interface NewSchedulePageProps {}
 
 const NewSchedulePage: React.FC<NewSchedulePageProps> = () => {
+  const { termCode } = useOutletContext<SharedContext>();
+  const term = parseTermCode(termCode);
+
   // Create a ref to store the course-to-color mapping
   const courseColorMapRef = useRef<{ [key: string]: string }>({});
   const availableColorsRef = useRef<string[]>([...colors]); // Initially, all colors are available
@@ -77,6 +86,15 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = () => {
       tut: '',
     },
   );
+
+  useEffect(() => {
+    setAppliedCourses([]);
+    setMajorSelected('');
+    setNumberSelected('');
+  }, [termCode]);
+
+  console.log('new code - ' + termCode);
+  console.log('new course list - ' + JSON.stringify(appliedCourses));
 
   const isAppliedCourseReSelected = () => {
     return !!appliedCourses.find(
@@ -150,8 +168,8 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = () => {
   const handleOk = () => {
     setIsModalOpen(false);
     const PreviewingCourseData = queryClient.getQueryData<CourseOffering[]>([
-      '2023',
-      'fall',
+      term.year,
+      term.semester,
       majorSelected,
       numberSelected,
     ]);
@@ -177,14 +195,14 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = () => {
 
   const { data: majorNames } = useQuery<Option[], Error>({
     queryKey: ['majors'],
-    queryFn: () => fetchMajors('2023', 'fall'),
+    queryFn: () => fetchMajors(term.year, term.semester),
   });
 
   const { data: majorNumbers } = useQuery<Option[], Error>({
     queryKey: ['numbers', majorSelected],
     queryFn: () => {
       if (majorSelected)
-        return fetchMajorCourses('2023', 'fall', majorSelected);
+        return fetchMajorCourses(term.year, term.semester, majorSelected);
       return Promise.resolve([]);
     },
   });
@@ -202,9 +220,14 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = () => {
       CourseOffering[],
       Error
     >({
-      queryKey: ['2023', 'fall', majorSelected, numberSelected],
+      queryKey: [term.year, term.semester, majorSelected, numberSelected],
       queryFn: () =>
-        fetchCourseOfferings('2023', 'fall', majorSelected, numberSelected),
+        fetchCourseOfferings(
+          term.year,
+          term.semester,
+          majorSelected,
+          numberSelected,
+        ),
     });
     setLoading(false);
     console.log(JSON.stringify(PreviewingCourseData));
@@ -218,6 +241,7 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = () => {
         setSelectedCourse={setSelectedCourseKey}
         majorSelected={majorSelected}
         numberSelected={numberSelected}
+        termCode={termCode}
       />,
       { okText: 'Add' },
     );
@@ -338,6 +362,7 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = () => {
               .localeCompare((optionB?.label ?? '').toLowerCase())
           }
           options={majorNames}
+          value={majorSelected}
           onSelect={updateMajorSelectionMade}
         />
         <Select
@@ -371,7 +396,7 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = () => {
       </div>
       <div className="flex flex-wrap justify-center items-start gap-2 w-full h-full md:max-h-full">
         <div className="flex h-full flex-1 grow justify-center md:max-h-full p-4 md:p-7">
-          <Calender termCode="1237" events={generateAppliedSchedule()} />
+          <Calender termCode={termCode} events={generateAppliedSchedule()} />
         </div>
         <div className="flex flex-col h-full md:max-h-full flex-1 justify-start min-w-96 p-4 md:p-7">
           {appliedCourses.length > 0 && (

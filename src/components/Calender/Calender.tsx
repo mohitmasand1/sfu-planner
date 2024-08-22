@@ -13,7 +13,7 @@ import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import './index.css';
-import { ReactNode, useCallback, useMemo, useState } from 'react';
+import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
 import { LeftOutlined, RightOutlined } from '@ant-design/icons';
 import CustomEvent from './CustomEvent';
 import CustomToolbar from './CustomToolbar';
@@ -65,18 +65,7 @@ interface CalenderProps {
 
 const Calender: React.FC<CalenderProps> = props => {
   const {
-    events = [
-      {
-        title: 'CMPT 120',
-        start: new Date(2024, 4, 6, 10, 30, 0),
-        end: new Date(2024, 4, 6, 12, 20, 0),
-      },
-      {
-        title: 'CMPT 125',
-        start: new Date(2024, 4, 7, 12, 30, 0),
-        end: new Date(2024, 4, 7, 13, 20, 0),
-      },
-    ],
+    events = [],
     views = ['day', 'work_week'],
     defaultView = 'work_week',
     minTime = new Date(2024, 4, 6, 8, 0, 0),
@@ -84,7 +73,11 @@ const Calender: React.FC<CalenderProps> = props => {
     termCode,
   } = props;
 
-  const [date, setDate] = useState(convertTermCodeToDate(termCode));
+  const [date, setDate] = useState(() => convertTermCodeToDate(termCode));
+
+  useEffect(() => {
+    setDate(convertTermCodeToDate(termCode));
+  }, [termCode]);
 
   const onNavigate = useCallback(
     (newDate: Date) => setDate(newDate),
@@ -169,6 +162,8 @@ const Calender: React.FC<CalenderProps> = props => {
     }),
     [dateText],
   );
+
+  console.log(date);
 
   return (
     <Calendar

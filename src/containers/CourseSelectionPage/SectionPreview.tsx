@@ -15,7 +15,7 @@ const SelectionPreview: React.FC<SelectionPreviewProps> = props => {
   const { courseOffering, onChangeLabTabKey, onChangeTutTabKey } = props;
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col w-full">
       <div className="flex flex-row justify-between">
         <label>Section: {courseOffering.text}</label>
         <label>

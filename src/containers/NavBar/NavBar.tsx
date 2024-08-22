@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import type { MenuProps } from 'antd';
-import { Menu, Avatar } from 'antd';
+import { Select, Menu, Avatar } from 'antd';
 import { Link, useLocation } from 'react-router-dom';
 
 const items: MenuProps['items'] = [
@@ -18,7 +18,13 @@ const items: MenuProps['items'] = [
   },
 ];
 
-const NavBar: React.FC = () => {
+interface NavBarProps {
+  setTermCode: React.Dispatch<React.SetStateAction<string>>;
+  termCode: string;
+}
+
+const NavBar: React.FC<NavBarProps> = props => {
+  const { termCode, setTermCode } = props;
   const location = useLocation();
   const pathWithoutSlash = location.pathname.substring(1);
   const [current, setCurrent] = useState(pathWithoutSlash);
@@ -30,6 +36,7 @@ const NavBar: React.FC = () => {
 
   const handleSemesterChange = (value: string) => {
     console.log(`selected ${value}`);
+    setTermCode(value);
   };
 
   const url =
@@ -37,7 +44,18 @@ const NavBar: React.FC = () => {
 
   return (
     <div className="flex justify-between items-center w-full border-b">
-      <div className="p-4">Logo</div>
+      <div className="p-3">
+        <Select
+          defaultValue={termCode}
+          className="sm:w-18 md:w-28 lg:w-32"
+          onChange={handleSemesterChange}
+          options={[
+            { value: '1247', label: 'Fa24' },
+            { value: '1251', label: 'Sp25' },
+            { value: '1254', label: 'Su25' },
+          ]}
+        />
+      </div>
       <Menu
         className="border-b-0"
         onClick={onClick}
