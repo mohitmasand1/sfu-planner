@@ -194,12 +194,12 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = () => {
   };
 
   const { data: majorNames } = useQuery<Option[], Error>({
-    queryKey: ['majors'],
+    queryKey: ['majors', termCode],
     queryFn: () => fetchMajors(term.year, term.semester),
   });
 
   const { data: majorNumbers } = useQuery<Option[], Error>({
-    queryKey: ['numbers', majorSelected],
+    queryKey: ['numbers', majorSelected, termCode],
     queryFn: () => {
       if (majorSelected)
         return fetchMajorCourses(term.year, term.semester, majorSelected);

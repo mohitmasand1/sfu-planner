@@ -1,21 +1,13 @@
 import React, { useState } from 'react';
 import type { MenuProps } from 'antd';
-import { Select, Menu, Avatar } from 'antd';
+import { Select, Menu } from 'antd';
 import { Link, useLocation } from 'react-router-dom';
+import Auth from '../../components/Authentication/Auth';
 
 const items: MenuProps['items'] = [
-  {
-    key: 'create',
-    label: <Link to="/create">Create</Link>,
-  },
-  {
-    key: 'saved',
-    label: <Link to="/saved">Saved</Link>,
-  },
-  {
-    key: 'courseai',
-    label: <Link to="/courseai">Course</Link>,
-  },
+  { key: 'create', label: <Link to="/create">Create</Link> },
+  { key: 'saved', label: <Link to="/saved">Saved</Link> },
+  { key: 'courseai', label: <Link to="/courseai">Course</Link> },
 ];
 
 interface NavBarProps {
@@ -30,17 +22,12 @@ const NavBar: React.FC<NavBarProps> = props => {
   const [current, setCurrent] = useState(pathWithoutSlash);
 
   const onClick: MenuProps['onClick'] = e => {
-    console.log('click ', e);
     setCurrent(e.key);
   };
 
   const handleSemesterChange = (value: string) => {
-    console.log(`selected ${value}`);
     setTermCode(value);
   };
-
-  const url =
-    'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png';
 
   return (
     <div className="flex justify-between items-center w-full border-b">
@@ -52,7 +39,6 @@ const NavBar: React.FC<NavBarProps> = props => {
           options={[
             { value: '1247', label: 'Fa24' },
             { value: '1251', label: 'Sp25' },
-            { value: '1254', label: 'Su25' },
           ]}
         />
       </div>
@@ -63,9 +49,7 @@ const NavBar: React.FC<NavBarProps> = props => {
         mode="horizontal"
         items={items}
       />
-      <div className="flex-none p-4">
-        <Avatar src={<img src={url} alt="avatar" />} />
-      </div>
+      <Auth />
     </div>
   );
 };

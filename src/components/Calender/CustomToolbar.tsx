@@ -1,6 +1,6 @@
 import { ReloadOutlined } from '@ant-design/icons';
-import { Radio } from 'antd';
-import React from 'react';
+import { Button } from 'antd';
+import React, { useEffect, useState } from 'react';
 import { Views } from 'react-big-calendar';
 
 interface ToolbarProps {
@@ -13,9 +13,30 @@ interface ToolbarProps {
 
 type Keys = keyof typeof Views;
 
+type SizeType = 'large' | 'middle' | 'small';
+
+function useResponsiveButtonSize(): SizeType {
+  const [size, setSize] = useState<SizeType>(() =>
+    window.innerWidth < 768 ? 'small' : 'middle',
+  );
+
+  useEffect(() => {
+    const handleResize = () => {
+      setSize(window.innerWidth < 768 ? 'small' : 'middle');
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  return size;
+}
+
 const CustomToolbar: React.FC<ToolbarProps> = props => {
   const { onNextClick, onPrevClick, onTodayClick, onResetClick, dateText } =
     props;
+
+  const buttonSize = useResponsiveButtonSize();
   return (
     <div className="flex justify-between items-center w-full">
       <div className="flex items-center">
@@ -23,7 +44,24 @@ const CustomToolbar: React.FC<ToolbarProps> = props => {
           {dateText}
         </label>
       </div>
-      <Radio.Group>
+      <div className="flex gap-1">
+        <Button type="primary" size={buttonSize} onClick={onPrevClick}>
+          {'<'}
+        </Button>
+        <Button type="primary" size={buttonSize} onClick={onTodayClick}>
+          Today
+        </Button>
+        <Button
+          type="primary"
+          icon={<ReloadOutlined />}
+          onClick={onResetClick}
+          size={buttonSize}
+        />
+        <Button type="primary" size={buttonSize} onClick={onNextClick}>
+          {'>'}
+        </Button>
+      </div>
+      {/* <Radio.Group>
         <Radio.Button value="large" onClick={onPrevClick}>
           {'<'}
         </Radio.Button>
@@ -36,7 +74,7 @@ const CustomToolbar: React.FC<ToolbarProps> = props => {
         <Radio.Button value="small" onClick={onNextClick}>
           {'>'}
         </Radio.Button>
-      </Radio.Group>
+      </Radio.Group> */}
     </div>
   );
 };

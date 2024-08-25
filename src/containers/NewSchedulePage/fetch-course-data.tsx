@@ -29,7 +29,7 @@ export async function fetchMajors(
 ): Promise<Option[]> {
   const termCode = convertToTermCode(year, term);
   const response = await fetch(
-    `http://localhost:5000/sfuapi?termCode=${termCode}`,
+    `http://localhost:5000/api/sfuapi?termCode=${termCode}`,
   );
   if (!response.ok) {
     throw new Error('Network response was not ok');
@@ -54,7 +54,7 @@ export async function fetchMajorCourses(
 ): Promise<Option[]> {
   const termCode = convertToTermCode(year, term);
   const response = await fetch(
-    `http://localhost:5000/sfuapi?termCode=${termCode}&major=${department}`,
+    `http://localhost:5000/api/sfuapi?termCode=${termCode}&major=${department}`,
   );
   if (!response.ok) {
     throw new Error('Network response was not ok');
@@ -86,7 +86,7 @@ export async function fetchCourseOfferings(
 ): Promise<CourseOffering[]> {
   const termCode = convertToTermCode(year, term);
   const response = await fetch(
-    `http://localhost:5000/sfuapi?termCode=${termCode}&major=${department}&course=${courseNumber}`,
+    `http://localhost:5000/api/sfuapi?termCode=${termCode}&major=${department}&course=${courseNumber}`,
   );
   if (!response.ok) {
     throw new Error('Network response was not ok');
@@ -142,7 +142,7 @@ export async function fetchCourseSection(
 ): Promise<CourseSection> {
   const termCode = convertToTermCode(year, term);
   const response = await fetch(
-    `http://localhost:5000/sfuapi?termCode=${termCode}&major=${department}&course=${courseNumber}&section=${courseSection}`,
+    `http://localhost:5000/api/sfuapi?termCode=${termCode}&major=${department}&course=${courseNumber}&section=${courseSection}`,
   );
   if (!response.ok) {
     throw new Error('Network response was not ok');
