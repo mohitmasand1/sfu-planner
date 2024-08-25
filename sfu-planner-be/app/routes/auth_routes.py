@@ -19,8 +19,8 @@ def google_auth():
 
     data = {
         'code': auth_code,
-        'client_id': GOOGLE_CLIENT_ID,
-        'client_secret': GOOGLE_SECRET_KEY,
+        'client_id': GOOGLE_CLIENT_ID, # client ID from the credential at google developer console
+        'client_secret': GOOGLE_SECRET_KEY, # client secret from the credential at google developer console
         'redirect_uri': 'postmessage',
         'grant_type': 'authorization_code'
     }
@@ -28,10 +28,25 @@ def google_auth():
     response = requests.post(GOOGLE_TOKEN_POST_URL, data=data).json()
     headers = {'Authorization': f'Bearer {response["access_token"]}'}
     user_info = requests.get(GOOGLE_USER_GET_URL, headers=headers).json()
+    """
+        check here if user exists in database, if not, add them
+    """
+    user = mongo.db.users.find_one({'google_id': user_info['sub']})
 
-    jwt_token = create_access_token(identity=user_info['email'])
+    if not user:
+        # If the user doesn't exist, add them to the database
+        user_id = mongo.db.users.insert_one({
+            'google_id': user_info['sub'],
+            'email': user_info['email'],
+            'name': user_info.get('name'),
+            'picture': user_info.get('picture')  # Optionally store profile picture
+        }).inserted_id
+    else:
+        user_id = user['_id']
+
+    jwt_token = create_access_token(identity=str(user_id))
     response = jsonify(user=user_info)
-    response.set_cookie('access_token_cookie', value=jwt_token, secure=True)
+    response.set_cookie('access_token_cookie', value=jwt_token, secure=True, httponly=True)
 
     return response, 200
 

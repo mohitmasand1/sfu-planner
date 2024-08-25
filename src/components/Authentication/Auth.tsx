@@ -1,22 +1,36 @@
 import { useGoogleLogin } from '@react-oauth/google';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { getUserInfo } from '../../auth/auth';
 
 export default function Auth() {
   const [loggedIn, setLoggedIn] = useState(false);
-  const [user, setUser] = useState<any>({});
+  const [user, setUser] = useState<any>(null);
+
+  // Check if user info is already in local storage when the component mounts
+  useEffect(() => {
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+      setLoggedIn(true);
+    }
+  }, []);
+
   const googleLogin = useGoogleLogin({
     flow: 'auth-code',
     onSuccess: async codeResponse => {
-      var loginDetails = await getUserInfo(codeResponse);
+      const loginDetails = await getUserInfo(codeResponse);
+
+      // Save user info in state and local storage
       setLoggedIn(true);
       setUser(loginDetails.user);
+      localStorage.setItem('user', JSON.stringify(loginDetails.user)); // Save user info in local storage
     },
   });
 
   const handleLogout = () => {
     setLoggedIn(false);
-    setUser(false);
+    setUser(null);
+    localStorage.removeItem('user'); // Clear user info from local storage on logout
   };
 
   return (
