@@ -89,14 +89,25 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = () => {
     },
   );
 
+  // Added to track the previous termCode
+  const previousTermCode = useRef(termCode);
+  const MemoizedCourseItemLabel = React.memo(CourseItemLabel);
+  const MemoizedCourseItemContent = React.memo(CourseItemContent);
+
   useEffect(() => {
-    setAppliedCourses(JSON.parse(sessionStorage.getItem('schedule') || '[]'));
-    setMajorSelected(null);
-    setNumberSelected(null);
+    // Check if termCode has changed
+    if (previousTermCode.current !== termCode) {
+      setAppliedCourses([]);
+      setMajorSelected(null);
+      setNumberSelected(null);
+      sessionStorage.removeItem('schedule');
+      console.log('changed termCode');
+      // Update previousTermCode to the new termCode
+      previousTermCode.current = termCode;
+    }
   }, [termCode]);
 
   console.log('new code - ' + termCode);
-  console.log('new course list - ' + JSON.stringify(appliedCourses));
 
   const isAppliedCourseReSelected = () => {
     return !!appliedCourses.find(
@@ -213,6 +224,7 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = () => {
         return fetchMajorCourses(term.year, term.semester, majorSelected);
       return Promise.resolve([]);
     },
+    enabled: !!majorSelected, // Only run this query when a major is selected
   });
 
   const panelStyle: React.CSSProperties = {
@@ -245,7 +257,7 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = () => {
       fullCourseName,
       <CourseSelectionPage
         PreviewingCourseData={PreviewingCourseData}
-        appliedSchedule={generateAppliedSchedule()}
+        appliedSchedule={appliedSchedule}
         setSelectedCourse={setSelectedCourseKey}
         majorSelected={majorSelected}
         numberSelected={numberSelected}
@@ -325,6 +337,11 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = () => {
     });
   };
 
+  const appliedSchedule = React.useMemo(
+    () => generateAppliedSchedule(),
+    [appliedCourses],
+  );
+
   const getItems: (
     panelStyle: React.CSSProperties,
   ) => CollapseProps['items'] = panelStyle => {
@@ -339,7 +356,7 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = () => {
       return {
         key: index,
         label: (
-          <CourseItemLabel
+          <MemoizedCourseItemLabel
             course={course}
             handleLeftArrowClick={handleLeftArrowClick}
             handleRightArrowClick={handleRightArrowClick}
@@ -348,7 +365,7 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = () => {
             confirm={confirm}
           />
         ),
-        children: <CourseItemContent course={course} />,
+        children: <MemoizedCourseItemContent course={course} />,
         style: itemPanelStyle,
       };
     });
@@ -405,7 +422,7 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = () => {
       </div>
       <div className="flex flex-wrap justify-center items-start gap-2 w-full h-full md:max-h-full">
         <div className="flex h-full flex-1 grow justify-center md:max-h-full p-4 md:p-7">
-          <Calender termCode={termCode} events={generateAppliedSchedule()} />
+          <Calender termCode={termCode} events={appliedSchedule} />
         </div>
         <div className="flex flex-col h-full md:max-h-full flex-1 justify-start min-w-96 p-4 md:p-7">
           {appliedCourses.length > 0 && (
