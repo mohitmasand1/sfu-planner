@@ -35,7 +35,7 @@ const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement,
 );
 root.render(
-  <GoogleOAuthProvider clientId="335800261522-pi50uikomoskn0th8kt493sqmpt4lstl.apps.googleusercontent.com">
+  <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID || ''}>
     <React.StrictMode>
       <RouterProvider router={router} />
     </React.StrictMode>
