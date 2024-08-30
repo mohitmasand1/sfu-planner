@@ -78,7 +78,9 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = () => {
     content: <></>,
   });
   const [loading, setLoading] = useState(false);
-  const [appliedCourses, setAppliedCourses] = useState<CourseOffering[]>([]);
+  const [appliedCourses, setAppliedCourses] = useState<CourseOffering[]>(
+    JSON.parse(sessionStorage.getItem('schedule') || '[]'),
+  );
   const [selectedCourseKey, setSelectedCourseKey] = useState<SelectedCourseKey>(
     {
       key: '',
@@ -88,9 +90,9 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = () => {
   );
 
   useEffect(() => {
-    setAppliedCourses([]);
-    setMajorSelected('');
-    setNumberSelected('');
+    setAppliedCourses(JSON.parse(sessionStorage.getItem('schedule') || '[]'));
+    setMajorSelected(null);
+    setNumberSelected(null);
   }, [termCode]);
 
   console.log('new code - ' + termCode);
@@ -130,9 +132,11 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = () => {
   };
 
   const confirm = (courseKey: string) => () => {
-    setAppliedCourses(prevCourses =>
-      prevCourses.filter(course => course.title !== courseKey),
-    );
+    setAppliedCourses(prevCourses => {
+      const newList = prevCourses.filter(course => course.title !== courseKey);
+      sessionStorage.setItem('schedule', JSON.stringify(newList));
+      return newList;
+    });
     // Optionally restore the color to the available pool
     const removedColor = courseColorMapRef.current[courseKey];
     if (removedColor) {
@@ -185,6 +189,10 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = () => {
         tut => tut.value === selectedCourseKey.tut,
       );
       setAppliedCourses(appliedCourses => [...appliedCourses, selectedSection]);
+      sessionStorage.setItem(
+        'schedule',
+        JSON.stringify([...appliedCourses, selectedSection]),
+      );
     }
     message.success('Saved');
   };
@@ -263,6 +271,7 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = () => {
       onOk() {
         message.success('Deleted all');
         setAppliedCourses([]);
+        sessionStorage.removeItem('schedule');
       },
     });
   };

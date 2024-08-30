@@ -12,6 +12,10 @@ jwt = JWTManager()
 
 def create_app():
     app = Flask(__name__)
+    # Configuration for JWT in cookies
+    app.config['JWT_TOKEN_LOCATION'] = ['cookies']  # Look for JWT in cookies
+    app.config['JWT_COOKIE_SECURE'] = False  # Set to True if using HTTPS
+    app.config['JWT_COOKIE_CSRF_PROTECT'] = False  # Disable CSRF protection for simplicity in development
     
     # Load configuration
     app.config['MONGO_URI'] = os.getenv('MONGO_URI')
@@ -20,7 +24,7 @@ def create_app():
     # Initialize extensions
     mongo.init_app(app)
     jwt.init_app(app)
-    CORS(app)
+    CORS(app, supports_credentials=True, origins=["*"])
     
     # Register blueprints
     from app.routes.auth_routes import auth_bp

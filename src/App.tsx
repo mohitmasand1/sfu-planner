@@ -3,8 +3,6 @@ import NavBar from './containers/NavBar/NavBar';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 
-// TODO: Re-render calenders on termcode change
-
 function App() {
   const queryClient = new QueryClient();
   const [termCode, setTermCode] = useState<string>(() => {

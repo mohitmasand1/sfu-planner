@@ -46,7 +46,8 @@ def google_auth():
 
     jwt_token = create_access_token(identity=str(user_id))
     response = jsonify(user=user_info)
-    response.set_cookie('access_token_cookie', value=jwt_token, secure=True, httponly=True)
+    print(f"Setting cookie with value: {jwt_token}, SameSite=Lax, HttpOnly=True")
+    response.set_cookie('access', value=jwt_token, secure=False, samesite='Lax', max_age=86400)
 
     return response, 200
 
@@ -54,5 +55,12 @@ def google_auth():
 @jwt_required()
 def protected():
     current_user_id = get_jwt_identity()
+    print(f"JWT identity: {current_user_id}")
     user = mongo.db.users.find_one({'_id': current_user_id})
     return jsonify(logged_in_as=user['email']), 200
+
+
+@auth_bp.route('/protected', methods=['OPTIONS', 'GET'])
+def handle_options():
+    if request.method == 'OPTIONS':
+        return jsonify({}), 200

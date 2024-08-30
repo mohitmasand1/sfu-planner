@@ -1,6 +1,6 @@
 import { useGoogleLogin } from '@react-oauth/google';
 import { useState, useEffect } from 'react';
-import { getUserInfo } from '../../auth/auth';
+import { getUserInfo, getLoggedInUser } from '../../auth/auth';
 
 export default function Auth() {
   const [loggedIn, setLoggedIn] = useState(false);
@@ -43,6 +43,7 @@ export default function Auth() {
       ) : (
         <button onClick={() => googleLogin()}>Login</button>
       )}
+      <button onClick={() => getLoggedInUser()}>Verify</button>
     </div>
   );
 }
