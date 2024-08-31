@@ -1,7 +1,17 @@
 import React from 'react';
-import { CourseOffering } from '../../containers/NewSchedulePage/fetch-course-data';
-import { Popconfirm } from 'antd';
-import { DeleteOutlined, LeftOutlined, RightOutlined } from '@ant-design/icons';
+import {
+  CourseOffering,
+  fetchRateMyProfRating,
+  ProfRating,
+} from '../../containers/NewSchedulePage/fetch-course-data';
+import { Popconfirm, Flex, Spin } from 'antd';
+import {
+  DeleteOutlined,
+  LeftOutlined,
+  RightOutlined,
+  LoadingOutlined,
+} from '@ant-design/icons';
+import { useQuery } from '@tanstack/react-query';
 
 const DELETE_ICON_SIZE = 18;
 
@@ -31,6 +41,13 @@ const CourseItemLabel: React.FC<CourseItemLabelProps> = props => {
     confirm,
   } = props;
 
+  const professorDisplayName = course.specificData.professor[0]?.name || '';
+
+  const { data: RMPRatingData, isLoading } = useQuery<ProfRating>({
+    queryKey: [professorDisplayName],
+    queryFn: () => fetchRateMyProfRating(professorDisplayName),
+  });
+
   const courseKey = course.title;
   return (
     <div className="flex gap-3 pb-2">
@@ -39,21 +56,21 @@ const CourseItemLabel: React.FC<CourseItemLabelProps> = props => {
           <label>
             <b>{course.specificData.info.name}</b>
           </label>
-          <label>
-            {course.specificData?.professor[0]?.firstName +
-              ' ' +
-              course.specificData?.professor[0]?.lastName}
-          </label>
+          <label>{professorDisplayName}</label>
         </div>
         <div>
           <div className="flex justify-between items-center">
             <label className="text-xs">{course.text}</label>
             <a
               className="text-sky-500 text-xs"
-              href="http://greenteapress.com/thinkpython2/thinkpython2.pdf"
+              href={`https://www.ratemyprofessors.com/search/professors/1482?q=${professorDisplayName}`}
               target="_blank"
             >
-              (4.6/5)
+              {!isLoading ? (
+                `${RMPRatingData?.rating || 'N/A'}/5`
+              ) : (
+                <Spin indicator={<LoadingOutlined spin />} size="small" />
+              )}
             </a>
           </div>
           <div className="flex justify-between">

@@ -102,6 +102,7 @@ def process_course_section_data(data):
         formatted_data['professor'].append({
             'firstName': instructor[i]['firstName'],
             'lastName': instructor[i]['lastName'],
+            'name' : instructor[i]['name'],
         })
 
     info = data.get('info', {})

@@ -98,6 +98,7 @@ export async function fetchCourseOfferings(
 interface Professor {
   firstName: string;
   lastName: string;
+  name: string;
 }
 
 export interface Event {
@@ -148,5 +149,22 @@ export async function fetchCourseSection(
     throw new Error('Network response was not ok');
   }
   const data: CourseSection = await response.json();
+  return data;
+}
+
+export interface ProfRating {
+  department?: string;
+  difficulty?: number;
+  name?: string;
+  num_ratings?: number;
+  rating?: number;
+}
+
+export async function fetchRateMyProfRating(name: string): Promise<ProfRating> {
+  const response = await fetch(`http://localhost:5000/api/rmp?name=${name}`);
+  if (!response.ok) {
+    throw new Error('Network response was not ok');
+  }
+  const data: ProfRating = await response.json();
   return data;
 }
