@@ -17,6 +17,7 @@ import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
 import { LeftOutlined, RightOutlined } from '@ant-design/icons';
 import CustomEvent from './CustomEvent';
 import CustomToolbar from './CustomToolbar';
+// import { Slider, SliderSingleProps } from 'antd';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -165,32 +166,40 @@ const Calender: React.FC<CalenderProps> = props => {
 
   console.log(date);
 
+  // const marks: SliderSingleProps['marks'] = {
+  //   0: '0°C',
+  //   100: '100°C',
+  // };
+
   return (
-    <Calendar
-      localizer={localizer}
-      events={events}
-      views={views}
-      defaultView={defaultView}
-      min={minTime}
-      max={maxTime}
-      date={date}
-      onNavigate={onNavigate}
-      messages={{
-        today: 'Now',
-        work_week: 'Week',
-        next: <RightOutlined />,
-        previous: <LeftOutlined />,
-      }}
-      formats={formats}
-      components={components}
-      toolbar={true}
-      selectable={true}
-      step={10}
-      timeslots={6}
-      startAccessor="start"
-      endAccessor="end"
-      style={{ height: '100%', width: '100%' }}
-    />
+    // <div className="flex flex-col gap-2 mb-2">
+      <Calendar
+        localizer={localizer}
+        events={events}
+        views={views}
+        defaultView={defaultView}
+        min={minTime}
+        max={maxTime}
+        date={date}
+        onNavigate={onNavigate}
+        messages={{
+          today: 'Now',
+          work_week: 'Week',
+          next: <RightOutlined />,
+          previous: <LeftOutlined />,
+        }}
+        formats={formats}
+        components={components}
+        toolbar={true}
+        selectable={true}
+        step={10}
+        timeslots={6}
+        startAccessor="start"
+        endAccessor="end"
+        style={{ height: '100%', width: '100%' }}
+      />
+      // <Slider marks={marks} defaultValue={0} />
+    // </div>
   );
 };
 

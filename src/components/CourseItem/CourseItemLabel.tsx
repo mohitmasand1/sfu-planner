@@ -1,17 +1,11 @@
 import React from 'react';
-import {
-  CourseOffering,
-  fetchRateMyProfRating,
-  ProfRating,
-} from '../../containers/NewSchedulePage/fetch-course-data';
-import { Popconfirm, Spin } from 'antd';
+import { CourseOffering } from '../../containers/NewSchedulePage/fetch-course-data';
+import { Popconfirm } from 'antd';
 import {
   DeleteOutlined,
   // LeftOutlined,
   // RightOutlined,
-  LoadingOutlined,
 } from '@ant-design/icons';
-import { useQuery } from '@tanstack/react-query';
 
 const DELETE_ICON_SIZE = 18;
 
@@ -43,36 +37,19 @@ const CourseItemLabel: React.FC<CourseItemLabelProps> = props => {
 
   const professorDisplayName = course.specificData.professor[0]?.name || '';
 
-  const { data: RMPRatingData, isLoading } = useQuery<ProfRating>({
-    queryKey: [professorDisplayName],
-    queryFn: () => fetchRateMyProfRating(professorDisplayName),
-  });
-
   const courseKey = course.title;
   return (
     <div className="flex gap-3 pb-2">
       <div className="flex flex-col gap-1 w-full">
         <div className="flex justify-between items-center">
           <label>
-            <b>{course.specificData.info.name}</b>
+            <b>
+              {course.specificData.info.name} {course.text}
+            </b>
           </label>
           <label>{professorDisplayName}</label>
         </div>
         <div>
-          <div className="flex justify-between items-center">
-            <label className="text-xs">{course.text}</label>
-            <a
-              className="text-sky-500 text-xs"
-              href={`https://www.ratemyprofessors.com/search/professors/1482?q=${professorDisplayName}`}
-              target="_blank"
-            >
-              {!isLoading ? (
-                `Prof Rating: ${RMPRatingData?.rating || 'N/A'}/5`
-              ) : (
-                <Spin indicator={<LoadingOutlined spin />} size="small" />
-              )}
-            </a>
-          </div>
           <div className="flex justify-between">
             <label className="text-xs">
               {course.specificData.info?.units || 'N/A'} credits
