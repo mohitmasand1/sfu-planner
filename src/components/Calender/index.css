@@ -18,6 +18,11 @@
     background-color: #d1d5db;
 }
 
+.rbc-time-slot {
+    font-size: 14px !important;
+    font-weight: 500;
+}
+
 .rbc-time-gutter {
 }
 

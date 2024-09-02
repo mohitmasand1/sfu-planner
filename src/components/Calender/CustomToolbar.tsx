@@ -1,4 +1,8 @@
-import { ReloadOutlined } from '@ant-design/icons';
+import {
+  ReloadOutlined,
+  CaretLeftOutlined,
+  CaretRightOutlined,
+} from '@ant-design/icons';
 import { Button } from 'antd';
 import React, { useEffect, useState } from 'react';
 import { Views } from 'react-big-calendar';
@@ -45,9 +49,12 @@ const CustomToolbar: React.FC<ToolbarProps> = props => {
         </label>
       </div>
       <div className="flex gap-1">
-        <Button type="primary" size={buttonSize} onClick={onPrevClick}>
-          {'<'}
-        </Button>
+        <Button
+          icon={<CaretLeftOutlined />}
+          type="primary"
+          size={buttonSize}
+          onClick={onPrevClick}
+        ></Button>
         <Button type="primary" size={buttonSize} onClick={onTodayClick}>
           Today
         </Button>
@@ -57,24 +64,13 @@ const CustomToolbar: React.FC<ToolbarProps> = props => {
           onClick={onResetClick}
           size={buttonSize}
         />
-        <Button type="primary" size={buttonSize} onClick={onNextClick}>
-          {'>'}
-        </Button>
+        <Button
+          icon={<CaretRightOutlined />}
+          type="primary"
+          size={buttonSize}
+          onClick={onNextClick}
+        ></Button>
       </div>
-      {/* <Radio.Group>
-        <Radio.Button value="large" onClick={onPrevClick}>
-          {'<'}
-        </Radio.Button>
-        <Radio.Button value="default" onClick={onTodayClick}>
-          Today
-        </Radio.Button>
-        <Radio.Button value="reset" onClick={onResetClick}>
-          <ReloadOutlined />
-        </Radio.Button>
-        <Radio.Button value="small" onClick={onNextClick}>
-          {'>'}
-        </Radio.Button>
-      </Radio.Group> */}
     </div>
   );
 };

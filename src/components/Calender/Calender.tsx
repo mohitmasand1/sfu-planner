@@ -133,7 +133,7 @@ const Calender: React.FC<CalenderProps> = props => {
           date: FormatInput,
           culture: string,
           localizer: DateLocalizer,
-        ) => localizer.format(date, 'h A', culture),
+        ) => localizer.format(date, 'hh a', culture),
       },
       components: {
         toolbar: () => (

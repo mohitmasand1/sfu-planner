@@ -47,7 +47,7 @@ def google_auth():
     jwt_token = create_access_token(identity=str(user_id))
     response = jsonify(user=user_info)
     print(f"Setting cookie with value: {jwt_token}, SameSite=Lax, HttpOnly=True")
-    response.set_cookie('access', value=jwt_token, secure=False, samesite='Lax', max_age=86400)
+    response.set_cookie('access_token_cookie', value=jwt_token, secure=False, samesite='Lax', max_age=86400)
 
     return response, 200
 

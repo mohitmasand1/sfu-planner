@@ -5,13 +5,14 @@ import React, {
   useEffect,
   useState,
 } from 'react';
-import { Radio } from 'antd';
+import { Divider, Radio } from 'antd';
 import type { RadioChangeEvent } from 'antd';
 import { CourseOffering } from '../NewSchedulePage/fetch-course-data';
 import Calender from '../../components/Calender/Calender';
 import SelectionPreview from './SectionPreview';
 import { Event } from 'react-big-calendar';
 import { SelectedCourseKey } from '../NewSchedulePage/NewSchedulePage';
+import './styles.css';
 
 interface TabState {
   [key: string]: { labtab?: string; tuttab?: string };
@@ -173,29 +174,38 @@ const CourseSelectionPage: React.FC<CourseSelectionPageProps> = props => {
           events={getPreviewScheduleFromSelection()}
         />
       </div>
-      <div className="flex-1 min-w-[50%] overflow-auto">
+      <div className="flex flex-1 min-w-[50%] overflow-auto">
         <Radio.Group
-          className="flex flex-col gap-10"
+          className="flex flex-col gap-10 w-full"
           onChange={onSectionChange}
           value={value}
           defaultValue={value}
         >
-          {PreviewingCourseData?.map(courseOffering => (
-            <Radio key={courseOffering.value} value={courseOffering.value}>
-              <SelectionPreview
-                courseOffering={courseOffering}
-                tabKeys={tabStates[courseOffering.value]}
-                onChangeLabTabKey={newTabKey =>
-                  handleLabTabChange(courseOffering.value, newTabKey)
-                }
-                onChangeTutTabKey={newTabKey =>
-                  handleTutTabChange(courseOffering.value, newTabKey)
-                }
-                majorSelected={majorSelected}
-                numberSelected={numberSelected}
-              />
-            </Radio>
-          ))}
+          <div className="flex flex-col">
+            {PreviewingCourseData?.map((courseOffering, i) => (
+              <>
+                <Divider orientation="left">Option {i + 1}</Divider>
+                <Radio
+                  key={courseOffering.value}
+                  value={courseOffering.value}
+                  className="w-full radio-full-width my-3"
+                >
+                  <SelectionPreview
+                    courseOffering={courseOffering}
+                    tabKeys={tabStates[courseOffering.value]}
+                    onChangeLabTabKey={newTabKey =>
+                      handleLabTabChange(courseOffering.value, newTabKey)
+                    }
+                    onChangeTutTabKey={newTabKey =>
+                      handleTutTabChange(courseOffering.value, newTabKey)
+                    }
+                    majorSelected={majorSelected}
+                    numberSelected={numberSelected}
+                  />
+                </Radio>
+              </>
+            ))}
+          </div>
         </Radio.Group>
       </div>
     </div>

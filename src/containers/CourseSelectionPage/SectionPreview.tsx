@@ -13,19 +13,16 @@ interface SelectionPreviewProps {
 
 const SelectionPreview: React.FC<SelectionPreviewProps> = props => {
   const { courseOffering, onChangeLabTabKey, onChangeTutTabKey } = props;
-
   return (
     <div className="flex flex-col w-full">
       <div className="flex flex-row justify-between">
-        <label>Section: {courseOffering.text}</label>
         <label>
-          Professor:
-          {' ' +
-            courseOffering?.specificData?.professor?.[0]?.firstName +
-            ' ' +
-            courseOffering?.specificData?.professor?.[0]?.lastName}
+          <b>{courseOffering.text}</b>
         </label>
-        <label>{courseOffering?.specificData.info.units} credits</label>
+        <div className="flex flex-col items-end">
+          <label>{courseOffering?.specificData?.professor?.[0]?.name}</label>
+          <label>{courseOffering?.specificData.info.units} credits</label>
+        </div>
       </div>
       {courseOffering.tutorials.length > 0 && (
         <Tabs
@@ -37,7 +34,23 @@ const SelectionPreview: React.FC<SelectionPreviewProps> = props => {
             key: tutorial.value,
             children: (
               <>
-                {<label>{tutorial?.specificData?.schedule?.[0].start}</label>}
+                {
+                  <label>
+                    Tutorial time:{' '}
+                    {`${new Date(
+                      tutorial?.specificData?.schedule?.[0].start,
+                    ).toLocaleString('en-US', {
+                      weekday: 'long',
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })} - ${new Date(
+                      tutorial?.specificData?.schedule?.[0].end,
+                    ).toLocaleString('en-US', {
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })}`}
+                  </label>
+                }
               </>
             ),
           }))}
@@ -52,7 +65,25 @@ const SelectionPreview: React.FC<SelectionPreviewProps> = props => {
             label: `${lab.text}`,
             key: lab.value,
             children: (
-              <>{<label>{lab?.specificData?.schedule?.[0].start}</label>}</>
+              <>
+                {
+                  <label>
+                    Lab time:{' '}
+                    {`${new Date(
+                      lab?.specificData?.schedule?.[0].start,
+                    ).toLocaleString('en-US', {
+                      weekday: 'long',
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })} - ${new Date(
+                      lab?.specificData?.schedule?.[0].end,
+                    ).toLocaleString('en-US', {
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })}`}
+                  </label>
+                }
+              </>
             ),
           }))}
         />

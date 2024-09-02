@@ -4,11 +4,11 @@ import {
   fetchRateMyProfRating,
   ProfRating,
 } from '../../containers/NewSchedulePage/fetch-course-data';
-import { Popconfirm, Flex, Spin } from 'antd';
+import { Popconfirm, Spin } from 'antd';
 import {
   DeleteOutlined,
-  LeftOutlined,
-  RightOutlined,
+  // LeftOutlined,
+  // RightOutlined,
   LoadingOutlined,
 } from '@ant-design/icons';
 import { useQuery } from '@tanstack/react-query';
@@ -34,8 +34,8 @@ interface CourseItemLabelProps {
 const CourseItemLabel: React.FC<CourseItemLabelProps> = props => {
   const {
     course,
-    handleLeftArrowClick,
-    handleRightArrowClick,
+    // handleLeftArrowClick,
+    // handleRightArrowClick,
     cancel,
     showConfirm,
     confirm,
@@ -67,7 +67,7 @@ const CourseItemLabel: React.FC<CourseItemLabelProps> = props => {
               target="_blank"
             >
               {!isLoading ? (
-                `${RMPRatingData?.rating || 'N/A'}/5`
+                `Prof Rating: ${RMPRatingData?.rating || 'N/A'}/5`
               ) : (
                 <Spin indicator={<LoadingOutlined spin />} size="small" />
               )}
@@ -77,7 +77,7 @@ const CourseItemLabel: React.FC<CourseItemLabelProps> = props => {
             <label className="text-xs">
               {course.specificData.info?.units || 'N/A'} credits
             </label>
-            <div className="flex gap-2">
+            {/* <div className="flex gap-2">
               <LeftOutlined
                 style={{
                   cursor: 'pointer',
@@ -92,7 +92,7 @@ const CourseItemLabel: React.FC<CourseItemLabelProps> = props => {
                 }}
                 onClick={handleRightArrowClick}
               />
-            </div>
+            </div> */}
             <label className="text-xs">
               {course.specificData?.schedule[0]?.campus} Campus
             </label>
