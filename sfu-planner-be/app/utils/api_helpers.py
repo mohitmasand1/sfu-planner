@@ -123,28 +123,44 @@ def process_course_section_data(data):
     
     schedule = data['courseSchedule']
     events = create_events(schedule)
+    print(events)
     formatted_data['schedule'] = events
 
     return formatted_data
 
+days_mapping = {
+    'Mo': 0,  # Monday
+    'Tu': 1,  # Tuesday
+    'We': 2,  # Wednesday
+    'Th': 3,  # Thursday
+    'Fr': 4,  # Friday
+}
+
 def create_events(course_schedule):
     events = []
-    timezone = pytz.timezone('America/Vancouver')  # Specific to BC, Canada
+    timezone = pytz.timezone('America/Vancouver')  # Pacific Time Zone
+
+    # Define the first full week of January 2024 (Monday to Friday)
+    week_start_date = timezone.localize(datetime.datetime(2024, 1, 1))  # Monday, January 1, 2024
+
     for course in course_schedule:
-        start_date = parse(course.get('startDate', ''))
-        end_date = parse(course.get('endDate', ''))
-        start_date = timezone.localize(start_date)
-        end_date = timezone.localize(end_date)
         start_time = datetime.datetime.strptime(course.get('startTime', ''), '%H:%M').time()
         end_time = datetime.datetime.strptime(course.get('endTime', ''), '%H:%M').time()
         days = course.get('days', '').replace(',', '').split()
         rrule_days = [days_mapping[day] for day in days]
 
-        for dt in rrule(freq=WEEKLY, byweekday=rrule_days, dtstart=start_date, until=end_date):
-            event_date = dt.date()
-            if event_date not in bc_holidays_2024:
-                event_start = datetime.datetime.combine(event_date, start_time, dt.tzinfo)
-                event_end = datetime.datetime.combine(event_date, end_time, dt.tzinfo)
+        for day in rrule_days:
+            # Calculate the exact date for this day in the first week of January 2024
+            event_date = week_start_date + datetime.timedelta(days=day)
+
+            # Ensure event times are in the correct timezone
+            event_start = timezone.localize(datetime.datetime.combine(event_date, start_time))
+            event_end = timezone.localize(datetime.datetime.combine(event_date, end_time))
+            
+            # Check if the event is already in the list to avoid duplicates
+            event_exists = any(e['start'] == event_start.isoformat() and e['end'] == event_end.isoformat() for e in events)
+            
+            if not event_exists:
                 events.append({
                     'campus': course.get('campus', 'Burnaby'),
                     'sectionCode': course.get('sectionCode', ''),

@@ -421,7 +421,7 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = () => {
         </Button>
       </div>
       <div className="flex flex-wrap justify-center items-start gap-2 w-full h-full md:max-h-full">
-        <div className="flex h-full flex-1 grow justify-center md:max-h-full p-4 md:p-7">
+        <div className="flex h-full flex-2 grow justify-center md:max-h-full p-5 md:p-7">
           <Calender termCode={termCode} events={appliedSchedule} />
         </div>
         <div className="flex flex-col h-full md:max-h-full flex-1 justify-start min-w-96 p-4 md:p-7">

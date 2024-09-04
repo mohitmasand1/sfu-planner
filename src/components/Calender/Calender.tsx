@@ -16,7 +16,7 @@ import './index.css';
 import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
 import { LeftOutlined, RightOutlined } from '@ant-design/icons';
 import CustomEvent from './CustomEvent';
-import CustomToolbar from './CustomToolbar';
+// import CustomToolbar from './CustomToolbar';
 // import { Slider, SliderSingleProps } from 'antd';
 
 dayjs.extend(utc);
@@ -52,7 +52,7 @@ const convertTermCodeToDate = (code: string): Date => {
       return new Date();
   }
 
-  return new Date(fullYear, month, day);
+  return new Date(2024, 0, 1);
 };
 
 interface CalenderProps {
@@ -67,7 +67,7 @@ interface CalenderProps {
 const Calender: React.FC<CalenderProps> = props => {
   const {
     events = [],
-    views = ['day', 'work_week'],
+    views = ['work_week'],
     defaultView = 'work_week',
     minTime = new Date(2024, 4, 6, 8, 0, 0),
     maxTime = new Date(2026, 4, 6, 20, 0, 0),
@@ -138,13 +138,14 @@ const Calender: React.FC<CalenderProps> = props => {
       },
       components: {
         toolbar: () => (
-          <CustomToolbar
-            onNextClick={onNextClick}
-            onPrevClick={onPrevClick}
-            onTodayClick={onTodayClick}
-            onResetClick={onResetClick}
-            dateText={dateText}
-          />
+          <></>
+          // <CustomToolbar
+          //   onNextClick={onNextClick}
+          //   onPrevClick={onPrevClick}
+          //   onTodayClick={onTodayClick}
+          //   onResetClick={onResetClick}
+          //   dateText={dateText}
+          // />
         ),
         event: ({
           event,
@@ -173,32 +174,32 @@ const Calender: React.FC<CalenderProps> = props => {
 
   return (
     // <div className="flex flex-col gap-2 mb-2">
-      <Calendar
-        localizer={localizer}
-        events={events}
-        views={views}
-        defaultView={defaultView}
-        min={minTime}
-        max={maxTime}
-        date={date}
-        onNavigate={onNavigate}
-        messages={{
-          today: 'Now',
-          work_week: 'Week',
-          next: <RightOutlined />,
-          previous: <LeftOutlined />,
-        }}
-        formats={formats}
-        components={components}
-        toolbar={true}
-        selectable={true}
-        step={10}
-        timeslots={6}
-        startAccessor="start"
-        endAccessor="end"
-        style={{ height: '100%', width: '100%' }}
-      />
-      // <Slider marks={marks} defaultValue={0} />
+    <Calendar
+      localizer={localizer}
+      events={events}
+      views={views}
+      defaultView={defaultView}
+      min={minTime}
+      max={maxTime}
+      date={date}
+      onNavigate={onNavigate}
+      messages={{
+        today: 'Now',
+        work_week: 'Week',
+        next: <RightOutlined />,
+        previous: <LeftOutlined />,
+      }}
+      formats={formats}
+      components={components}
+      toolbar={true}
+      selectable={true}
+      step={10}
+      timeslots={6}
+      startAccessor="start"
+      endAccessor="end"
+      style={{ height: '100%', width: '100%' }}
+    />
+    // <Slider marks={marks} defaultValue={0} />
     // </div>
   );
 };
