@@ -125,6 +125,7 @@ interface Info {
 
 interface RequiredText {
   details: string;
+  isbn?: string;
 }
 
 export interface CourseSection {

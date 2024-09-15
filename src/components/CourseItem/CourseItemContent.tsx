@@ -7,6 +7,7 @@ import {
 import { useQuery } from '@tanstack/react-query';
 import { Spin } from 'antd';
 import { BookOutlined, LoadingOutlined } from '@ant-design/icons';
+import { convertToIsbn13 } from './isbn-converter';
 
 interface CourseItemContentProps {
   course: CourseOffering;
@@ -16,6 +17,8 @@ const CourseItemContent: React.FC<CourseItemContentProps> = props => {
   const { course } = props;
 
   const professorDisplayName = course.specificData.professor[0]?.name || '';
+  const isbn = course.specificData.requiredText?.[0]?.isbn || '';
+  const isbn13 = convertToIsbn13(isbn);
 
   const { data: RMPRatingData, isLoading } = useQuery<ProfRating>({
     queryKey: [professorDisplayName],
@@ -54,7 +57,7 @@ const CourseItemContent: React.FC<CourseItemContentProps> = props => {
         <label></label>
         <a
           className="text-sky-500"
-          href="http://greenteapress.com/thinkpython2/thinkpython2.pdf"
+          href={`https://shop.sfu.ca/Item?item=${isbn13}`}
           target="_blank"
         >
           <BookOutlined />

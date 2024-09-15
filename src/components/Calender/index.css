@@ -1,6 +1,7 @@
 .rbc-time-view {
     box-shadow: rgba(149, 157, 165, 0.2) 0px 8px 24px;
     margin-top: 8px;
+    border-radius: 20px;
 }
 
 .rbc-header {

@@ -1,11 +1,7 @@
 import React from 'react';
 import { CourseOffering } from '../../containers/NewSchedulePage/fetch-course-data';
 import { Popconfirm } from 'antd';
-import {
-  DeleteOutlined,
-  // LeftOutlined,
-  // RightOutlined,
-} from '@ant-design/icons';
+import { DeleteOutlined, LeftOutlined, RightOutlined } from '@ant-design/icons';
 
 const DELETE_ICON_SIZE = 18;
 
@@ -28,8 +24,8 @@ interface CourseItemLabelProps {
 const CourseItemLabel: React.FC<CourseItemLabelProps> = props => {
   const {
     course,
-    // handleLeftArrowClick,
-    // handleRightArrowClick,
+    handleLeftArrowClick,
+    handleRightArrowClick,
     cancel,
     showConfirm,
     confirm,
@@ -54,7 +50,7 @@ const CourseItemLabel: React.FC<CourseItemLabelProps> = props => {
             <label className="text-xs">
               {course.specificData.info?.units || 'N/A'} credits
             </label>
-            {/* <div className="flex gap-2">
+            <div className="flex gap-2">
               <LeftOutlined
                 style={{
                   cursor: 'pointer',
@@ -69,7 +65,7 @@ const CourseItemLabel: React.FC<CourseItemLabelProps> = props => {
                 }}
                 onClick={handleRightArrowClick}
               />
-            </div> */}
+            </div>
             <label className="text-xs">
               {course.specificData?.schedule[0]?.campus} Campus
             </label>

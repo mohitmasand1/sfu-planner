@@ -252,19 +252,20 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = () => {
     setLoading(false);
     console.log(JSON.stringify(PreviewingCourseData));
     const fullCourseName = `${majorNames?.filter(major => majorSelected == major.value)[0].label} ${majorNumbers?.filter(number => number.value == numberSelected)[0].label}`;
-    showModal(
-      event,
-      fullCourseName,
-      <CourseSelectionPage
-        PreviewingCourseData={PreviewingCourseData}
-        appliedSchedule={appliedSchedule}
-        setSelectedCourse={setSelectedCourseKey}
-        majorSelected={majorSelected}
-        numberSelected={numberSelected}
-        termCode={termCode}
-      />,
-      { okText: 'Add' },
-    );
+    setAppliedCourses(applied => [...applied, PreviewingCourseData[0]]);
+    // showModal(
+    //   event,
+    //   fullCourseName,
+    //   <CourseSelectionPage
+    //     PreviewingCourseData={PreviewingCourseData}
+    //     appliedSchedule={appliedSchedule}
+    //     setSelectedCourse={setSelectedCourseKey}
+    //     majorSelected={majorSelected}
+    //     numberSelected={numberSelected}
+    //     termCode={termCode}
+    //   />,
+    //   { okText: 'Add' },
+    // );
   };
 
   const onClickSave = (event: React.MouseEvent<HTMLSpanElement>) => {
