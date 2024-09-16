@@ -169,3 +169,31 @@ export async function fetchRateMyProfRating(name: string): Promise<ProfRating> {
   const data: ProfRating = await response.json();
   return data;
 }
+
+export interface CourseGrade {
+  _id: string;
+  a_minus_percentage: number;
+  a_percentage: number;
+  a_plus_percentage: number;
+  b_minus_percentage: number;
+  b_percentage: number;
+  b_plus_percentage: number;
+  c_grade_percentage: number;
+  c_minus_percentage: number;
+  c_plus_percentage: number;
+  course_name: string;
+  d_percentage: number;
+  fail_rate: number;
+  median_grade: string;
+}
+
+export async function fetchAverageCourseGrade(
+  course: string,
+): Promise<CourseGrade> {
+  const response = await fetch(`http://localhost:5000/api/cd?course=${course}`);
+  if (!response.ok) {
+    throw new Error('Network response was not ok');
+  }
+  const data: CourseGrade = await response.json();
+  return data;
+}

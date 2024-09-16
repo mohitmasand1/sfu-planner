@@ -1,7 +1,8 @@
-import { Outlet } from 'react-router-dom';
+// import { Outlet } from 'react-router-dom';
 import NavBar from './containers/NavBar/NavBar';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
+import NewSchedulePage from './containers/NewSchedulePage/NewSchedulePage';
 
 function App() {
   const queryClient = new QueryClient();
@@ -18,7 +19,7 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <div className="flex flex-col w-full items-center md:h-screen md:max-h-screen overflow-hidden">
         <NavBar termCode={termCode} setTermCode={setTermCode} />
-        <Outlet context={{ termCode }} />
+        <NewSchedulePage termCode={termCode} setTermCode={setTermCode} />
       </div>
     </QueryClientProvider>
   );

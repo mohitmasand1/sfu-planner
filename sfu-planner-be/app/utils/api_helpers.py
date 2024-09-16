@@ -121,7 +121,7 @@ def process_course_section_data(data):
             'corequisites': info.get('corequisites', None),
         }
     
-    schedule = data['courseSchedule']
+    schedule = data.get('courseSchedule', [])
     events = create_events(schedule)
     print(events)
     formatted_data['schedule'] = events
@@ -144,8 +144,13 @@ def create_events(course_schedule):
     week_start_date = timezone.localize(datetime.datetime(2024, 1, 1))  # Monday, January 1, 2024
 
     for course in course_schedule:
-        start_time = datetime.datetime.strptime(course.get('startTime', ''), '%H:%M').time()
-        end_time = datetime.datetime.strptime(course.get('endTime', ''), '%H:%M').time()
+        # Set default start and end times to '00:00' if they are not provided
+        start_time_str = course.get('startTime', '00:00') or '00:00'
+        end_time_str = course.get('endTime', '00:00') or '00:00'
+        
+        # Parse the times into datetime.time objects
+        start_time = datetime.datetime.strptime(start_time_str, '%H:%M').time()
+        end_time = datetime.datetime.strptime(end_time_str, '%H:%M').time()
         days = course.get('days', '').replace(',', '').split()
         rrule_days = [days_mapping[day] for day in days]
 

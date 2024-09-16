@@ -51,7 +51,7 @@ const CourseItemLabel: React.FC<CourseItemLabelProps> = props => {
               {course.specificData.info?.units || 'N/A'} credits
             </label>
             <div className="flex gap-2">
-              <LeftOutlined
+              {/* <LeftOutlined
                 style={{
                   cursor: 'pointer',
                   color: 'grey',
@@ -64,7 +64,7 @@ const CourseItemLabel: React.FC<CourseItemLabelProps> = props => {
                   color: 'black',
                 }}
                 onClick={handleRightArrowClick}
-              />
+              /> */}
             </div>
             <label className="text-xs">
               {course.specificData?.schedule[0]?.campus} Campus
