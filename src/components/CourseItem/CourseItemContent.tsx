@@ -1,7 +1,6 @@
 import React from 'react';
 import {
   CourseGrade,
-  CourseOffering,
   fetchAverageCourseGrade,
   fetchRateMyProfRating,
   ProfRating,
@@ -10,17 +9,23 @@ import { useQuery } from '@tanstack/react-query';
 import { Statistic } from 'antd';
 import { LinkOutlined } from '@ant-design/icons';
 import { convertToIsbn13 } from './isbn-converter';
+import type {
+  Course as CustomCourse,
+  Offering,
+} from '../../components/MyScheduler/types';
 
 interface CourseItemContentProps {
-  course: CourseOffering;
+  course: { course: CustomCourse; offering: Offering };
 }
 
 const CourseItemContent: React.FC<CourseItemContentProps> = props => {
   const { course } = props;
+  const { specificData } = course.offering;
+  const { info, professor, requiredText } = specificData;
 
-  const professorDisplayName = course.specificData.professor[0]?.name || '';
-  const courseName = course.specificData.info.name;
-  const isbn = course.specificData.requiredText?.[0]?.isbn || '';
+  const professorDisplayName = professor[0]?.name || '';
+  const courseName = info.name;
+  const isbn = requiredText?.[0]?.isbn || '';
   const isbn13 = convertToIsbn13(isbn);
 
   const { data: RMPRatingData, isLoading: isRMPLoading } = useQuery<ProfRating>(
@@ -68,10 +73,7 @@ const CourseItemContent: React.FC<CourseItemContentProps> = props => {
             <div className="flex flex-col">
               <div className="flex flex-row gap-1">
                 <label>Average Grade</label>
-                <a
-                  href={`https://www.ratemyprofessors.com/search/professors/1482?q=${professorDisplayName}`}
-                  target="_blank"
-                >
+                <a href={`https://coursediggers.com/`} target="_blank">
                   <LinkOutlined />
                 </a>
               </div>

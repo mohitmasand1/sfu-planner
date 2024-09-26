@@ -1,3 +1,4 @@
+import { LabSession, LectureTime } from '../../components/MyScheduler/types';
 import { Option } from './NewSchedulePage';
 
 interface Major {
@@ -73,8 +74,9 @@ export interface CourseOffering {
   classType?: string;
   sectionCode?: string;
   associatedClass?: string;
-  tutorials: CourseOffering[];
-  labs: CourseOffering[];
+  lectures: LectureTime[];
+  tutorials: LabSession[];
+  labs: LabSession[];
   specificData: CourseSection;
 }
 

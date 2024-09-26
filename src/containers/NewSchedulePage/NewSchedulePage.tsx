@@ -1,7 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { useOutletContext } from 'react-router-dom';
 import { Button, Collapse, Select, theme, Modal, Tooltip, message } from 'antd';
 import type { CollapseProps, ModalProps, PopconfirmProps } from 'antd';
+import type {
+  Event as CustomEvent,
+  Course as CustomCourse,
+  Offering,
+} from '../../components/MyScheduler/types';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   fetchMajorCourses,
@@ -9,18 +13,14 @@ import {
   fetchCourseOfferings,
   CourseOffering,
 } from './fetch-course-data';
-import {
-  CloudUploadOutlined,
-  CloseOutlined,
-  DownloadOutlined,
-} from '@ant-design/icons';
-// import CourseSelectionPage from '../CourseSelectionPage/CourseSelectionPage';
+import { CloudUploadOutlined, CloseOutlined } from '@ant-design/icons';
 import SaveInstancePage from '../SaveInstanceModal/SaveInstancePage';
-import Calender from '../../components/Calender/Calender';
 import LoadingOverlay from '../../components/Loading/LoadingOverlay';
 import CourseItemLabel from '../../components/CourseItem/CourseItemLabel';
 import CourseItemContent from '../../components/CourseItem/CourseItemContent';
 import { parseTermCode } from '../../utils/parseTermCode';
+import MyScheduler from '../../components/MyScheduler/MyScheduler';
+import { Course } from '../../components/MyScheduler/types';
 
 const SAVE_ICON_SIZE = 22;
 const CLOSE_ICON_SIZE = 20;
@@ -51,10 +51,6 @@ export interface SelectedCourseKey {
   key: string;
   lab: string;
   tut: string;
-}
-
-interface SharedContext {
-  termCode: string;
 }
 
 interface NewSchedulePageProps {
@@ -89,18 +85,14 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
   const [appliedCourses, setAppliedCourses] = useState<CourseOffering[]>(
     JSON.parse(sessionStorage.getItem('schedule') || '[]'),
   );
-  // const [selectedCourseKey, setSelectedCourseKey] = useState<SelectedCourseKey>(
-  //   {
-  //     key: '',
-  //     lab: '',
-  //     tut: '',
-  //   },
-  // );
+  const [allCourses, setAllCourses] = useState<Course[]>([]);
+  const [events, setEvents] = useState<CustomEvent[]>([]);
+  const [scheduledCourses, setScheduledCourses] = useState<
+    { course: CustomCourse; offering: Offering }[]
+  >([]);
 
   // Added to track the previous termCode
   const previousTermCode = useRef(termCode);
-  const MemoizedCourseItemLabel = React.memo(CourseItemLabel);
-  const MemoizedCourseItemContent = React.memo(CourseItemContent);
 
   useEffect(() => {
     // Check if termCode has changed
@@ -114,6 +106,39 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
       previousTermCode.current = termCode;
     }
   }, [termCode]);
+
+  useEffect(() => {
+    // Map courseId to offeringId
+    const courseOfferingMap: { [courseId: string]: string } = {};
+
+    events.forEach(event => {
+      if (!courseOfferingMap[event.courseId]) {
+        courseOfferingMap[event.courseId] = event.offeringId!;
+      }
+    });
+
+    // Build scheduledCourses array
+    const scheduled = Object.keys(courseOfferingMap)
+      .map(courseId => {
+        const offeringId = courseOfferingMap[courseId];
+        const course = allCourses.find(c => c.id === courseId);
+        const offering = course?.availableOfferings.find(
+          o => o.id === offeringId,
+        );
+
+        if (course && offering) {
+          return { course, offering };
+        } else {
+          return null;
+        }
+      })
+      .filter(item => item !== null) as {
+      course: Course;
+      offering: Offering;
+    }[];
+
+    setScheduledCourses(scheduled);
+  }, [events, allCourses]);
 
   console.log('new code - ' + termCode);
 
@@ -134,16 +159,6 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
 
   const updateNumberSelectionMade = (value: string | number) => {
     setNumberSelected(value);
-  };
-
-  const handleRightArrowClick = (event: React.MouseEvent<HTMLSpanElement>) => {
-    event.stopPropagation();
-    // if enabled (not end of list), then change class and update enable/disable state
-  };
-
-  const handleLeftArrowClick = (event: React.MouseEvent<HTMLSpanElement>) => {
-    event.stopPropagation();
-    // if enabled (not end of list), then change class and update enable/disable state
   };
 
   const showConfirm = (event: React.MouseEvent<HTMLSpanElement>) => {
@@ -188,34 +203,6 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
     setIsModalOpen(true);
   };
 
-  // const handleOk = () => {
-  //   setIsModalOpen(false);
-  //   const PreviewingCourseData = queryClient.getQueryData<CourseOffering[]>([
-  //     term.year,
-  //     term.semester,
-  //     majorSelected,
-  //     numberSelected,
-  //   ]);
-  //   if (PreviewingCourseData) {
-  //     const selectedSection: CourseOffering =
-  //       PreviewingCourseData.find(
-  //         section => section.value === selectedCourseKey.key,
-  //       ) || ({} as CourseOffering);
-  //     selectedSection.labs = selectedSection.labs.filter(
-  //       lab => lab.value === selectedCourseKey.lab,
-  //     );
-  //     selectedSection.tutorials = selectedSection.tutorials.filter(
-  //       tut => tut.value === selectedCourseKey.tut,
-  //     );
-  //     setAppliedCourses(appliedCourses => [...appliedCourses, selectedSection]);
-  //     sessionStorage.setItem(
-  //       'schedule',
-  //       JSON.stringify([...appliedCourses, selectedSection]),
-  //     );
-  //   }
-  //   message.success('Saved');
-  // };
-
   const handleCancel = () => {
     setIsModalOpen(false);
   };
@@ -242,7 +229,34 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
     border: 'none',
   };
 
-  const onClickSearch = async (event: React.MouseEvent<HTMLButtonElement>) => {
+  const transformCourseData = (data: CourseOffering[]) => {
+    return data.map(offering => {
+      const { specificData } = offering;
+
+      const lectures = offering.lectures.map(lecture => ({
+        id: lecture.id,
+        day: lecture.day,
+        startTime: new Date(lecture.startTime),
+        endTime: new Date(lecture.endTime),
+      }));
+
+      const labs = offering.labs.map(lab => ({
+        id: lab.id,
+        day: lab.day,
+        startTime: new Date(lab.startTime),
+        endTime: new Date(lab.endTime),
+      }));
+
+      return {
+        id: offering.associatedClass,
+        lectures,
+        labs,
+        specificData,
+      };
+    });
+  };
+
+  const onClickSearch = async () => {
     setLoading(true);
     const PreviewingCourseData = await queryClient.fetchQuery<
       CourseOffering[],
@@ -259,21 +273,16 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
     });
     setLoading(false);
     console.log(JSON.stringify(PreviewingCourseData));
-    const fullCourseName = `${majorNames?.filter(major => majorSelected == major.value)[0].label} ${majorNumbers?.filter(number => number.value == numberSelected)[0].label}`;
-    setAppliedCourses(applied => [...applied, PreviewingCourseData[0]]);
-    // showModal(
-    //   event,
-    //   fullCourseName,
-    //   <CourseSelectionPage
-    //     PreviewingCourseData={PreviewingCourseData}
-    //     appliedSchedule={appliedSchedule}
-    //     setSelectedCourse={setSelectedCourseKey}
-    //     majorSelected={majorSelected}
-    //     numberSelected={numberSelected}
-    //     termCode={termCode}
-    //   />,
-    //   { okText: 'Add' },
-    // );
+    // const fullCourseName = `${majorNames?.filter(major => majorSelected == major.value)[0].label} ${majorNumbers?.filter(number => number.value == numberSelected)[0].label}`;
+    // setAppliedCourses(applied => [...applied, PreviewingCourseData[0]]);
+    const courseObj = {
+      id: crypto.randomUUID(),
+      className: 'bg-selection-4',
+      name: PreviewingCourseData[0].specificData.info.name,
+      availableOfferings: transformCourseData(PreviewingCourseData),
+    } as Course;
+    setAllCourses(all => [...all, courseObj]);
+    console.log(courseObj);
   };
 
   const onClickSave = (event: React.MouseEvent<HTMLSpanElement>) => {
@@ -297,65 +306,11 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
     });
   };
 
-  const generateAppliedSchedule = () => {
-    return appliedCourses.flatMap(course => {
-      // Get the course identifier (you can use course key or any unique identifier)
-      const courseKey = course.title; // Assuming `key` is a unique identifier for the course
-
-      // Check if the course already has a color assigned
-      let classColor = courseColorMapRef.current[courseKey];
-      if (!classColor) {
-        // Assign a new color from the available pool
-        if (availableColorsRef.current.length > 0) {
-          classColor = availableColorsRef.current.pop() as string; // Take a color from the end of the available list
-          courseColorMapRef.current[courseKey] = classColor;
-        } else {
-          console.error('No available colors left!');
-        }
-      }
-
-      // Extract schedules and apply the color
-      const courseSchedule = course.specificData.schedule.map(occ => ({
-        title: course.specificData.info.name,
-        description: occ.sectionCode + ' ' + course.text,
-        start: new Date(occ.start),
-        end: new Date(occ.end),
-        className: classColor,
-      }));
-
-      const labSchedule =
-        course.labs[0]?.specificData.schedule.map(occ => ({
-          title: course.specificData.info.name,
-          description: occ.sectionCode + ' ' + course.labs[0].text,
-          start: new Date(occ.start),
-          end: new Date(occ.end),
-          className: classColor,
-        })) || [];
-
-      const tutSchedule =
-        course.tutorials[0]?.specificData.schedule.map(occ => ({
-          title: course.specificData.info.name,
-          description: occ.sectionCode + ' ' + course.tutorials[0].text,
-          start: new Date(occ.start),
-          end: new Date(occ.end),
-          className: classColor,
-        })) || [];
-
-      // Combine all schedules
-      return [...courseSchedule, ...labSchedule, ...tutSchedule];
-    });
-  };
-
-  const appliedSchedule = React.useMemo(
-    () => generateAppliedSchedule(),
-    [appliedCourses],
-  );
-
   const getItems: (
     panelStyle: React.CSSProperties,
   ) => CollapseProps['items'] = panelStyle => {
-    return appliedCourses.map((course, index) => {
-      const courseKey = course.title;
+    return scheduledCourses.map((course, index) => {
+      const courseKey = course.course.name;
       const courseColor = courseColorMapRef.current[courseKey];
 
       const itemPanelStyle: React.CSSProperties = {
@@ -365,16 +320,14 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
       return {
         key: index,
         label: (
-          <MemoizedCourseItemLabel
+          <CourseItemLabel
             course={course}
-            handleLeftArrowClick={handleLeftArrowClick}
-            handleRightArrowClick={handleRightArrowClick}
             cancel={cancel}
             showConfirm={showConfirm}
             confirm={confirm}
           />
         ),
-        children: <MemoizedCourseItemContent course={course} />,
+        children: <CourseItemContent course={course} />,
         style: itemPanelStyle,
       };
     });
@@ -383,6 +336,8 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
   const handleSemesterChange = (value: string) => {
     setTermCode(value);
   };
+
+  console.log(scheduledCourses);
 
   return (
     <div className="flex flex-col items-center w-full h-full md:max-h-[calc(100%-65px)] overflow-hidden">
@@ -443,11 +398,17 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
         </Button>
       </div>
       <div className="flex flex-wrap justify-center items-start gap-2 w-full h-full md:max-h-full">
-        <div className="flex h-full flex-2 grow justify-center md:max-h-full p-5 md:p-7">
-          <Calender termCode={termCode} events={appliedSchedule} />
+        <div className="flex h-full flex-1 grow justify-center md:max-h-full p-5 md:p-7">
+          {/* <Calender termCode={termCode} events={appliedSchedule} /> */}
+          <MyScheduler
+            allCourses={allCourses}
+            setAllCourses={setAllCourses}
+            events={events}
+            setEvents={setEvents}
+          />
         </div>
         <div className="flex flex-col h-full md:max-h-full flex-1 justify-start min-w-96 p-4 md:p-7">
-          {appliedCourses.length > 0 && (
+          {scheduledCourses.length > 0 && (
             <Collapse
               bordered={false}
               defaultActiveKey={['1']}
@@ -478,15 +439,6 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
                     color: 'grey',
                   }}
                   onClick={onClickDeleteAll}
-                />
-              </Tooltip>
-              <Tooltip title="Load schedule">
-                <DownloadOutlined
-                  style={{
-                    cursor: 'pointer',
-                    fontSize: CLOSE_ICON_SIZE,
-                    color: 'grey',
-                  }}
                 />
               </Tooltip>
             </div>

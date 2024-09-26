@@ -7,6 +7,7 @@ from constants.days import days_mapping
 from constants.holidays import bc_holidays_2024
 import os
 from dotenv import load_dotenv
+import uuid
 
 load_dotenv()
 SFU_API_BASE_URL = os.getenv('SFU_API_BASE_URL')
@@ -81,9 +82,9 @@ def process_course_number_data(data):
             associated_class = cls['associatedClass']
             if associated_class in lectures:
                 if cls['sectionCode'] == 'LAB':
-                    lectures[associated_class]['labs'].append(cls)
+                    lectures[associated_class]['labs'].append(cls['text'])
                 elif cls['sectionCode'] == 'TUT':
-                    lectures[associated_class]['tutorials'].append(cls)
+                    lectures[associated_class]['tutorials'].append(cls['text'])
 
     # Convert lectures dictionary back to list
     nested_classes = list(lectures.values())
@@ -120,60 +121,145 @@ def process_course_section_data(data):
             'units': info.get('units', None),
             'corequisites': info.get('corequisites', None),
         }
-    
-    schedule = data.get('courseSchedule', [])
-    events = create_events(schedule)
-    print(events)
-    formatted_data['schedule'] = events
 
     return formatted_data
 
-days_mapping = {
-    'Mo': 0,  # Monday
-    'Tu': 1,  # Tuesday
-    'We': 2,  # Wednesday
-    'Th': 3,  # Thursday
-    'Fr': 4,  # Friday
-}
+def process_lab_tut_section_data(data):
+    formatted_data = {}
+    formatted_data['lectures'] = []
+    schedule = data.get('courseSchedule', [])
+    events = create_events(schedule)
+    print(events)
+    formatted_data = events
 
-def create_events(course_schedule):
-    events = []
-    timezone = pytz.timezone('America/Vancouver')  # Pacific Time Zone
+    return formatted_data
 
-    # Define the first full week of January 2024 (Monday to Friday)
-    week_start_date = timezone.localize(datetime.datetime(2024, 1, 1))  # Monday, January 1, 2024
+# days_mapping = {
+#     'Mo': 0,  # Monday
+#     'Tu': 1,  # Tuesday
+#     'We': 2,  # Wednesday
+#     'Th': 3,  # Thursday
+#     'Fr': 4,  # Friday
+# }
 
-    for course in course_schedule:
-        # Set default start and end times to '00:00' if they are not provided
-        start_time_str = course.get('startTime', '00:00') or '00:00'
-        end_time_str = course.get('endTime', '00:00') or '00:00'
+def remove_timezone(date_str):
+    parts = date_str.split()
+    if len(parts) == 6:
+        # Remove the 5th element (timezone abbreviation)
+        del parts[4]
+        return ' '.join(parts)
+    else:
+        return date_str
+
+def create_events(courseSchedule):
+    day_mapping = {
+        'Mo': 1,
+        'Tu': 2,
+        'We': 3,
+        'Th': 4,
+        'Fr': 5
+    }
+    lectures = []
+
+    # Define the fixed timezone offset for PDT (-07:00)
+    pdt = datetime.timezone(datetime.timedelta(hours=-7))
+
+    for schedule in courseSchedule:
+        # Parse startDate and endDate
+        start_date_str = schedule.get('startDate', '')
+        end_date_str = schedule.get('endDate', '')
+
+        # Remove timezone from date strings
+        start_date_str_no_tz = remove_timezone(start_date_str)
+        end_date_str_no_tz = remove_timezone(end_date_str)
+
+        # Convert date strings to datetime objects
+        try:
+            start_date = datetime.datetime.strptime(start_date_str_no_tz, '%a %b %d %H:%M:%S %Y')
+            end_date = datetime.datetime.strptime(end_date_str_no_tz, '%a %b %d %H:%M:%S %Y')
+        except ValueError:
+            # If date parsing fails, skip this schedule entry
+            continue
+
+        # Check if the date range is 0 days
+        if start_date.date() == end_date.date():
+            # Skip this schedule entry
+            continue
+
+        days_str = schedule.get('days', '')
+        # Split the 'days' string into a list of day abbreviations
+        days = [day.strip() for day in days_str.split(',')]
+
+        # Parse the startTime and endTime strings
+        start_time_str = schedule.get('startTime', '')
+        end_time_str = schedule.get('endTime', '')
+
+        # Convert startTime and endTime to datetime objects with fixed date and timezone
+        try:
+            start_time_obj = datetime.datetime.strptime(start_time_str, '%H:%M')
+            start_datetime = datetime.datetime(1970, 1, 1, start_time_obj.hour, start_time_obj.minute, tzinfo=pdt)
+
+            end_time_obj = datetime.datetime.strptime(end_time_str, '%H:%M')
+            end_datetime = datetime.datetime(1970, 1, 1, end_time_obj.hour, end_time_obj.minute, tzinfo=pdt)
+        except ValueError:
+            # If time parsing fails, skip this schedule entry
+            continue
+
+        # Format datetime objects into ISO8601 strings
+        start_iso = start_datetime.isoformat(timespec='seconds')
+        end_iso = end_datetime.isoformat(timespec='seconds')
+
+        for day_abbr in days:
+            day_number = day_mapping.get(day_abbr)
+            if day_number is not None:
+                lecture = {
+                    'id': uuid.uuid4(),
+                    'day': day_number,
+                    'startTime': start_iso,
+                    'endTime': end_iso,
+                }
+                lectures.append(lecture)
+
+    return lectures
+
+# def create_events(course_schedule):
+#     events = []
+#     timezone = pytz.timezone('America/Vancouver')  # Pacific Time Zone
+
+#     # Define the first full week of January 2024 (Monday to Friday)
+#     week_start_date = timezone.localize(datetime.datetime(2024, 1, 1))  # Monday, January 1, 2024
+
+#     for course in course_schedule:
+#         # Set default start and end times to '00:00' if they are not provided
+#         start_time_str = course.get('startTime', '00:00') or '00:00'
+#         end_time_str = course.get('endTime', '00:00') or '00:00'
         
-        # Parse the times into datetime.time objects
-        start_time = datetime.datetime.strptime(start_time_str, '%H:%M').time()
-        end_time = datetime.datetime.strptime(end_time_str, '%H:%M').time()
-        days = course.get('days', '').replace(',', '').split()
-        rrule_days = [days_mapping[day] for day in days]
+#         # Parse the times into datetime.time objects
+#         start_time = datetime.datetime.strptime(start_time_str, '%H:%M').time()
+#         end_time = datetime.datetime.strptime(end_time_str, '%H:%M').time()
+#         days = course.get('days', '').replace(',', '').split()
+#         rrule_days = [days_mapping[day] for day in days]
 
-        for day in rrule_days:
-            # Calculate the exact date for this day in the first week of January 2024
-            event_date = week_start_date + datetime.timedelta(days=day)
+#         for day in rrule_days:
+#             # Calculate the exact date for this day in the first week of January 2024
+#             event_date = week_start_date + datetime.timedelta(days=day)
 
-            # Ensure event times are in the correct timezone
-            event_start = timezone.localize(datetime.datetime.combine(event_date, start_time))
-            event_end = timezone.localize(datetime.datetime.combine(event_date, end_time))
+#             # Ensure event times are in the correct timezone
+#             event_start = timezone.localize(datetime.datetime.combine(event_date, start_time))
+#             event_end = timezone.localize(datetime.datetime.combine(event_date, end_time))
             
-            # Check if the event is already in the list to avoid duplicates
-            event_exists = any(e['start'] == event_start.isoformat() and e['end'] == event_end.isoformat() for e in events)
+#             # Check if the event is already in the list to avoid duplicates
+#             event_exists = any(e['start'] == event_start.isoformat() and e['end'] == event_end.isoformat() for e in events)
             
-            if not event_exists:
-                events.append({
-                    'campus': course.get('campus', 'Burnaby'),
-                    'sectionCode': course.get('sectionCode', ''),
-                    'start': event_start.isoformat(),
-                    'end': event_end.isoformat()
-                })
+#             if not event_exists:
+#                 events.append({
+#                     'campus': course.get('campus', 'Burnaby'),
+#                     'sectionCode': course.get('sectionCode', ''),
+#                     'start': event_start.isoformat(),
+#                     'end': event_end.isoformat()
+#                 })
 
-    return events
+#     return events
 
 def process_course_number_and_section_data(course_number_data, year, term, major, course_number):
     nested_classes = process_course_number_data(course_number_data)
@@ -182,18 +268,24 @@ def process_course_number_and_section_data(course_number_data, year, term, major
         section = cls['text']
         section_data = fetch_data_from_api(f"{SFU_API_BASE_URL}{year}/{term}/{major}/{course_number}/{section}")
         specific_data = process_course_section_data(section_data)
+        schedule_data = section_data.get('courseSchedule', [])
+        events = create_events(schedule_data)
+        cls['lectures'] = events
         cls['specificData'] = specific_data
 
-        for lab in cls.get('labs', []):
-            lab_section = lab['text']
+        for i, lab in enumerate(cls.get('labs', [])):
+            lab_section = lab
             lab_section_data = fetch_data_from_api(f"{SFU_API_BASE_URL}{year}/{term}/{major}/{course_number}/{lab_section}")
-            lab_specific_data = process_course_section_data(lab_section_data)
-            lab['specificData'] = lab_specific_data
+            lab_specific_data = process_lab_tut_section_data(lab_section_data)
+            # Replace the lab with lab_specific_data
+            cls['labs'][i] = lab_specific_data
+        cls['labs'] = [item for sublist in cls['labs'] for item in sublist]
 
-        for tut in cls.get('tutorials', []):
-            tut_section = tut['text']
+        for i, tut in enumerate(cls.get('tutorials', [])):
+            tut_section = tut
             tut_section_data = fetch_data_from_api(f"{SFU_API_BASE_URL}{year}/{term}/{major}/{course_number}/{tut_section}")
-            tut_specific_data = process_course_section_data(tut_section_data)
-            tut['specificData'] = tut_specific_data
+            tut_specific_data = process_lab_tut_section_data(tut_section_data)
+            cls['tutorials'][i] = tut_specific_data
+        cls['tutorials'] = [item for sublist in cls['tutorials'] for item in sublist]
 
     return nested_classes

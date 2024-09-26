@@ -1,7 +1,10 @@
 import React from 'react';
-import { CourseOffering } from '../../containers/NewSchedulePage/fetch-course-data';
+import type {
+  Course as CustomCourse,
+  Offering,
+} from '../../components/MyScheduler/types';
 import { Popconfirm } from 'antd';
-import { DeleteOutlined, LeftOutlined, RightOutlined } from '@ant-design/icons';
+import { DeleteOutlined } from '@ant-design/icons';
 
 const DELETE_ICON_SIZE = 18;
 
@@ -13,73 +16,54 @@ const deleteIconStyle: React.CSSProperties = {
 };
 
 interface CourseItemLabelProps {
-  course: CourseOffering;
-  handleLeftArrowClick: (event: React.MouseEvent<HTMLSpanElement>) => void;
-  handleRightArrowClick: (event: React.MouseEvent<HTMLSpanElement>) => void;
+  course: { course: CustomCourse; offering: Offering };
   cancel?: (e?: React.MouseEvent<HTMLElement>) => void;
   showConfirm: (event: React.MouseEvent<HTMLSpanElement>) => void;
-  confirm: (courseKey: string) => () => void;
+  confirm?: (courseKey: string) => () => void;
 }
 
 const CourseItemLabel: React.FC<CourseItemLabelProps> = props => {
   const {
     course,
-    handleLeftArrowClick,
-    handleRightArrowClick,
     cancel,
     showConfirm,
-    confirm,
+    // confirm,
   } = props;
+  const { specificData } = course.offering;
+  const { info, professor } = specificData;
+  console.log(course);
 
-  const professorDisplayName = course.specificData.professor[0]?.name || '';
+  const professorDisplayName = professor[0]?.name || '';
 
-  const courseKey = course.title;
+  // const courseKey = course.title;
   return (
     <div className="flex gap-3 pb-2">
       <div className="flex flex-col gap-1 w-full">
         <div className="flex justify-between items-center">
           <label>
             <b>
-              {course.specificData.info.name} {course.text}
+              {course.course.name}
+              {/* {course.specificData.info.name} {course.text} */}
             </b>
           </label>
           <label>{professorDisplayName}</label>
         </div>
         <div>
           <div className="flex justify-between">
-            <label className="text-xs">
-              {course.specificData.info?.units || 'N/A'} credits
-            </label>
-            <div className="flex gap-2">
-              {/* <LeftOutlined
-                style={{
-                  cursor: 'pointer',
-                  color: 'grey',
-                }}
-                onClick={handleLeftArrowClick}
-              />
-              <RightOutlined
-                style={{
-                  cursor: 'pointer',
-                  color: 'black',
-                }}
-                onClick={handleRightArrowClick}
-              /> */}
-            </div>
-            <label className="text-xs">
-              {course.specificData?.schedule[0]?.campus} Campus
-            </label>
+            <label className="text-xs">{info?.units || 'N/A'} credits</label>
+            <div className="flex gap-2"></div>
+            <label className="text-xs">Burnaby Campus</label>
           </div>
         </div>
       </div>
       {/* <div className=" h-fit bg-slate-200 w-px" /> */}
       <Popconfirm
         placement="left"
-        title={`Remove ${course.specificData.info.name}?`}
+        title={`Remove ${info.name}?`}
         description="Are you sure to remove this course?"
         okText="Yes"
         cancelText="No"
-        onConfirm={confirm(courseKey)}
+        // onConfirm={confirm(courseKey)}
         onCancel={cancel}
       >
         <DeleteOutlined style={deleteIconStyle} onClick={showConfirm} />

@@ -1,8 +1,9 @@
+import { DownloadOutlined } from '@ant-design/icons';
+import { Tooltip } from 'antd';
 import React from 'react';
 // import type { MenuProps } from 'antd';
 // import { Select, Menu } from 'antd';
 // import { Link, useLocation } from 'react-router-dom';
-import Auth from '../../components/Authentication/Auth';
 
 // const items: MenuProps['items'] = [
 //   { key: 'create', label: <Link to="/create">Create</Link> },
@@ -16,6 +17,7 @@ interface NavBarProps {
 }
 
 const NavBar: React.FC<NavBarProps> = () => {
+  const Load_ICON_SIZE = 20;
   // const { termCode, setTermCode } = props;
   // const location = useLocation();
   // const pathWithoutSlash = location.pathname.substring(1);
@@ -30,8 +32,8 @@ const NavBar: React.FC<NavBarProps> = () => {
   // };
 
   return (
-    <div className="flex justify-between items-center w-full border-b bg-red-600">
-      <div className="p-3 text-white">
+    <div className="flex justify-between items-center w-full border-b bg-red-700">
+      <div className="p-4 text-white">
         <label className="text-xl font-bold">SFU</label> Scheduler
         {/* <Select
           defaultValue={termCode}
@@ -50,7 +52,16 @@ const NavBar: React.FC<NavBarProps> = () => {
         mode="horizontal"
         // items={items}
       /> */}
-      <Auth />
+      <Tooltip title="Load schedule">
+        <DownloadOutlined
+          style={{
+            cursor: 'pointer',
+            fontSize: Load_ICON_SIZE,
+            color: 'white',
+            padding: '20px',
+          }}
+        />
+      </Tooltip>
     </div>
   );
 };
