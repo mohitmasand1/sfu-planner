@@ -40,6 +40,8 @@ interface MySchedulerProps {
   draggingCourseId: string | null;
   draggingEventId: string | null;
   draggingEventType: 'lecture' | 'lab' | 'placeholder' | null;
+  onPlaceholderHover: (offeringId: string | null) => void;
+  hoveredOfferingId: string | null;
 }
 
 const MyScheduler: React.FC<MySchedulerProps> = ({
@@ -52,6 +54,8 @@ const MyScheduler: React.FC<MySchedulerProps> = ({
   draggingCourseId,
   draggingEventId,
   draggingEventType,
+  onPlaceholderHover,
+  hoveredOfferingId,
 }) => {
   const today = new Date(2024, 0, 1);
 
@@ -260,6 +264,8 @@ const MyScheduler: React.FC<MySchedulerProps> = ({
                 onLabDrop={handleLabDrop}
                 onDragStart={onDragStart}
                 onDragEnd={onDragEnd}
+                onPlaceholderHover={onPlaceholderHover}
+                hoveredOfferingId={hoveredOfferingId}
               />
             ),
           }}

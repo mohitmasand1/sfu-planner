@@ -99,6 +99,9 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
   const [draggingEventType, setDraggingEventType] = useState<
     'lecture' | 'lab' | 'placeholder' | null
   >(null);
+  const [hoveredOfferingId, setHoveredOfferingId] = useState<string | null>(
+    null,
+  );
 
   // Added to track the previous termCode
   const previousTermCode = useRef(termCode);
@@ -175,6 +178,7 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
     setDraggingCourseId(null);
     setDraggingEventId(null);
     setDraggingEventType(null);
+    setHoveredOfferingId(null);
   };
 
   const handleRemoveCourse = (courseId: string) => {
@@ -482,9 +486,11 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
               draggingCourseId={draggingCourseId}
               draggingEventId={draggingEventId}
               draggingEventType={draggingEventType}
+              onPlaceholderHover={setHoveredOfferingId} // Pass the setter function
+              hoveredOfferingId={hoveredOfferingId}
             />
           </div>
-          <div className="flex flex-col h-full md:max-h-full flex-1 justify-start min-w-96 p-4 md:p-7">
+          <div className="flex flex-col h-full md:max-h-full flex-1 justify-start min-w-96 p-4 md:p-7 gap-3">
             <CourseList
               courses={courses}
               onDragStart={handleDragStart}

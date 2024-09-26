@@ -19,6 +19,8 @@ interface CalendarEventProps {
     eventType?: 'lecture' | 'lab' | 'placeholder',
   ) => void;
   onDragEnd: () => void;
+  onPlaceholderHover: (offeringId: string | null) => void;
+  hoveredOfferingId: string | null;
 }
 
 const CalendarEventComponent: React.FC<CalendarEventProps> = ({
@@ -28,6 +30,8 @@ const CalendarEventComponent: React.FC<CalendarEventProps> = ({
   onLabDrop,
   onDragStart,
   onDragEnd,
+  onPlaceholderHover,
+  hoveredOfferingId,
 }) => {
   if (event.isPlaceholder) {
     const [{ isOver }, drop] = useDrop<
@@ -70,11 +74,37 @@ const CalendarEventComponent: React.FC<CalendarEventProps> = ({
       }),
     });
 
+    useEffect(() => {
+      if (event.eventType === 'placeholder' && !event.labSessionId) {
+        // This is a lecture placeholder
+        if (isOver) {
+          onPlaceholderHover(event.offeringId!);
+        }
+      }
+      // Do not set onPlaceholderHover(null) here
+    }, [
+      isOver,
+      event.offeringId,
+      event.eventType,
+      event.labSessionId,
+      onPlaceholderHover,
+    ]);
+
+    let isHighlighted = false;
+
+    if (event.eventType === 'placeholder' && !event.labSessionId) {
+      // Lecture placeholder
+      isHighlighted = hoveredOfferingId === event.offeringId;
+    } else if (event.eventType === 'placeholder' && event.labSessionId) {
+      // Lab placeholder
+      isHighlighted = isOver;
+    }
+
     return (
       <div
         ref={drop}
-        className={`flex justify-center items-center h-full w-full border-2 border-dashed  ${
-          isOver
+        className={`h-full w-full border-2 border-dashed ${
+          isHighlighted
             ? 'border-green-500 bg-green-100'
             : 'border-gray-400 bg-gray-200'
         }`}
