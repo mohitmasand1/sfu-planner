@@ -35,7 +35,7 @@ const CourseList: React.FC<CourseListProps> = ({
   return (
     <div
       ref={drop}
-      className={`w-64 border-r border-gray-300 p-4 overflow-y-auto ${
+      className={`w-full h-[180px] border-gray-300 p-4 overflow-y-auto border ${
         isOver ? 'bg-red-100' : ''
       }`}
     >

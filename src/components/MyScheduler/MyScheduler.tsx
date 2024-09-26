@@ -1,15 +1,12 @@
 // src/components/MyScheduler.tsx
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Calendar, dateFnsLocalizer } from 'react-big-calendar';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import format from 'date-fns/format';
 import parse from 'date-fns/parse';
 import startOfWeek from 'date-fns/startOfWeek';
 import getDay from 'date-fns/getDay';
-import { DndProvider } from 'react-dnd';
-import { HTML5Backend } from 'react-dnd-html5-backend';
-import CourseList from './CourseList';
 import CalendarEventComponent from './CalenderEventComponent';
 import { Course, Event } from './types';
 import './index.css';
@@ -30,22 +27,32 @@ const localizer = dateFnsLocalizer({
 
 interface MySchedulerProps {
   allCourses: Course[];
-  setAllCourses: React.Dispatch<React.SetStateAction<Course[]>>;
   events: Event[];
   setEvents: React.Dispatch<React.SetStateAction<Event[]>>;
+  courses: Course[];
+  setCourses: React.Dispatch<React.SetStateAction<Course[]>>;
+  onDragStart: (
+    courseId: string,
+    eventId?: string,
+    eventType?: 'lecture' | 'lab' | 'placeholder',
+  ) => void;
+  onDragEnd: () => void;
+  draggingCourseId: string | null;
+  draggingEventId: string | null;
+  draggingEventType: 'lecture' | 'lab' | 'placeholder' | null;
 }
 
 const MyScheduler: React.FC<MySchedulerProps> = ({
   allCourses,
   events,
   setEvents,
+  setCourses,
+  onDragStart,
+  onDragEnd,
+  draggingCourseId,
+  draggingEventId,
+  draggingEventType,
 }) => {
-  const [courses, setCourses] = useState<Course[]>(allCourses);
-  const [draggingCourseId, setDraggingCourseId] = useState<string | null>(null);
-  const [draggingEventId, setDraggingEventId] = useState<string | null>(null);
-  const [draggingEventType, setDraggingEventType] = useState<
-    'lecture' | 'lab' | 'placeholder' | null
-  >(null);
   const today = new Date(2024, 0, 1);
 
   React.useEffect(() => {
@@ -65,24 +72,6 @@ const MyScheduler: React.FC<MySchedulerProps> = ({
     date.setDate(today.getDate() + diff);
     date.setHours(time.getHours(), time.getMinutes(), 0, 0);
     return date;
-  };
-
-  const handleDragStart = (
-    courseId: string,
-    eventId?: string,
-    eventType?: 'lecture' | 'lab' | 'placeholder',
-  ) => {
-    setDraggingCourseId(courseId);
-    if (eventId) {
-      setDraggingEventId(eventId);
-      setDraggingEventType(eventType || null);
-    }
-  };
-
-  const handleDragEnd = () => {
-    setDraggingCourseId(null);
-    setDraggingEventId(null);
-    setDraggingEventType(null);
   };
 
   const handleCourseDrop = (courseId: string, offeringId: string) => {
@@ -139,7 +128,7 @@ const MyScheduler: React.FC<MySchedulerProps> = ({
     }
 
     setEvents(prevEvents => [...prevEvents, ...newEvents]);
-    handleDragEnd();
+    onDragEnd();
   };
 
   const handleLabDrop = (
@@ -181,24 +170,7 @@ const MyScheduler: React.FC<MySchedulerProps> = ({
       return [...filteredEvents, newLabEvent];
     });
 
-    handleDragEnd();
-  };
-
-  const handleRemoveCourse = (courseId: string) => {
-    // Remove all events for this course
-    setEvents(prevEvents => prevEvents.filter(e => e.courseId !== courseId));
-
-    // Add the course back to the course list
-    const course = allCourses.find(c => c.id === courseId);
-    if (course) {
-      setCourses(prevCourses => {
-        // Prevent duplicates
-        if (!prevCourses.find(c => c.id === courseId)) {
-          return [...prevCourses, course];
-        }
-        return prevCourses;
-      });
-    }
+    onDragEnd();
   };
 
   // Generate placeholder events when dragging
@@ -265,42 +237,36 @@ const MyScheduler: React.FC<MySchedulerProps> = ({
   const allEvents = [...events, ...placeholderEvents];
 
   return (
-    <DndProvider backend={HTML5Backend}>
-      <div className="flex h-screen">
-        <div className="flex-1">
-          <Calendar
-            localizer={localizer}
-            events={allEvents}
-            defaultView="work_week"
-            views={['work_week']}
-            step={60}
-            date={today}
-            timeslots={1}
-            min={new Date(1970, 1, 1, 7, 0, 0)} // 8 AM
-            max={new Date(1970, 1, 1, 19, 0, 0)} // 6 PM
-            style={{ height: '80%', width: '800px' }}
-            components={{
-              toolbar: () => <></>,
-              event: props => (
-                <CalendarEventComponent
-                  {...props}
-                  onCourseDrop={handleCourseDrop}
-                  onLabDrop={handleLabDrop}
-                  onDragStart={handleDragStart}
-                  onDragEnd={handleDragEnd}
-                />
-              ),
-            }}
-          />
-        </div>
-        <CourseList
-          courses={courses}
-          onDragStart={handleDragStart}
-          onDragEnd={handleDragEnd}
-          onRemoveCourse={handleRemoveCourse}
+    // <DndProvider backend={HTML5Backend}>
+    <div className="flex h-screen">
+      <div className="flex-1">
+        <Calendar
+          localizer={localizer}
+          events={allEvents}
+          defaultView="work_week"
+          views={['work_week']}
+          step={60}
+          date={today}
+          timeslots={1}
+          min={new Date(1970, 1, 1, 7, 0, 0)} // 8 AM
+          max={new Date(1970, 1, 1, 19, 0, 0)} // 6 PM
+          style={{ height: '80%', width: '800px' }}
+          components={{
+            toolbar: () => <></>,
+            event: props => (
+              <CalendarEventComponent
+                {...props}
+                onCourseDrop={handleCourseDrop}
+                onLabDrop={handleLabDrop}
+                onDragStart={onDragStart}
+                onDragEnd={onDragEnd}
+              />
+            ),
+          }}
         />
       </div>
-    </DndProvider>
+    </div>
+    // </DndProvider>
   );
 };
 

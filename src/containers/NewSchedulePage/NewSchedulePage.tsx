@@ -1,4 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { DndProvider } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
 import { Button, Collapse, Select, theme, Modal, Tooltip, message } from 'antd';
 import type { CollapseProps, ModalProps, PopconfirmProps } from 'antd';
 import type {
@@ -21,6 +23,7 @@ import CourseItemContent from '../../components/CourseItem/CourseItemContent';
 import { parseTermCode } from '../../utils/parseTermCode';
 import MyScheduler from '../../components/MyScheduler/MyScheduler';
 import { Course } from '../../components/MyScheduler/types';
+import CourseList from '../../components/MyScheduler/CourseList';
 
 const SAVE_ICON_SIZE = 22;
 const CLOSE_ICON_SIZE = 20;
@@ -86,10 +89,16 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
     JSON.parse(sessionStorage.getItem('schedule') || '[]'),
   );
   const [allCourses, setAllCourses] = useState<Course[]>([]);
+  const [courses, setCourses] = useState<Course[]>(allCourses);
   const [events, setEvents] = useState<CustomEvent[]>([]);
   const [scheduledCourses, setScheduledCourses] = useState<
     { course: CustomCourse; offering: Offering }[]
   >([]);
+  const [draggingCourseId, setDraggingCourseId] = useState<string | null>(null);
+  const [draggingEventId, setDraggingEventId] = useState<string | null>(null);
+  const [draggingEventType, setDraggingEventType] = useState<
+    'lecture' | 'lab' | 'placeholder' | null
+  >(null);
 
   // Added to track the previous termCode
   const previousTermCode = useRef(termCode);
@@ -139,6 +148,51 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
 
     setScheduledCourses(scheduled);
   }, [events, allCourses]);
+
+  useEffect(() => {
+    setCourses(() => {
+      // Keep only unscheduled courses
+      const scheduledCourseIds = events.map(e => e.courseId);
+      return allCourses.filter(
+        course => !scheduledCourseIds.includes(course.id),
+      );
+    });
+  }, [allCourses, events]);
+
+  const handleDragStart = (
+    courseId: string,
+    eventId?: string,
+    eventType?: 'lecture' | 'lab' | 'placeholder',
+  ) => {
+    setDraggingCourseId(courseId);
+    if (eventId) {
+      setDraggingEventId(eventId);
+      setDraggingEventType(eventType || null);
+    }
+  };
+
+  const handleDragEnd = () => {
+    setDraggingCourseId(null);
+    setDraggingEventId(null);
+    setDraggingEventType(null);
+  };
+
+  const handleRemoveCourse = (courseId: string) => {
+    // Remove all events for this course
+    setEvents(prevEvents => prevEvents.filter(e => e.courseId !== courseId));
+
+    // Add the course back to the course list
+    const course = allCourses.find(c => c.id === courseId);
+    if (course) {
+      setCourses(prevCourses => {
+        // Prevent duplicates
+        if (!prevCourses.find(c => c.id === courseId)) {
+          return [...prevCourses, course];
+        }
+        return prevCourses;
+      });
+    }
+  };
 
   console.log('new code - ' + termCode);
 
@@ -275,9 +329,25 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
     console.log(JSON.stringify(PreviewingCourseData));
     // const fullCourseName = `${majorNames?.filter(major => majorSelected == major.value)[0].label} ${majorNumbers?.filter(number => number.value == numberSelected)[0].label}`;
     // setAppliedCourses(applied => [...applied, PreviewingCourseData[0]]);
+
+    // Get the course identifier (you can use course key or any unique identifier)
+    const courseKey = PreviewingCourseData[0].specificData.info.name; // Assuming `key` is a unique identifier for the course
+
+    // Check if the course already has a color assigned
+    let classColor = courseColorMapRef.current[courseKey];
+    if (!classColor) {
+      // Assign a new color from the available pool
+      if (availableColorsRef.current.length > 0) {
+        classColor = availableColorsRef.current.pop() as string; // Take a color from the end of the available list
+        courseColorMapRef.current[courseKey] = classColor;
+      } else {
+        console.error('No available colors left!');
+      }
+    }
+
     const courseObj = {
       id: crypto.randomUUID(),
-      className: 'bg-selection-4',
+      className: classColor,
       name: PreviewingCourseData[0].specificData.info.name,
       availableOfferings: transformCourseData(PreviewingCourseData),
     } as Course;
@@ -340,125 +410,142 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
   console.log(scheduledCourses);
 
   return (
-    <div className="flex flex-col items-center w-full h-full md:max-h-[calc(100%-65px)] overflow-hidden">
-      <div className="flex justify-center items-center gap-4 flex-wrap grow p-4">
-        <Select
-          defaultValue={termCode}
-          className="w-32"
-          onChange={handleSemesterChange}
-          options={[
-            { value: '1247', label: 'Fall 2024' },
-            { value: '1251', label: 'Spring 2025' },
-          ]}
-        />
-        <Select
-          showSearch
-          style={{ width: 300 }}
-          placeholder="Select major"
-          optionFilterProp="children"
-          filterOption={(input, option) =>
-            (option?.label ?? '').includes(input)
-          }
-          filterSort={(optionA, optionB) =>
-            (optionA?.label ?? '')
-              .toLowerCase()
-              .localeCompare((optionB?.label ?? '').toLowerCase())
-          }
-          options={majorNames}
-          value={majorSelected}
-          onSelect={updateMajorSelectionMade}
-        />
-        <Select
-          showSearch
-          style={{ width: 300 }}
-          placeholder="Select course number"
-          optionFilterProp="children"
-          filterOption={(input, option) =>
-            (option?.label ?? '').includes(input)
-          }
-          filterSort={(optionA, optionB) =>
-            (optionA?.label ?? '')
-              .toLowerCase()
-              .localeCompare((optionB?.label ?? '').toLowerCase())
-          }
-          options={majorNumbers}
-          disabled={!majorSelected}
-          value={numberSelected}
-          onSelect={updateNumberSelectionMade}
-        />
-        <Button
-          type="primary"
-          size="middle"
-          disabled={
-            !numberSelected || !majorSelected || isAppliedCourseReSelected()
-          }
-          onClick={onClickSearch}
-        >
-          Add
-        </Button>
-      </div>
-      <div className="flex flex-wrap justify-center items-start gap-2 w-full h-full md:max-h-full">
-        <div className="flex h-full flex-1 grow justify-center md:max-h-full p-5 md:p-7">
-          {/* <Calender termCode={termCode} events={appliedSchedule} /> */}
-          <MyScheduler
-            allCourses={allCourses}
-            setAllCourses={setAllCourses}
-            events={events}
-            setEvents={setEvents}
+    <DndProvider backend={HTML5Backend}>
+      <div className="flex flex-col items-center w-full h-full md:max-h-[calc(100%-65px)] overflow-hidden">
+        <div className="flex justify-center items-center gap-4 flex-wrap grow p-4">
+          <Select
+            defaultValue={termCode}
+            className="w-32"
+            onChange={handleSemesterChange}
+            options={[
+              { value: '1247', label: 'Fall 2024' },
+              { value: '1251', label: 'Spring 2025' },
+            ]}
           />
+          <Select
+            showSearch
+            style={{ width: 300 }}
+            placeholder="Select major"
+            optionFilterProp="children"
+            filterOption={(input, option) =>
+              (option?.label ?? '').includes(input)
+            }
+            filterSort={(optionA, optionB) =>
+              (optionA?.label ?? '')
+                .toLowerCase()
+                .localeCompare((optionB?.label ?? '').toLowerCase())
+            }
+            options={majorNames}
+            value={majorSelected}
+            onSelect={updateMajorSelectionMade}
+          />
+          <Select
+            showSearch
+            style={{ width: 300 }}
+            placeholder="Select course number"
+            optionFilterProp="children"
+            filterOption={(input, option) =>
+              (option?.label ?? '').includes(input)
+            }
+            filterSort={(optionA, optionB) =>
+              (optionA?.label ?? '')
+                .toLowerCase()
+                .localeCompare((optionB?.label ?? '').toLowerCase())
+            }
+            options={majorNumbers}
+            disabled={!majorSelected}
+            value={numberSelected}
+            onSelect={updateNumberSelectionMade}
+          />
+          <Button
+            type="primary"
+            size="middle"
+            disabled={
+              !numberSelected || !majorSelected || isAppliedCourseReSelected()
+            }
+            onClick={onClickSearch}
+          >
+            Add
+          </Button>
         </div>
-        <div className="flex flex-col h-full md:max-h-full flex-1 justify-start min-w-96 p-4 md:p-7">
-          {scheduledCourses.length > 0 && (
-            <Collapse
-              bordered={false}
-              defaultActiveKey={['1']}
-              style={{
-                background: token.colorBgContainer,
-                overflowY: 'auto',
-              }}
-              items={getItems(panelStyle)}
+        <div className="flex flex-wrap justify-center items-start gap-2 w-full h-full md:max-h-full">
+          <div className="flex h-full flex-1 grow justify-center md:max-h-full p-5 md:p-7">
+            {/* <Calender termCode={termCode} events={appliedSchedule} /> */}
+            <MyScheduler
+              allCourses={allCourses}
+              events={events}
+              setEvents={setEvents}
+              courses={courses}
+              setCourses={setCourses}
+              onDragStart={handleDragStart}
+              onDragEnd={handleDragEnd}
+              draggingCourseId={draggingCourseId}
+              draggingEventId={draggingEventId}
+              draggingEventType={draggingEventType}
             />
-          )}
-          {(getItems(panelStyle)?.length || 0) > 0 && (
-            <div className="flex self-center gap-6">
-              <Tooltip title="Save schedule">
-                <CloudUploadOutlined
+          </div>
+          <div className="flex flex-col h-full md:max-h-full flex-1 justify-start min-w-96 p-4 md:p-7">
+            <CourseList
+              courses={courses}
+              onDragStart={handleDragStart}
+              onDragEnd={handleDragEnd}
+              onRemoveCourse={handleRemoveCourse}
+            />
+            <div className="flex flex-col h-full overflow-auto">
+              {scheduledCourses.length > 0 && (
+                <Collapse
+                  bordered={false}
+                  defaultActiveKey={['1']}
                   style={{
-                    cursor: 'pointer',
-                    fontSize: SAVE_ICON_SIZE,
-                    color: 'grey',
+                    background: token.colorBgContainer,
+                    overflowY: 'auto',
                   }}
-                  onClick={onClickSave}
+                  items={getItems(panelStyle)}
                 />
-              </Tooltip>
-              <Tooltip title="Delete current schedule">
-                <CloseOutlined
-                  style={{
-                    cursor: 'pointer',
-                    fontSize: CLOSE_ICON_SIZE,
-                    color: 'grey',
-                  }}
-                  onClick={onClickDeleteAll}
-                />
-              </Tooltip>
+              )}
+
+              {(getItems(panelStyle)?.length || 0) > 0 && (
+                <div className="flex self-center gap-6 overflow-auto">
+                  <Tooltip title="Save schedule">
+                    <CloudUploadOutlined
+                      style={{
+                        cursor: 'pointer',
+                        fontSize: SAVE_ICON_SIZE,
+                        color: 'grey',
+                      }}
+                      onClick={onClickSave}
+                    />
+                  </Tooltip>
+                  <Tooltip title="Delete current schedule">
+                    <CloseOutlined
+                      style={{
+                        cursor: 'pointer',
+                        fontSize: CLOSE_ICON_SIZE,
+                        color: 'grey',
+                      }}
+                      onClick={onClickDeleteAll}
+                    />
+                  </Tooltip>
+                </div>
+              )}
             </div>
-          )}
+          </div>
         </div>
+        {contextHolder}
+        {loading && <LoadingOverlay />}{' '}
+        <Modal
+          title={modalContent.title}
+          open={isModalOpen}
+          // onOk={handleOk}
+          onCancel={handleCancel}
+          closable={false}
+          {...modalContent.modalProps}
+          className="!w-full top-12"
+        >
+          {modalContent.content}
+        </Modal>
       </div>
-      {contextHolder}
-      {loading && <LoadingOverlay />}{' '}
-      <Modal
-        title={modalContent.title}
-        open={isModalOpen}
-        // onOk={handleOk}
-        onCancel={handleCancel}
-        closable={false}
-        {...modalContent.modalProps}
-        className="!w-full top-12"
-      >
-        {modalContent.content}
-      </Modal>
-    </div>
+    </DndProvider>
   );
 };
 
