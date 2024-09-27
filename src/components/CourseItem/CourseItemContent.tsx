@@ -42,7 +42,7 @@ const CourseItemContent: React.FC<CourseItemContentProps> = props => {
     });
 
   const rating = `${RMPRatingData?.rating || 'N/A'}/5`;
-  console.log(isbn13);
+  // console.log(isbn13);
 
   return (
     <div className="flex flex-row gap-3 justify-evenly">

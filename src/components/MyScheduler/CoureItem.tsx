@@ -2,6 +2,7 @@
 import React, { useEffect } from 'react';
 import { useDrag } from 'react-dnd';
 import { Course } from './types';
+import { DeleteOutlined } from '@ant-design/icons';
 
 interface CourseItemProps {
   course: Course;
@@ -38,11 +39,14 @@ const CourseItem: React.FC<CourseItemProps> = ({
   return (
     <div
       ref={drag}
-      className={`bg-gray-200 mb-2 p-2 rounded cursor-move ${
+      className={`bg-gray-200 mb-2 p-2 rounded cursor-move flex flex-row justify-between ${
         isDragging ? 'opacity-50' : 'opacity-100'
       }`}
     >
-      {course.name}
+      <label>
+        {`${course.name} (${course.availableOfferings.length} option${course.availableOfferings.length > 1 ? 's' : ''})`}
+      </label>
+      <DeleteOutlined />
     </div>
   );
 };

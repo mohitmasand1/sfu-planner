@@ -19,23 +19,18 @@ interface CourseItemLabelProps {
   course: { course: CustomCourse; offering: Offering };
   cancel?: (e?: React.MouseEvent<HTMLElement>) => void;
   showConfirm: (event: React.MouseEvent<HTMLSpanElement>) => void;
-  confirm?: (courseKey: string) => () => void;
+  confirm: (courseKey: string, courseId: string) => () => void;
 }
 
 const CourseItemLabel: React.FC<CourseItemLabelProps> = props => {
-  const {
-    course,
-    cancel,
-    showConfirm,
-    // confirm,
-  } = props;
+  const { course, cancel, showConfirm, confirm } = props;
   const { specificData } = course.offering;
   const { info, professor } = specificData;
-  console.log(course);
+  // console.log(course);
 
-  const professorDisplayName = professor[0]?.name || '';
+  const professorDisplayName = professor[0]?.name || '*TBD*';
 
-  // const courseKey = course.title;
+  const courseKey = course.course.name;
   return (
     <div className="flex gap-3 pb-2">
       <div className="flex flex-col gap-1 w-full">
@@ -63,7 +58,7 @@ const CourseItemLabel: React.FC<CourseItemLabelProps> = props => {
         description="Are you sure to remove this course?"
         okText="Yes"
         cancelText="No"
-        // onConfirm={confirm(courseKey)}
+        onConfirm={confirm(courseKey, course.course.id)}
         onCancel={cancel}
       >
         <DeleteOutlined style={deleteIconStyle} onClick={showConfirm} />

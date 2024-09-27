@@ -102,6 +102,7 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
   const [hoveredOfferingId, setHoveredOfferingId] = useState<string | null>(
     null,
   );
+  const [isEventDragging, setIsEventDragging] = useState<boolean>(false);
 
   // Added to track the previous termCode
   const previousTermCode = useRef(termCode);
@@ -113,7 +114,7 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
       setMajorSelected(null);
       setNumberSelected(null);
       sessionStorage.removeItem('schedule');
-      console.log('changed termCode');
+      // console.log('changed termCode');
       // Update previousTermCode to the new termCode
       previousTermCode.current = termCode;
     }
@@ -171,6 +172,10 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
     if (eventId) {
       setDraggingEventId(eventId);
       setDraggingEventType(eventType || null);
+      setIsEventDragging(true); // Set isEventDragging to true
+    } else {
+      // A course is being dragged from the course list
+      setIsEventDragging(false); // Ensure isEventDragging is false
     }
   };
 
@@ -179,6 +184,7 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
     setDraggingEventId(null);
     setDraggingEventType(null);
     setHoveredOfferingId(null);
+    setIsEventDragging(false);
   };
 
   const handleRemoveCourse = (courseId: string) => {
@@ -198,7 +204,7 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
     }
   };
 
-  console.log('new code - ' + termCode);
+  // console.log('new code - ' + termCode);
 
   const isAppliedCourseReSelected = () => {
     return !!appliedCourses.find(
@@ -223,13 +229,20 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
     event.stopPropagation();
   };
 
-  const confirm = (courseKey: string) => () => {
-    setAppliedCourses(prevCourses => {
-      const newList = prevCourses.filter(course => course.title !== courseKey);
-      sessionStorage.setItem('schedule', JSON.stringify(newList));
-      return newList;
-    });
-    // Optionally restore the color to the available pool
+  const confirm = (courseKey: string, courseId: string) => () => {
+    // Remove the course from allCourses
+    setAllCourses(prevAllCourses =>
+      prevAllCourses.filter(c => c.id !== courseId),
+    );
+    // Remove any events associated with the course
+    setEvents(prevEvents => prevEvents.filter(e => e.courseId !== courseId));
+    // Remove the course from unscheduled courses
+    setCourses(prevCourses => prevCourses.filter(c => c.id !== courseId));
+    // Reset dragging state if necessary
+    if (draggingCourseId === courseId) {
+      handleDragEnd();
+    }
+    // Restore the color to the available pool
     const removedColor = courseColorMapRef.current[courseKey];
     if (removedColor) {
       availableColorsRef.current.push(removedColor);
@@ -239,7 +252,7 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
   };
 
   const cancel: PopconfirmProps['onCancel'] = e => {
-    console.log(e);
+    // console.log(e);
     e?.stopPropagation();
   };
 
@@ -330,7 +343,7 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
         ),
     });
     setLoading(false);
-    console.log(JSON.stringify(PreviewingCourseData));
+    // console.log(JSON.stringify(PreviewingCourseData));
     // const fullCourseName = `${majorNames?.filter(major => majorSelected == major.value)[0].label} ${majorNumbers?.filter(number => number.value == numberSelected)[0].label}`;
     // setAppliedCourses(applied => [...applied, PreviewingCourseData[0]]);
 
@@ -356,7 +369,7 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
       availableOfferings: transformCourseData(PreviewingCourseData),
     } as Course;
     setAllCourses(all => [...all, courseObj]);
-    console.log(courseObj);
+    // console.log(courseObj);
   };
 
   const onClickSave = (event: React.MouseEvent<HTMLSpanElement>) => {
@@ -374,7 +387,16 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
       content: <div>Delete all selections?</div>,
       onOk() {
         message.success('Deleted all');
-        setAppliedCourses([]);
+        // Clear all courses
+        setAllCourses([]);
+        // Clear events
+        setEvents([]);
+        // Clear unscheduled courses
+        setCourses([]);
+        // Clear scheduled courses
+        setScheduledCourses([]);
+        // Reset dragging state
+        handleDragEnd();
         sessionStorage.removeItem('schedule');
       },
     });
@@ -411,7 +433,7 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
     setTermCode(value);
   };
 
-  console.log(scheduledCourses);
+  // console.log(scheduledCourses);
 
   return (
     <DndProvider backend={HTML5Backend}>
@@ -496,8 +518,9 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
               onDragStart={handleDragStart}
               onDragEnd={handleDragEnd}
               onRemoveCourse={handleRemoveCourse}
+              isEventDragging={isEventDragging}
             />
-            <div className="flex flex-col h-full overflow-auto">
+            <div className="flex flex-col overflow-auto">
               {scheduledCourses.length > 0 && (
                 <Collapse
                   bordered={false}

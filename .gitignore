@@ -15,6 +15,7 @@ sfu-planner-be/venv
 sfu-planner-be/.env
 sfu-planner-be/plan.txt
 *.env
+package-lock.json
 
 # Editor directories and files
 .vscode/*

@@ -10,6 +10,7 @@ interface CourseListProps {
   onDragStart: (courseId: string) => void;
   onDragEnd: () => void;
   onRemoveCourse: (courseId: string) => void;
+  isEventDragging: boolean;
 }
 
 const CourseList: React.FC<CourseListProps> = ({
@@ -17,6 +18,7 @@ const CourseList: React.FC<CourseListProps> = ({
   onDragStart,
   onDragEnd,
   onRemoveCourse,
+  isEventDragging,
 }) => {
   const [{ isOver }, drop] = useDrop<
     { courseId: string; eventId?: string },
@@ -32,10 +34,15 @@ const CourseList: React.FC<CourseListProps> = ({
     }),
   });
 
+  let backgroundColor = '';
+  if (isEventDragging) {
+    backgroundColor = isOver ? 'bg-red-300' : 'bg-red-100';
+  }
+
   return (
     <div
       ref={drop}
-      className={`w-full h-[180px] border-gray-300 p-4 overflow-y-auto border ${
+      className={`w-full h-[177px] border-gray-300 p-4 overflow-y-auto border rounded-md ${backgroundColor} ${
         isOver ? 'bg-red-100' : ''
       }`}
     >

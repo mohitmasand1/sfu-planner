@@ -165,7 +165,7 @@ const Calender: React.FC<CalenderProps> = props => {
     [dateText],
   );
 
-  console.log(date);
+  // console.log(date);
 
   // const marks: SliderSingleProps['marks'] = {
   //   0: '0°C',
