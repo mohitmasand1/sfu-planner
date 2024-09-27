@@ -229,6 +229,20 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
     event.stopPropagation();
   };
 
+  const handleDeleteCourseFromList = (courseId: string, courseKey: string) => {
+    // Remove the course from unscheduled courses
+    setCourses(prevCourses => prevCourses.filter(c => c.id !== courseId));
+    // Also remove the course from allCourses
+    setAllCourses(prevAllCourses =>
+      prevAllCourses.filter(c => c.id !== courseId),
+    );
+    const removedColor = courseColorMapRef.current[courseKey];
+    if (removedColor) {
+      availableColorsRef.current.push(removedColor);
+      delete courseColorMapRef.current[courseKey];
+    }
+  };
+
   const confirm = (courseKey: string, courseId: string) => () => {
     // Remove the course from allCourses
     setAllCourses(prevAllCourses =>
@@ -398,6 +412,15 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
         // Reset dragging state
         handleDragEnd();
         sessionStorage.removeItem('schedule');
+
+        allCourses.forEach(course => {
+          const courseKey = course.name;
+          const removedColor = courseColorMapRef.current[courseKey];
+          if (removedColor) {
+            availableColorsRef.current.push(removedColor);
+            delete courseColorMapRef.current[courseKey];
+          }
+        });
       },
     });
   };
@@ -519,6 +542,7 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
               onDragEnd={handleDragEnd}
               onRemoveCourse={handleRemoveCourse}
               isEventDragging={isEventDragging}
+              onDeleteCourse={handleDeleteCourseFromList}
             />
             <div className="flex flex-col overflow-auto">
               {scheduledCourses.length > 0 && (

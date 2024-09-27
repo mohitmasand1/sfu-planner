@@ -4,16 +4,20 @@ import { useDrag } from 'react-dnd';
 import { Course } from './types';
 import { DeleteOutlined } from '@ant-design/icons';
 
+const DELETE_ICON_SIZE = 18;
+
 interface CourseItemProps {
   course: Course;
   onDragStart: (courseId: string) => void;
   onDragEnd: () => void;
+  onDeleteCourse: (courseId: string, courseKey: string) => void;
 }
 
 const CourseItem: React.FC<CourseItemProps> = ({
   course,
   onDragStart,
   onDragEnd,
+  onDeleteCourse,
 }) => {
   const [{ isDragging }, drag] = useDrag<
     { courseId: string },
@@ -36,6 +40,13 @@ const CourseItem: React.FC<CourseItemProps> = ({
     }
   }, [isDragging, course.id, onDragStart]);
 
+  const deleteIconStyle: React.CSSProperties = {
+    padding: 1,
+    cursor: 'pointer',
+    fontSize: DELETE_ICON_SIZE,
+    color: 'grey',
+  };
+
   return (
     <div
       ref={drag}
@@ -46,7 +57,10 @@ const CourseItem: React.FC<CourseItemProps> = ({
       <label>
         {`${course.name} (${course.availableOfferings.length} option${course.availableOfferings.length > 1 ? 's' : ''})`}
       </label>
-      <DeleteOutlined />
+      <DeleteOutlined
+        style={deleteIconStyle}
+        onClick={() => onDeleteCourse(course.id, course.name)}
+      />
     </div>
   );
 };

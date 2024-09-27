@@ -11,6 +11,7 @@ interface CourseListProps {
   onDragEnd: () => void;
   onRemoveCourse: (courseId: string) => void;
   isEventDragging: boolean;
+  onDeleteCourse: (courseId: string, courseKey: string) => void;
 }
 
 const CourseList: React.FC<CourseListProps> = ({
@@ -19,6 +20,7 @@ const CourseList: React.FC<CourseListProps> = ({
   onDragEnd,
   onRemoveCourse,
   isEventDragging,
+  onDeleteCourse,
 }) => {
   const [{ isOver }, drop] = useDrop<
     { courseId: string; eventId?: string },
@@ -52,6 +54,7 @@ const CourseList: React.FC<CourseListProps> = ({
           course={course}
           onDragStart={onDragStart}
           onDragEnd={onDragEnd}
+          onDeleteCourse={onDeleteCourse}
         />
       ))}
     </div>
