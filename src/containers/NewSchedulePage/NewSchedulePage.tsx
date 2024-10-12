@@ -117,6 +117,16 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
       // console.log('changed termCode');
       // Update previousTermCode to the new termCode
       previousTermCode.current = termCode;
+      // Clear all courses
+      setAllCourses([]);
+      // Clear events
+      setEvents([]);
+      // Clear unscheduled courses
+      setCourses([]);
+      // Clear scheduled courses
+      setScheduledCourses([]);
+      // Reset dragging state
+      handleDragEnd();
     }
   }, [termCode]);
 
@@ -207,10 +217,9 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
   // console.log('new code - ' + termCode);
 
   const isAppliedCourseReSelected = () => {
-    return !!appliedCourses.find(
+    return !!allCourses.find(
       course =>
-        course.specificData.info.major === majorSelected?.toUpperCase() &&
-        course.specificData.info.number === numberSelected,
+        course.name === majorSelected?.toUpperCase() + ' ' + numberSelected,
     );
   };
 
@@ -535,7 +544,7 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
               hoveredOfferingId={hoveredOfferingId}
             />
           </div>
-          <div className="flex flex-col h-full md:max-h-full flex-1 justify-start min-w-96 p-4 md:p-7 gap-3">
+          <div className="flex flex-col h-full md:max-h-full flex-1 justify-start min-w-96 p-4 md:p-7 gap-6">
             <CourseList
               courses={courses}
               onDragStart={handleDragStart}
@@ -556,7 +565,6 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
                   items={getItems(panelStyle)}
                 />
               )}
-
               {(getItems(panelStyle)?.length || 0) > 0 && (
                 <div className="flex self-center gap-6 overflow-auto">
                   <Tooltip title="Save schedule">

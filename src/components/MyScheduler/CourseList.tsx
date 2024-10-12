@@ -4,6 +4,7 @@ import React from 'react';
 import { useDrop } from 'react-dnd';
 import CourseItem from './CoureItem';
 import { Course } from './types';
+import { Empty } from 'antd';
 
 interface CourseListProps {
   courses: Course[];
@@ -44,19 +45,21 @@ const CourseList: React.FC<CourseListProps> = ({
   return (
     <div
       ref={drop}
-      className={`w-full h-[177px] border-gray-300 p-4 overflow-y-auto border rounded-md ${backgroundColor} ${
+      className={`w-full h-[198px] border-gray-300 p-4 overflow-y-auto border rounded-md ${backgroundColor} ${
         isOver ? 'bg-red-100' : ''
       }`}
     >
-      {courses.map(course => (
-        <CourseItem
-          key={course.id}
-          course={course}
-          onDragStart={onDragStart}
-          onDragEnd={onDragEnd}
-          onDeleteCourse={onDeleteCourse}
-        />
-      ))}
+      {courses.length > 0 &&
+        courses.map(course => (
+          <CourseItem
+            key={course.id}
+            course={course}
+            onDragStart={onDragStart}
+            onDragEnd={onDragEnd}
+            onDeleteCourse={onDeleteCourse}
+          />
+        ))}
+      {courses.length == 0 && <Empty description="No courses" />}
     </div>
   );
 };
