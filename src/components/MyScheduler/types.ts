@@ -17,11 +17,19 @@ export interface LabSession {
   endTime: Date;
 }
 
+export interface TutorialSession {
+  id: string;
+  day: number;
+  startTime: Date;
+  endTime: Date;
+}
+
 export interface Offering {
   className?: string,
   id: string;
   lectures: LectureTime[];
   labs?: LabSession[]; // Optional labs
+  tutorials?: TutorialSession[];
   specificData: CourseSection;
 }
 
@@ -42,5 +50,6 @@ export interface Event extends BigCalendarEvent {
   isPlaceholder?: boolean;
   offeringId?: string;
   labSessionId?: string;
-  eventType: 'lecture' | 'lab' | 'placeholder';
+  tutorialSessionId?: string;
+  eventType: 'lecture' | 'lab' | 'tutorial' | 'placeholder';
 }

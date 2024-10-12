@@ -34,12 +34,12 @@ interface MySchedulerProps {
   onDragStart: (
     courseId: string,
     eventId?: string,
-    eventType?: 'lecture' | 'lab' | 'placeholder',
+    eventType?: 'lecture' | 'lab' | 'tutorial' | 'placeholder',
   ) => void;
   onDragEnd: () => void;
   draggingCourseId: string | null;
   draggingEventId: string | null;
-  draggingEventType: 'lecture' | 'lab' | 'placeholder' | null;
+  draggingEventType: 'lecture' | 'lab' | 'tutorial' | 'placeholder' | null;
   onPlaceholderHover: (offeringId: string | null) => void;
   hoveredOfferingId: string | null;
 }
@@ -130,6 +130,24 @@ const MyScheduler: React.FC<MySchedulerProps> = ({
         labSessionId: lab.id,
       } as Event);
     }
+    // Schedule default tutorial (first one)
+    if (offering.tutorials && offering.tutorials.length > 0) {
+      const tutorial = offering.tutorials[0];
+      const start = getDateForDay(tutorial.day, tutorial.startTime);
+      const end = getDateForDay(tutorial.day, tutorial.endTime);
+
+      newEvents.push({
+        id: `event-${courseId}-tutorial-${tutorial.id}`,
+        className: course?.className || '',
+        title: `${course.name} Tutorial`,
+        start,
+        end,
+        courseId,
+        offeringId,
+        eventType: 'tutorial',
+        tutorialSessionId: tutorial.id,
+      } as Event);
+    }
 
     setEvents(prevEvents => [...prevEvents, ...newEvents]);
     onDragEnd();
@@ -177,6 +195,50 @@ const MyScheduler: React.FC<MySchedulerProps> = ({
     onDragEnd();
   };
 
+  const handleTutorialDrop = (
+    courseId: string,
+    offeringId: string,
+    tutorialSessionId: string,
+  ) => {
+    // Update tutorial event
+    setEvents(prevEvents => {
+      // Remove existing tutorial for this course and offering
+      const filteredEvents = prevEvents.filter(
+        e => !(e.courseId === courseId && e.eventType === 'tutorial'),
+      );
+
+      const course = allCourses.find(c => c.id === courseId);
+      const offering = course?.availableOfferings.find(
+        o => o.id === offeringId,
+      );
+      if (!offering) return filteredEvents;
+
+      const tutorial = offering.tutorials?.find(
+        t => t.id === tutorialSessionId,
+      );
+      if (!tutorial) return filteredEvents;
+
+      const start = getDateForDay(tutorial.day, tutorial.startTime);
+      const end = getDateForDay(tutorial.day, tutorial.endTime);
+
+      const newTutorialEvent: Event = {
+        className: course?.className || '',
+        id: `event-${courseId}-tutorial-${tutorial.id}`,
+        title: `${course!.name} Tutorial`,
+        start,
+        end,
+        courseId,
+        offeringId,
+        eventType: 'tutorial',
+        tutorialSessionId: tutorial.id,
+      };
+
+      return [...filteredEvents, newTutorialEvent];
+    });
+
+    onDragEnd();
+  };
+
   // Generate placeholder events when dragging
   const placeholderEvents: Event[] = [];
   if (draggingCourseId) {
@@ -206,6 +268,32 @@ const MyScheduler: React.FC<MySchedulerProps> = ({
           isPlaceholder: true,
           offeringId,
           labSessionId: lab.id,
+          eventType: 'placeholder',
+        } as Event);
+      });
+    } else if (draggingEventType === 'tutorial') {
+      // Dragging a tutorial event to switch tutorial sessions within the same offering
+      const currentEvent = events.find(e => e.id === draggingEventId);
+      const offeringId = currentEvent?.offeringId;
+      const offering = course?.availableOfferings.find(
+        o => o.id === offeringId,
+      );
+
+      offering?.tutorials?.forEach(tutorial => {
+        if (currentEvent?.tutorialSessionId === tutorial.id) return; // Skip current tutorial
+
+        const start = getDateForDay(tutorial.day, tutorial.startTime);
+        const end = getDateForDay(tutorial.day, tutorial.endTime);
+
+        placeholderEvents.push({
+          id: `placeholder-tutorial-${offeringId}-${tutorial.id}`,
+          title: `Tutorial Option`,
+          start,
+          end,
+          courseId: course!.id,
+          isPlaceholder: true,
+          offeringId,
+          tutorialSessionId: tutorial.id,
           eventType: 'placeholder',
         } as Event);
       });
@@ -262,6 +350,7 @@ const MyScheduler: React.FC<MySchedulerProps> = ({
                 {...props}
                 onCourseDrop={handleCourseDrop}
                 onLabDrop={handleLabDrop}
+                onTutorialDrop={handleTutorialDrop}
                 onDragStart={onDragStart}
                 onDragEnd={onDragEnd}
                 onPlaceholderHover={onPlaceholderHover}

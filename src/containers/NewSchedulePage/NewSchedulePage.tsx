@@ -97,7 +97,7 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
   const [draggingCourseId, setDraggingCourseId] = useState<string | null>(null);
   const [draggingEventId, setDraggingEventId] = useState<string | null>(null);
   const [draggingEventType, setDraggingEventType] = useState<
-    'lecture' | 'lab' | 'placeholder' | null
+    'lecture' | 'lab' | 'tutorial' | 'placeholder' | null
   >(null);
   const [hoveredOfferingId, setHoveredOfferingId] = useState<string | null>(
     null,
@@ -176,7 +176,7 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
   const handleDragStart = (
     courseId: string,
     eventId?: string,
-    eventType?: 'lecture' | 'lab' | 'placeholder',
+    eventType?: 'lecture' | 'lab' | 'tutorial' | 'placeholder',
   ) => {
     setDraggingCourseId(courseId);
     if (eventId) {
@@ -341,10 +341,18 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
         endTime: new Date(lab.endTime),
       }));
 
+      const tutorials = offering.tutorials.map(tut => ({
+        id: tut.id,
+        day: tut.day,
+        startTime: new Date(tut.startTime),
+        endTime: new Date(tut.endTime),
+      }));
+
       return {
         id: offering.associatedClass,
         lectures,
         labs,
+        tutorials,
         specificData,
       };
     });
@@ -366,7 +374,7 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
         ),
     });
     setLoading(false);
-    // console.log(JSON.stringify(PreviewingCourseData));
+    console.log(JSON.stringify(PreviewingCourseData));
     // const fullCourseName = `${majorNames?.filter(major => majorSelected == major.value)[0].label} ${majorNumbers?.filter(number => number.value == numberSelected)[0].label}`;
     // setAppliedCourses(applied => [...applied, PreviewingCourseData[0]]);
 

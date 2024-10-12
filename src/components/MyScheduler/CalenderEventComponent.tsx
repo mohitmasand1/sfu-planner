@@ -13,10 +13,15 @@ interface CalendarEventProps {
     offeringId: string,
     labSessionId: string,
   ) => void;
+  onTutorialDrop: (
+    courseId: string,
+    offeringId: string,
+    tutorialSessionId: string,
+  ) => void;
   onDragStart: (
     courseId: string,
     eventId?: string,
-    eventType?: 'lecture' | 'lab' | 'placeholder',
+    eventType?: 'lecture' | 'lab' | 'tutorial' | 'placeholder',
   ) => void;
   onDragEnd: () => void;
   onPlaceholderHover: (offeringId: string | null) => void;
@@ -28,6 +33,7 @@ const CalendarEventComponent: React.FC<CalendarEventProps> = ({
   title,
   onCourseDrop,
   onLabDrop,
+  onTutorialDrop,
   onDragStart,
   onDragEnd,
   onPlaceholderHover,
@@ -36,9 +42,10 @@ const CalendarEventComponent: React.FC<CalendarEventProps> = ({
   if (event.isPlaceholder) {
     const [{ isOver }, drop] = useDrop<
       {
+        offeringId?: string;
         courseId: string;
         eventId?: string;
-        eventType?: 'lecture' | 'lab' | 'placeholder';
+        eventType?: 'lecture' | 'lab' | 'tutorial' | 'placeholder';
       },
       void,
       { isOver: boolean }
@@ -49,6 +56,13 @@ const CalendarEventComponent: React.FC<CalendarEventProps> = ({
           // Lab placeholder
           return (
             item.eventType === 'lab' &&
+            item.courseId === event.courseId &&
+            item.offeringId === event.offeringId
+          );
+        } else if (event.tutorialSessionId) {
+          // Tutorial placeholder
+          return (
+            item.eventType === 'tutorial' &&
             item.courseId === event.courseId &&
             item.offeringId === event.offeringId
           );
@@ -64,6 +78,13 @@ const CalendarEventComponent: React.FC<CalendarEventProps> = ({
         if (event.labSessionId) {
           // Lab placeholder
           onLabDrop(item.courseId, event.offeringId!, event.labSessionId!);
+        } else if (event.tutorialSessionId) {
+          // Tutorial placeholder
+          onTutorialDrop(
+            item.courseId,
+            event.offeringId!,
+            event.tutorialSessionId!,
+          );
         } else {
           // Lecture placeholder
           onCourseDrop(item.courseId, event.offeringId!);
@@ -75,7 +96,11 @@ const CalendarEventComponent: React.FC<CalendarEventProps> = ({
     });
 
     useEffect(() => {
-      if (event.eventType === 'placeholder' && !event.labSessionId) {
+      if (
+        event.eventType === 'placeholder' &&
+        !event.labSessionId &&
+        !event.tutorialSessionId
+      ) {
         // This is a lecture placeholder
         if (isOver) {
           onPlaceholderHover(event.offeringId!);
@@ -87,6 +112,7 @@ const CalendarEventComponent: React.FC<CalendarEventProps> = ({
       event.offeringId,
       event.eventType,
       event.labSessionId,
+      event.tutorialSessionId,
       onPlaceholderHover,
     ]);
 
@@ -97,6 +123,9 @@ const CalendarEventComponent: React.FC<CalendarEventProps> = ({
       isHighlighted = hoveredOfferingId === event.offeringId;
     } else if (event.eventType === 'placeholder' && event.labSessionId) {
       // Lab placeholder
+      isHighlighted = isOver;
+    } else if (event.eventType === 'placeholder' && event.tutorialSessionId) {
+      // Tutorial placeholder
       isHighlighted = isOver;
     }
 
@@ -119,7 +148,7 @@ const CalendarEventComponent: React.FC<CalendarEventProps> = ({
     {
       courseId: string;
       eventId: string;
-      eventType: 'lecture' | 'lab';
+      eventType: 'lecture' | 'lab' | 'tutorial' | 'placeholder';
       offeringId?: string;
     },
     unknown,
