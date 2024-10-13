@@ -330,8 +330,8 @@ const MyScheduler: React.FC<MySchedulerProps> = ({
 
   return (
     // <DndProvider backend={HTML5Backend}>
-    <div className="flex h-full flex-grow">
-      <div className="flex-1 flex-grow">
+    <div className="flex h-full flex-grow overflow-auto">
+      <div className="flex-1 flex-grow h-full">
         <Calendar
           localizer={localizer}
           events={allEvents}

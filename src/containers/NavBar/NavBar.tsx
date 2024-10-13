@@ -11,7 +11,7 @@ const NavBar: React.FC<NavBarProps> = () => {
   const Load_ICON_SIZE = 20;
 
   return (
-    <div className="flex justify-between items-center w-full border-b bg-red-700">
+    <div className="flex justify-between items-center w-full border-b bg-red-700 flex-none">
       <div className="flex flex-row p-4 text-white gap-6">
         <div>
           <label className="text-xl font-bold">SFU</label>{' '}

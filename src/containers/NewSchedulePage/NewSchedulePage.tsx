@@ -537,8 +537,8 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
 
   return (
     <DndProvider backend={HTML5Backend}>
-      <div className="flex flex-col items-center w-full h-full md:max-h-[calc(100%-65px)] overflow-hidden">
-        <div className="flex justify-center items-center gap-4 flex-wrap grow p-4">
+      <div className="flex flex-col flex-1 w-full items-center min-h-0 overflow-hidden">
+        <div className="flex justify-center items-center gap-4 flex-wrap p-4 w-full flex-none">
           <Select
             defaultValue={termCode}
             className="w-32"
@@ -594,8 +594,8 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
             Add
           </Button>
         </div>
-        <div className="flex flex-wrap justify-center items-start gap-2 w-full h-full md:max-h-full">
-          <div className="flex flex-col h-full flex-2 grow justify-center md:max-h-full p-5 pt-0 md:p-7 md:pt-0">
+        <div className="flex flex-row flex-1 w-full overflow-hidden justify-center items-start min-h-0 px-6 pb-6 gap-4">
+          <div className="flex flex-col flex-[3] justify-center min-h-0 h-full overflow-hidden gap-2">
             {/* <Calender termCode={termCode} events={appliedSchedule} /> */}
             <MyScheduler
               allCourses={allCourses}
@@ -619,7 +619,7 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
               onRemoteCourseUnschedule={handleRemoteCourseUnschedule}
             />
           </div>
-          <div className="flex flex-col h-full md:max-h-full flex-1 justify-start min-w-96 p-4 pt-0 md:p-7 md:pt-0 gap-6">
+          <div className="flex flex-col flex-[2] min-h-0 overflow-hidden max-h-full gap-4">
             <CourseList
               courses={courses}
               onDragStart={handleDragStart}
@@ -629,7 +629,7 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
               onDeleteCourse={handleDeleteCourseFromList}
               onRemoteCourseUnschedule={handleRemoteCourseUnschedule}
             />
-            <div className="flex flex-col overflow-auto">
+            <div className="flex flex-col flex-1 overflow-y-auto min-h-0">
               {scheduledCourses.length > 0 && (
                 <Collapse
                   bordered={false}
@@ -642,7 +642,7 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
                 />
               )}
               {(getItems(panelStyle)?.length || 0) > 0 && (
-                <div className="flex self-center gap-6 overflow-auto">
+                <div className="flex flex-none self-center gap-6 overflow-auto h-10">
                   <Tooltip title="Save schedule">
                     <CloudUploadOutlined
                       style={{

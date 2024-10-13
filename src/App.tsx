@@ -17,7 +17,7 @@ function App() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <div className="flex flex-col w-full items-center md:h-screen md:max-h-screen overflow-hidden">
+      <div className="flex flex-col w-screen h-screen items-center overflow-hidden">
         <NavBar termCode={termCode} setTermCode={setTermCode} />
         <NewSchedulePage termCode={termCode} setTermCode={setTermCode} />
       </div>

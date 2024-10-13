@@ -42,10 +42,7 @@ const RemoteOfferingsDropzone: React.FC<RemoteOfferingsDropzoneProps> = ({
   }, [draggingCourseId, allCourses]);
 
   return (
-    <div
-      className="flex justify-center items-center flex-col border-2 border-dashed p-4"
-      style={{ minHeight: '150px', width: '100%' }}
-    >
+    <div className="flex justify-center items-center flex-col border-2 border-dashed p-4 w-full">
       {draggingCourseId && currentCourse ? (
         remoteOfferings.length > 0 ? (
           <div className="flex flex-1 flex-wrap gap-4">
@@ -64,9 +61,7 @@ const RemoteOfferingsDropzone: React.FC<RemoteOfferingsDropzoneProps> = ({
           </p>
         )
       ) : (
-        <p className="flex-1">
-          Drag a course here to schedule a remote offering.
-        </p>
+        <p className="flex-1">Remote course offerings will appear here</p>
       )}
       {scheduledRemoteCourses.length > 0 && (
         <div className="flex-1 mt-4">

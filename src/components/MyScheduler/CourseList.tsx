@@ -51,7 +51,7 @@ const CourseList: React.FC<CourseListProps> = ({
   return (
     <div
       ref={drop}
-      className={`w-full h-[198px] border-gray-300 p-4 overflow-y-auto border rounded-md ${backgroundColor} ${
+      className={`flex-none w-full h-[198px] border-gray-300 p-4 overflow-y-auto border rounded-md ${backgroundColor} ${
         isOver ? 'bg-red-100' : ''
       }`}
     >
