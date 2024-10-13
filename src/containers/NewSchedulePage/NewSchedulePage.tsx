@@ -383,7 +383,7 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
         ),
     });
     setLoading(false);
-    console.log(JSON.stringify(PreviewingCourseData));
+    // console.log(JSON.stringify(PreviewingCourseData));
     // const fullCourseName = `${majorNames?.filter(major => majorSelected == major.value)[0].label} ${majorNumbers?.filter(number => number.value == numberSelected)[0].label}`;
     // setAppliedCourses(applied => [...applied, PreviewingCourseData[0]]);
 
