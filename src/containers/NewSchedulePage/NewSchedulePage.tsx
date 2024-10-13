@@ -24,6 +24,7 @@ import { parseTermCode } from '../../utils/parseTermCode';
 import MyScheduler from '../../components/MyScheduler/MyScheduler';
 import { Course } from '../../components/MyScheduler/types';
 import CourseList from '../../components/MyScheduler/CourseList';
+import RemoteOfferingsDropzone from '../../components/MyScheduler/RemoteOfferingsDropzone';
 
 const SAVE_ICON_SIZE = 22;
 const CLOSE_ICON_SIZE = 20;
@@ -85,9 +86,9 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
     content: <></>,
   });
   const [loading, setLoading] = useState(false);
-  const [appliedCourses, setAppliedCourses] = useState<CourseOffering[]>(
-    JSON.parse(sessionStorage.getItem('schedule') || '[]'),
-  );
+  // const [appliedCourses, setAppliedCourses] = useState<CourseOffering[]>(
+  //   JSON.parse(sessionStorage.getItem('schedule') || '[]'),
+  // );
   const [allCourses, setAllCourses] = useState<Course[]>([]);
   const [courses, setCourses] = useState<Course[]>(allCourses);
   const [events, setEvents] = useState<CustomEvent[]>([]);
@@ -103,6 +104,10 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
     null,
   );
   const [isEventDragging, setIsEventDragging] = useState<boolean>(false);
+  // State to keep track of scheduled remote courses
+  const [scheduledRemoteCourses, setScheduledRemoteCourses] = useState<
+    { course: Course; offering: Offering }[]
+  >([]);
 
   // Added to track the previous termCode
   const previousTermCode = useRef(termCode);
@@ -110,7 +115,7 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
   useEffect(() => {
     // Check if termCode has changed
     if (previousTermCode.current !== termCode) {
-      setAppliedCourses([]);
+      // setAppliedCourses([]);
       setMajorSelected(null);
       setNumberSelected(null);
       sessionStorage.removeItem('schedule');
@@ -473,6 +478,61 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
     setTermCode(value);
   };
 
+  // Function to handle remote offering selection
+  const handleRemoteOfferingSelect = (courseId: string, offeringId: string) => {
+    // Remove existing events for this course
+    setEvents(prevEvents => prevEvents.filter(e => e.courseId !== courseId));
+
+    // Remove the course from the course list
+    setCourses(prevCourses => prevCourses.filter(c => c.id !== courseId));
+
+    const course = allCourses.find(c => c.id === courseId);
+    if (!course) return;
+
+    const offering = course.availableOfferings.find(o => o.id === offeringId);
+    if (!offering) return;
+
+    // Create a placeholder event representing the remote offering
+    const newEvent: CustomEvent = {
+      id: `event-${courseId}-remote-${offering.id}`,
+      className: course.className || '',
+      title: `${course.name} (Remote)`,
+      start: new Date(), // Arbitrary date
+      end: new Date(), // Arbitrary date
+      allDay: true,
+      courseId,
+      offeringId,
+      eventType: 'remote',
+    };
+
+    setEvents(prevEvents => [...prevEvents, newEvent]);
+    setScheduledRemoteCourses(prev => [...prev, { course, offering }]);
+    handleDragEnd(); // Reset dragging state
+  };
+
+  // Function to unschedule a remote course
+  const handleRemoteCourseUnschedule = (courseId: string) => {
+    // Remove the course from scheduled remote courses
+    setScheduledRemoteCourses(prev =>
+      prev.filter(item => item.course.id !== courseId),
+    );
+
+    // Remove the event from events
+    setEvents(prevEvents => prevEvents.filter(e => e.courseId !== courseId));
+
+    // Add the course back to the course list
+    const course = allCourses.find(c => c.id === courseId);
+    if (course) {
+      setCourses(prevCourses => {
+        // Prevent duplicates
+        if (!prevCourses.find(c => c.id === courseId)) {
+          return [...prevCourses, course];
+        }
+        return prevCourses;
+      });
+    }
+  };
+
   // console.log(scheduledCourses);
 
   return (
@@ -535,7 +595,7 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
           </Button>
         </div>
         <div className="flex flex-wrap justify-center items-start gap-2 w-full h-full md:max-h-full">
-          <div className="flex h-full flex-1 grow justify-center md:max-h-full p-5 md:p-7">
+          <div className="flex flex-col h-full flex-2 grow justify-center md:max-h-full p-5 pt-0 md:p-7 md:pt-0">
             {/* <Calender termCode={termCode} events={appliedSchedule} /> */}
             <MyScheduler
               allCourses={allCourses}
@@ -551,8 +611,15 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
               onPlaceholderHover={setHoveredOfferingId} // Pass the setter function
               hoveredOfferingId={hoveredOfferingId}
             />
+            <RemoteOfferingsDropzone
+              allCourses={allCourses}
+              draggingCourseId={draggingCourseId}
+              onRemoteOfferingSelect={handleRemoteOfferingSelect}
+              scheduledRemoteCourses={scheduledRemoteCourses}
+              onRemoteCourseUnschedule={handleRemoteCourseUnschedule}
+            />
           </div>
-          <div className="flex flex-col h-full md:max-h-full flex-1 justify-start min-w-96 p-4 md:p-7 gap-6">
+          <div className="flex flex-col h-full md:max-h-full flex-1 justify-start min-w-96 p-4 pt-0 md:p-7 md:pt-0 gap-6">
             <CourseList
               courses={courses}
               onDragStart={handleDragStart}
@@ -560,6 +627,7 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
               onRemoveCourse={handleRemoveCourse}
               isEventDragging={isEventDragging}
               onDeleteCourse={handleDeleteCourseFromList}
+              onRemoteCourseUnschedule={handleRemoteCourseUnschedule}
             />
             <div className="flex flex-col overflow-auto">
               {scheduledCourses.length > 0 && (

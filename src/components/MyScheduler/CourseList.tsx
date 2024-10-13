@@ -13,6 +13,7 @@ interface CourseListProps {
   onRemoveCourse: (courseId: string) => void;
   isEventDragging: boolean;
   onDeleteCourse: (courseId: string, courseKey: string) => void;
+  onRemoteCourseUnschedule: (courseId: string) => void;
 }
 
 const CourseList: React.FC<CourseListProps> = ({
@@ -22,15 +23,20 @@ const CourseList: React.FC<CourseListProps> = ({
   onRemoveCourse,
   isEventDragging,
   onDeleteCourse,
+  onRemoteCourseUnschedule,
 }) => {
   const [{ isOver }, drop] = useDrop<
-    { courseId: string; eventId?: string },
+    { courseId: string; eventId?: string; type: string },
     void,
     { isOver: boolean }
   >({
-    accept: 'SCHEDULED_COURSE',
+    accept: ['SCHEDULED_COURSE', 'SCHEDULED_REMOTE_COURSE'],
     drop: item => {
-      onRemoveCourse(item.courseId);
+      if (item.type === 'SCHEDULED_COURSE') {
+        onRemoveCourse(item.courseId);
+      } else if (item.type === 'SCHEDULED_REMOTE_COURSE') {
+        onRemoteCourseUnschedule(item.courseId);
+      }
     },
     collect: monitor => ({
       isOver: !!monitor.isOver(),

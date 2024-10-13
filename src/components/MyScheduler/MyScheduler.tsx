@@ -330,8 +330,8 @@ const MyScheduler: React.FC<MySchedulerProps> = ({
 
   return (
     // <DndProvider backend={HTML5Backend}>
-    <div className="flex h-screen">
-      <div className="flex-1">
+    <div className="flex h-full flex-grow">
+      <div className="flex-1 flex-grow">
         <Calendar
           localizer={localizer}
           events={allEvents}
@@ -342,7 +342,7 @@ const MyScheduler: React.FC<MySchedulerProps> = ({
           timeslots={1}
           min={new Date(1970, 1, 1, 7, 0, 0)} // 8 AM
           max={new Date(1970, 1, 1, 19, 0, 0)} // 6 PM
-          style={{ height: '80%', width: '800px' }}
+          style={{ height: '100%', width: '100%' }}
           components={{
             toolbar: () => <></>,
             event: props => (

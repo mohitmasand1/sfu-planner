@@ -160,6 +160,7 @@ const CalendarEventComponent: React.FC<CalendarEventProps> = ({
       eventId: event.id,
       eventType: event.eventType,
       offeringId: event.offeringId,
+      type: 'SCHEDULED_COURSE',
     },
     collect: monitor => ({
       isDragging: monitor.isDragging(),

@@ -51,5 +51,5 @@ export interface Event extends BigCalendarEvent {
   offeringId?: string;
   labSessionId?: string;
   tutorialSessionId?: string;
-  eventType: 'lecture' | 'lab' | 'tutorial' | 'placeholder';
+  eventType: 'lecture' | 'lab' | 'tutorial' | 'placeholder' | 'remote';
 }
