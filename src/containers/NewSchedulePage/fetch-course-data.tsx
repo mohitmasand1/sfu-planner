@@ -123,6 +123,7 @@ interface Info {
   number: string;
   units: string;
   corequisites: string;
+  path: string;
 }
 
 interface RequiredText {

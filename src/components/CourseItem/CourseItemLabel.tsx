@@ -36,10 +36,12 @@ const CourseItemLabel: React.FC<CourseItemLabelProps> = props => {
       <div className="flex flex-col gap-1 w-full">
         <div className="flex justify-between items-center">
           <label>
-            <b>
-              {course.course.name} {specificData.info.section}
-              {/* {course.specificData.info.name} {course.text} */}
-            </b>
+            <a href={specificData.info.path} target="_blank">
+              <b>
+                {course.course.name} {specificData.info.section}
+                {/* {course.specificData.info.name} {course.text} */}
+              </b>
+            </a>
           </label>
           <label>{professorDisplayName}</label>
         </div>

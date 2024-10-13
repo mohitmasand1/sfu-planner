@@ -120,6 +120,7 @@ def process_course_section_data(data):
             'number': info.get('number', None),
             'units': info.get('units', None),
             'corequisites': info.get('corequisites', None),
+            'path': f"https://www.sfu.ca/outlines.html?{info.get('outlinePath', None)}",
         }
 
     return formatted_data

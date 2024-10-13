@@ -67,6 +67,20 @@ const CourseList: React.FC<CourseListProps> = ({
       minConstraints={[0, 50]}
       maxConstraints={[Infinity, Infinity]}
       onResize={handleResize}
+      handle={
+        <span
+          className="resizable-handle"
+          style={{
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            width: '100%',
+            height: '5px',
+            cursor: 'row-resize',
+            backgroundColor: '#e0e0e0',
+          }}
+        />
+      }
     >
       <div className="relative" style={{ height: courseList1Height }}>
         <div
@@ -88,18 +102,6 @@ const CourseList: React.FC<CourseListProps> = ({
             ))}
           {courses.length == 0 && <Empty description="No courses" />}
         </div>
-        <span
-          className="resizable-handle"
-          style={{
-            position: 'absolute',
-            bottom: 0,
-            left: 0,
-            width: '100%',
-            height: '5px',
-            cursor: 'row-resize',
-            backgroundColor: '#e0e0e0',
-          }}
-        />
       </div>
     </Resizable>
   );

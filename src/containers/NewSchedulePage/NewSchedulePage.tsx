@@ -558,7 +558,7 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
             placeholder="Select major"
             optionFilterProp="children"
             filterOption={(input, option) =>
-              (option?.label ?? '').includes(input)
+              (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
             }
             filterSort={(optionA, optionB) =>
               (optionA?.label ?? '')
@@ -575,7 +575,7 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
             placeholder="Select course number"
             optionFilterProp="children"
             filterOption={(input, option) =>
-              (option?.label ?? '').includes(input)
+              (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
             }
             filterSort={(optionA, optionB) =>
               (optionA?.label ?? '')
