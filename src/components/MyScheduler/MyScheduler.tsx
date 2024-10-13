@@ -34,12 +34,18 @@ interface MySchedulerProps {
   onDragStart: (
     courseId: string,
     eventId?: string,
-    eventType?: 'lecture' | 'lab' | 'tutorial' | 'placeholder',
+    eventType?: 'lecture' | 'lab' | 'tutorial' | 'remote' | 'placeholder',
   ) => void;
   onDragEnd: () => void;
   draggingCourseId: string | null;
   draggingEventId: string | null;
-  draggingEventType: 'lecture' | 'lab' | 'tutorial' | 'placeholder' | null;
+  draggingEventType:
+    | 'lecture'
+    | 'lab'
+    | 'tutorial'
+    | 'remote'
+    | 'placeholder'
+    | null;
   onPlaceholderHover: (offeringId: string | null) => void;
   hoveredOfferingId: string | null;
 }

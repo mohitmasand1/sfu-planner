@@ -37,7 +37,7 @@ const CourseItemLabel: React.FC<CourseItemLabelProps> = props => {
         <div className="flex justify-between items-center">
           <label>
             <b>
-              {course.course.name}
+              {course.course.name} {specificData.info.section}
               {/* {course.specificData.info.name} {course.text} */}
             </b>
           </label>

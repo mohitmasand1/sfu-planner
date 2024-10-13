@@ -40,6 +40,13 @@ const CourseItem: React.FC<CourseItemProps> = ({
     }
   }, [isDragging, course.id, onDragStart]);
 
+  const numOfRemoteOptions = course.availableOfferings.filter(
+    off => off.lectures.length === 0,
+  ).length;
+
+  const numOfInPersonOptions =
+    course.availableOfferings.length - numOfRemoteOptions;
+
   return (
     <Card
       ref={drag}
@@ -64,12 +71,12 @@ const CourseItem: React.FC<CourseItemProps> = ({
         <Space direction="horizontal">
           <Text strong>{course.name}</Text>
           <Text type="secondary">
-            | {course.availableOfferings.length} in-person option
-            {course.availableOfferings.length > 1 ? 's' : ''},
+            | {numOfInPersonOptions} in-person option
+            {numOfInPersonOptions > 1 ? 's' : ''},
           </Text>
           <Text type="secondary">
-            {course.availableOfferings.length} remote option
-            {course.availableOfferings.length > 1 ? 's' : ''}
+            {numOfRemoteOptions} remote option
+            {numOfRemoteOptions > 1 ? 's' : ''}
           </Text>
         </Space>
         <DeleteOutlined

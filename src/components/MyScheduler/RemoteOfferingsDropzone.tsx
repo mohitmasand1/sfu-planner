@@ -10,6 +10,12 @@ interface RemoteOfferingsDropzoneProps {
   onRemoteOfferingSelect: (courseId: string, offeringId: string) => void;
   scheduledRemoteCourses: { course: Course; offering: Offering }[];
   onRemoteCourseUnschedule: (courseId: string) => void;
+  onDragStart: (
+    courseId: string,
+    eventId?: string,
+    eventType?: 'remote',
+  ) => void;
+  onDragEnd: () => void;
 }
 
 const RemoteOfferingsDropzone: React.FC<RemoteOfferingsDropzoneProps> = ({
@@ -18,6 +24,8 @@ const RemoteOfferingsDropzone: React.FC<RemoteOfferingsDropzoneProps> = ({
   onRemoteOfferingSelect,
   scheduledRemoteCourses,
   onRemoteCourseUnschedule,
+  onDragStart,
+  onDragEnd,
 }) => {
   const [remoteOfferings, setRemoteOfferings] = useState<Offering[]>([]);
   const [currentCourse, setCurrentCourse] = useState<Course | null>(null);
@@ -72,6 +80,8 @@ const RemoteOfferingsDropzone: React.FC<RemoteOfferingsDropzoneProps> = ({
                 course={course}
                 offering={offering}
                 onRemoteCourseUnschedule={onRemoteCourseUnschedule}
+                onDragStart={onDragStart}
+                onDragEnd={onDragEnd}
               />
             ))}
           </div>
@@ -125,12 +135,20 @@ interface ScheduledRemoteCourseItemProps {
   course: Course;
   offering: Offering;
   onRemoteCourseUnschedule: (courseId: string) => void;
+  onDragStart: (
+    courseId: string,
+    eventId?: string,
+    eventType?: 'remote',
+  ) => void;
+  onDragEnd: () => void;
 }
 
 const ScheduledRemoteCourseItem: React.FC<ScheduledRemoteCourseItemProps> = ({
   course,
   offering,
   onRemoteCourseUnschedule,
+  onDragStart,
+  onDragEnd,
 }) => {
   const [{ isDragging }, drag] = useDrag({
     type: 'SCHEDULED_REMOTE_COURSE',
@@ -140,15 +158,23 @@ const ScheduledRemoteCourseItem: React.FC<ScheduledRemoteCourseItemProps> = ({
     }),
   });
 
+  useEffect(() => {
+    if (isDragging) {
+      onDragStart(course.id, undefined, 'remote');
+    } else {
+      onDragEnd();
+    }
+  }, [isDragging, course.id, onDragStart, onDragEnd]);
+
   return (
     <div
       ref={drag}
       className={`border p-2 cursor-pointer ${
         isDragging ? 'opacity-50' : 'opacity-100'
-      }`}
+      } ${course.className}`}
       style={{ minWidth: '150px', textAlign: 'center' }}
     >
-      {course.name} (Remote)
+      {course.name} {offering.specificData.info.section}
     </div>
   );
 };

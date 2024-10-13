@@ -98,7 +98,7 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
   const [draggingCourseId, setDraggingCourseId] = useState<string | null>(null);
   const [draggingEventId, setDraggingEventId] = useState<string | null>(null);
   const [draggingEventType, setDraggingEventType] = useState<
-    'lecture' | 'lab' | 'tutorial' | 'placeholder' | null
+    'lecture' | 'lab' | 'tutorial' | 'remote' | 'placeholder' | null
   >(null);
   const [hoveredOfferingId, setHoveredOfferingId] = useState<string | null>(
     null,
@@ -181,7 +181,7 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
   const handleDragStart = (
     courseId: string,
     eventId?: string,
-    eventType?: 'lecture' | 'lab' | 'tutorial' | 'placeholder',
+    eventType?: 'lecture' | 'lab' | 'tutorial' | 'remote' | 'placeholder',
   ) => {
     setDraggingCourseId(courseId);
     if (eventId) {
@@ -266,6 +266,10 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
     setEvents(prevEvents => prevEvents.filter(e => e.courseId !== courseId));
     // Remove the course from unscheduled courses
     setCourses(prevCourses => prevCourses.filter(c => c.id !== courseId));
+    // Remove the course from remote courses, incase it was a remote course
+    setScheduledRemoteCourses(prevRemotes =>
+      prevRemotes.filter(c => c.course.id !== courseId),
+    );
     // Reset dragging state if necessary
     if (draggingCourseId === courseId) {
       handleDragEnd();
@@ -617,6 +621,8 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
               onRemoteOfferingSelect={handleRemoteOfferingSelect}
               scheduledRemoteCourses={scheduledRemoteCourses}
               onRemoteCourseUnschedule={handleRemoteCourseUnschedule}
+              onDragStart={handleDragStart}
+              onDragEnd={handleDragEnd}
             />
           </div>
           <div className="flex flex-col flex-[2] min-h-0 overflow-hidden max-h-full gap-4">

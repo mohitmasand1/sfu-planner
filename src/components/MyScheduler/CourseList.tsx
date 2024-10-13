@@ -1,10 +1,12 @@
 // src/components/CourseList.tsx
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useDrop } from 'react-dnd';
 import CourseItem from './CoureItem';
 import { Course } from './types';
 import { Empty } from 'antd';
+import { Resizable, ResizeCallbackData } from 'react-resizable';
+import 'react-resizable/css/styles.css';
 
 interface CourseListProps {
   courses: Course[];
@@ -25,6 +27,15 @@ const CourseList: React.FC<CourseListProps> = ({
   onDeleteCourse,
   onRemoteCourseUnschedule,
 }) => {
+  const [courseList1Height, setCourseList1Height] = useState<number>(198); // Initial height in pixels
+
+  const handleResize = (
+    event: React.SyntheticEvent<Element>,
+    data: ResizeCallbackData,
+  ) => {
+    setCourseList1Height(data.size.height);
+  };
+
   const [{ isOver }, drop] = useDrop<
     { courseId: string; eventId?: string; type: string },
     void,
@@ -49,24 +60,48 @@ const CourseList: React.FC<CourseListProps> = ({
   }
 
   return (
-    <div
-      ref={drop}
-      className={`flex-none w-full h-[198px] border-gray-300 p-4 overflow-y-auto border rounded-md ${backgroundColor} ${
-        isOver ? 'bg-red-100' : ''
-      }`}
+    <Resizable
+      height={courseList1Height}
+      width={0}
+      axis="y"
+      minConstraints={[0, 50]}
+      maxConstraints={[Infinity, Infinity]}
+      onResize={handleResize}
     >
-      {courses.length > 0 &&
-        courses.map(course => (
-          <CourseItem
-            key={course.id}
-            course={course}
-            onDragStart={onDragStart}
-            onDragEnd={onDragEnd}
-            onDeleteCourse={onDeleteCourse}
-          />
-        ))}
-      {courses.length == 0 && <Empty description="No courses" />}
-    </div>
+      <div className="relative" style={{ height: courseList1Height }}>
+        <div
+          ref={drop}
+          className={`flex-none justify-center items-center w-full border-gray-300 p-4 overflow-y-auto border rounded-md ${backgroundColor} ${
+            isOver ? 'bg-red-100' : ''
+          }`}
+          style={{ height: 'calc(100% - 5px)' }}
+        >
+          {courses.length > 0 &&
+            courses.map(course => (
+              <CourseItem
+                key={course.id}
+                course={course}
+                onDragStart={onDragStart}
+                onDragEnd={onDragEnd}
+                onDeleteCourse={onDeleteCourse}
+              />
+            ))}
+          {courses.length == 0 && <Empty description="No courses" />}
+        </div>
+        <span
+          className="resizable-handle"
+          style={{
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            width: '100%',
+            height: '5px',
+            cursor: 'row-resize',
+            backgroundColor: '#e0e0e0',
+          }}
+        />
+      </div>
+    </Resizable>
   );
 };
 
