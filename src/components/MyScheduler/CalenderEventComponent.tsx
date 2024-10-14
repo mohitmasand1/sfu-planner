@@ -21,7 +21,7 @@ interface CalendarEventProps {
   onDragStart: (
     courseId: string,
     eventId?: string,
-    eventType?: 'lecture' | 'lab' | 'tutorial' | 'placeholder',
+    eventType?: 'lecture' | 'lab' | 'tutorial' | 'remote' | 'placeholder',
   ) => void;
   onDragEnd: () => void;
   onPlaceholderHover: (offeringId: string | null) => void;
@@ -148,8 +148,9 @@ const CalendarEventComponent: React.FC<CalendarEventProps> = ({
     {
       courseId: string;
       eventId: string;
-      eventType: 'lecture' | 'lab' | 'tutorial' | 'placeholder';
+      eventType: 'lecture' | 'lab' | 'tutorial' | 'remote' | 'placeholder';
       offeringId?: string;
+      type: string;
     },
     unknown,
     { isDragging: boolean }

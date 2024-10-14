@@ -3,7 +3,6 @@
 import React, { useState } from 'react';
 import { useDrop } from 'react-dnd';
 import CourseItem from './CoureItem';
-import { Course } from './types';
 import { Empty } from 'antd';
 import { Resizable, ResizeCallbackData } from 'react-resizable';
 import 'react-resizable/css/styles.css';

@@ -1,21 +1,13 @@
 import React from 'react';
-import {
-  CourseGrade,
-  fetchAverageCourseGrade,
-  fetchRateMyProfRating,
-  ProfRating,
-} from '../../containers/NewSchedulePage/fetch-course-data';
+import { CourseGrade, ProfRating } from './types';
+import { fetchAverageCourseGrade, fetchRateMyProfRating } from './http';
 import { useQuery } from '@tanstack/react-query';
 import { Statistic } from 'antd';
 import { LinkOutlined } from '@ant-design/icons';
 import { convertToIsbn13 } from './isbn-converter';
-import type {
-  Course as CustomCourse,
-  Offering,
-} from '../../components/MyScheduler/types';
 
 interface CourseItemContentProps {
-  course: { course: CustomCourse; offering: Offering };
+  course: { course: Course; offering: Offering };
 }
 
 const CourseItemContent: React.FC<CourseItemContentProps> = props => {

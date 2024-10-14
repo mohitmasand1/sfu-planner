@@ -1,6 +1,5 @@
 import React, { useEffect } from 'react';
 import { useDrag } from 'react-dnd';
-import { Course } from './types';
 import { DeleteOutlined } from '@ant-design/icons';
 import { Card, Typography, Space } from 'antd';
 

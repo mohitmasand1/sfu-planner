@@ -3,18 +3,10 @@ import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { Button, Collapse, Select, theme, Modal, Tooltip, message } from 'antd';
 import type { CollapseProps, ModalProps, PopconfirmProps } from 'antd';
-import type {
-  Event as CustomEvent,
-  Course as CustomCourse,
-  Offering,
-} from '../../components/MyScheduler/types';
+import type { Event as CustomEvent } from '../../components/MyScheduler/types';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import {
-  fetchMajorCourses,
-  fetchMajors,
-  fetchCourseOfferings,
-  CourseOffering,
-} from './fetch-course-data';
+import { fetchMajorCourses, fetchMajors, fetchCourseOfferings } from './http';
+import { CourseOffering, modalData, Option } from './types';
 import { CloudUploadOutlined, CloseOutlined } from '@ant-design/icons';
 import SaveInstancePage from '../SaveInstanceModal/SaveInstancePage';
 import LoadingOverlay from '../../components/Loading/LoadingOverlay';
@@ -22,7 +14,6 @@ import CourseItemLabel from '../../components/CourseItem/CourseItemLabel';
 import CourseItemContent from '../../components/CourseItem/CourseItemContent';
 import { parseTermCode } from '../../utils/parseTermCode';
 import MyScheduler from '../../components/MyScheduler/MyScheduler';
-import { Course } from '../../components/MyScheduler/types';
 import CourseList from '../../components/MyScheduler/CourseList';
 import RemoteOfferingsDropzone from '../../components/MyScheduler/RemoteOfferingsDropzone';
 
@@ -40,24 +31,7 @@ const colors = [
   'bg-selection-8',
 ];
 
-export interface Option {
-  value: string;
-  label: string;
-}
-
-interface modalData {
-  title: string;
-  content: React.ReactNode;
-  modalProps?: ModalProps;
-}
-
-export interface SelectedCourseKey {
-  key: string;
-  lab: string;
-  tut: string;
-}
-
-interface NewSchedulePageProps {
+export interface NewSchedulePageProps {
   setTermCode: React.Dispatch<React.SetStateAction<string>>;
   termCode: string;
 }
@@ -93,7 +67,7 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
   const [courses, setCourses] = useState<Course[]>(allCourses);
   const [events, setEvents] = useState<CustomEvent[]>([]);
   const [scheduledCourses, setScheduledCourses] = useState<
-    { course: CustomCourse; offering: Offering }[]
+    { course: Course; offering: Offering }[]
   >([]);
   const [draggingCourseId, setDraggingCourseId] = useState<string | null>(null);
   const [draggingEventId, setDraggingEventId] = useState<string | null>(null);

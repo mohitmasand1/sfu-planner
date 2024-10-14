@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { useDrop, useDrag } from 'react-dnd';
-import { Course, Offering } from './types';
 
 interface RemoteOfferingsDropzoneProps {
   allCourses: Course[];

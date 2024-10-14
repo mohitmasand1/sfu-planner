@@ -1,8 +1,4 @@
 import React from 'react';
-import type {
-  Course as CustomCourse,
-  Offering,
-} from '../../components/MyScheduler/types';
 import { Popconfirm } from 'antd';
 import { DeleteOutlined } from '@ant-design/icons';
 
@@ -16,7 +12,7 @@ const deleteIconStyle: React.CSSProperties = {
 };
 
 interface CourseItemLabelProps {
-  course: { course: CustomCourse; offering: Offering };
+  course: { course: Course; offering: Offering };
   cancel?: (e?: React.MouseEvent<HTMLElement>) => void;
   showConfirm: (event: React.MouseEvent<HTMLSpanElement>) => void;
   confirm: (courseKey: string, courseId: string) => () => void;
