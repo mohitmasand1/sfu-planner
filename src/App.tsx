@@ -7,7 +7,7 @@ function App() {
   const queryClient = new QueryClient();
   const [termCode, setTermCode] = useState<string>(() => {
     const savedData = localStorage.getItem('term');
-    return savedData ? JSON.parse(savedData) : '1247';
+    return savedData ? JSON.parse(savedData) : '1251';
   });
 
   useEffect(() => {

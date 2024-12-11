@@ -19,12 +19,12 @@ const CourseItem: React.FC<CourseItemProps> = ({
   onDeleteCourse,
 }) => {
   const [{ isDragging }, drag] = useDrag<
-    { courseId: string },
+    { courseId: string; type: string },
     unknown,
     { isDragging: boolean }
   >({
     type: 'COURSE',
-    item: { courseId: course.id },
+    item: { courseId: course.id, type: 'COURSE' },
     collect: monitor => ({
       isDragging: monitor.isDragging(),
     }),

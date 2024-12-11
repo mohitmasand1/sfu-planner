@@ -109,6 +109,7 @@ const MyScheduler: React.FC<MySchedulerProps> = ({
           id: `event-${courseId}-${lecture.id}`,
           className: course?.className || '',
           title: `${course!.name} Lecture`,
+          section: offering.specificData.info.section,
           start,
           end,
           courseId,
@@ -128,6 +129,7 @@ const MyScheduler: React.FC<MySchedulerProps> = ({
         id: `event-${courseId}-lab-${lab.id}`,
         className: course?.className || '',
         title: `${course!.name} Lab`,
+        section: lab.section,
         start,
         end,
         courseId,
@@ -146,6 +148,7 @@ const MyScheduler: React.FC<MySchedulerProps> = ({
         id: `event-${courseId}-tutorial-${tutorial.id}`,
         className: course?.className || '',
         title: `${course.name} Tutorial`,
+        section: tutorial.section,
         start,
         end,
         courseId,
@@ -187,6 +190,7 @@ const MyScheduler: React.FC<MySchedulerProps> = ({
         className: course?.className || '',
         id: `event-${courseId}-lab-${lab.id}`,
         title: `${course!.name} Lab`,
+        section: lab.section,
         start,
         end,
         courseId,
@@ -231,6 +235,7 @@ const MyScheduler: React.FC<MySchedulerProps> = ({
         className: course?.className || '',
         id: `event-${courseId}-tutorial-${tutorial.id}`,
         title: `${course!.name} Tutorial`,
+        section: tutorial.section,
         start,
         end,
         courseId,
@@ -246,6 +251,7 @@ const MyScheduler: React.FC<MySchedulerProps> = ({
   };
 
   // Generate placeholder events when dragging
+
   const placeholderEvents: Event[] = [];
   if (draggingCourseId) {
     const course = allCourses.find(c => c.id === draggingCourseId);
@@ -267,7 +273,8 @@ const MyScheduler: React.FC<MySchedulerProps> = ({
 
         placeholderEvents.push({
           id: `placeholder-lab-${offeringId}-${lab.id}`,
-          title: `Lab Option`,
+          title: `${course!.name} Lab`,
+          section: lab.section,
           start,
           end,
           courseId: course!.id,
@@ -293,7 +300,8 @@ const MyScheduler: React.FC<MySchedulerProps> = ({
 
         placeholderEvents.push({
           id: `placeholder-tutorial-${offeringId}-${tutorial.id}`,
-          title: `Tutorial Option`,
+          title: `${course!.name} Tutorial`,
+          section: tutorial.section,
           start,
           end,
           courseId: course!.id,
@@ -307,9 +315,9 @@ const MyScheduler: React.FC<MySchedulerProps> = ({
       // Dragging a course or lecture event to switch offerings
       course?.availableOfferings.forEach(offering => {
         // Exclude current offering
-        const currentOfferingId = events.find(
-          e => e.courseId === draggingCourseId,
-        )?.offeringId;
+        const currentOfferingId = events
+          .filter(e => e.eventType !== 'remote')
+          .find(e => e.courseId === draggingCourseId)?.offeringId;
         if (currentOfferingId === offering.id) return;
 
         // Create placeholders for lectures
@@ -319,7 +327,8 @@ const MyScheduler: React.FC<MySchedulerProps> = ({
 
           placeholderEvents.push({
             id: `placeholder-${offering.id}-${lecture.id}`,
-            title: `D${offering.id}00`,
+            title: `${course.name}`,
+            section: offering.specificData.info.section,
             start,
             end,
             courseId: course!.id,
@@ -333,6 +342,9 @@ const MyScheduler: React.FC<MySchedulerProps> = ({
   }
 
   const allEvents = [...events, ...placeholderEvents];
+  const calendarEvents = allEvents.filter(
+    event => event.eventType !== 'remote',
+  );
 
   return (
     // <DndProvider backend={HTML5Backend}>
@@ -340,7 +352,7 @@ const MyScheduler: React.FC<MySchedulerProps> = ({
       <div className="flex-1 flex-grow h-full">
         <Calendar
           localizer={localizer}
-          events={allEvents}
+          events={calendarEvents}
           defaultView="work_week"
           views={['work_week']}
           step={60}

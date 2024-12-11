@@ -130,10 +130,52 @@ def process_lab_tut_section_data(data):
     formatted_data['lectures'] = []
     schedule = data.get('courseSchedule', [])
     events = create_events(schedule)
-    print(events)
+    section = data.get('info', {}).get('section', '')
+
+    # Add 'section' field to each event
+    for event in events:
+        event['section'] = section
     formatted_data = events
 
     return formatted_data
+
+def remove_duplicates(events):
+    unique_events = {}
+    
+    for event in events:
+        day = int(event['day'])
+    
+        start_time_str = event['startTime'].strip()
+        end_time_str = event['endTime'].strip()
+    
+        # Parse the times into datetime objects
+        start_time_dt = datetime.datetime.fromisoformat(start_time_str)
+        end_time_dt = datetime.datetime.fromisoformat(end_time_str)
+    
+        # Extract hour and minute components
+        start_hour = start_time_dt.hour
+        start_minute = start_time_dt.minute
+        end_hour = end_time_dt.hour
+        end_minute = end_time_dt.minute
+    
+        # Create key using day, start hour and minute, end hour and minute
+        key = (day, start_hour, start_minute, end_hour, end_minute)
+    
+        if key not in unique_events:
+            # Initialize 'sections' as a list with the current section
+            event['sections'] = [event.get('section')]
+            # Update 'section' field to include the current section code
+            event['section'] = event.get('section')
+            unique_events[key] = event
+        else:
+            # Duplicate found; append the 'section' to the existing event's 'sections' list
+            existing_event = unique_events[key]
+            existing_event['sections'].append(event.get('section'))
+            # Update 'section' field to include all section codes
+            existing_event['section'] = '/'.join(existing_event['sections'])
+    
+    # Return the list of unique events
+    return list(unique_events.values())
 
 # days_mapping = {
 #     'Mo': 0,  # Monday
@@ -274,19 +316,25 @@ def process_course_number_and_section_data(course_number_data, year, term, major
         cls['lectures'] = events
         cls['specificData'] = specific_data
 
-        for i, lab in enumerate(cls.get('labs', [])):
+        # Collect all lab events
+        all_lab_events = []
+        for lab in cls.get('labs', []):
             lab_section = lab
             lab_section_data = fetch_data_from_api(f"{SFU_API_BASE_URL}{year}/{term}/{major}/{course_number}/{lab_section}")
-            lab_specific_data = process_lab_tut_section_data(lab_section_data)
-            # Replace the lab with lab_specific_data
-            cls['labs'][i] = lab_specific_data
-        cls['labs'] = [item for sublist in cls['labs'] for item in sublist]
+            lab_events = process_lab_tut_section_data(lab_section_data)
+            all_lab_events.extend(lab_events)
+        # Remove duplicates across all lab events
+        cls['labs'] = remove_duplicates(all_lab_events)
 
-        for i, tut in enumerate(cls.get('tutorials', [])):
+        # Collect all tutorial events
+        all_tut_events = []
+        for tut in cls.get('tutorials', []):
             tut_section = tut
             tut_section_data = fetch_data_from_api(f"{SFU_API_BASE_URL}{year}/{term}/{major}/{course_number}/{tut_section}")
-            tut_specific_data = process_lab_tut_section_data(tut_section_data)
-            cls['tutorials'][i] = tut_specific_data
-        cls['tutorials'] = [item for sublist in cls['tutorials'] for item in sublist]
+            tut_events = process_lab_tut_section_data(tut_section_data)
+            all_tut_events.extend(tut_events)
+        # Remove duplicates across all tutorial events
+        cls['tutorials'] = remove_duplicates(all_tut_events)
 
+    print(nested_classes)
     return nested_classes

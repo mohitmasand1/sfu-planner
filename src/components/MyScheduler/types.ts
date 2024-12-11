@@ -5,12 +5,14 @@ export interface TutorialSession {
   day: number;
   startTime: Date;
   endTime: Date;
+  section: string;
 }
 
 export interface Event extends BigCalendarEvent {
   className?: string;
   id: string;
   title: string;
+  section: string;
   start: Date;
   end: Date;
   courseId: string;

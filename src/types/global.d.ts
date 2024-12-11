@@ -36,5 +36,6 @@ declare global {
         day: number;
         startTime: Date;
         endTime: Date;
+        section: string;
     }
 }

@@ -164,11 +164,14 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
       setIsEventDragging(true); // Set isEventDragging to true
     } else {
       // A course is being dragged from the course list
+      setDraggingEventId(null);
+      setDraggingEventType(null);
       setIsEventDragging(false); // Ensure isEventDragging is false
     }
   };
 
   const handleDragEnd = () => {
+    console.log('handleDragEnd called');
     setDraggingCourseId(null);
     setDraggingEventId(null);
     setDraggingEventType(null);
@@ -322,6 +325,7 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
         day: lab.day,
         startTime: new Date(lab.startTime),
         endTime: new Date(lab.endTime),
+        section: lab.section,
       }));
 
       const tutorials = offering.tutorials.map(tut => ({
@@ -329,6 +333,7 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
         day: tut.day,
         startTime: new Date(tut.startTime),
         endTime: new Date(tut.endTime),
+        section: tut.section,
       }));
 
       return {
@@ -475,6 +480,7 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
       id: `event-${courseId}-remote-${offering.id}`,
       className: course.className || '',
       title: `${course.name} (Remote)`,
+      section: offering.specificData.info.section,
       start: new Date(), // Arbitrary date
       end: new Date(), // Arbitrary date
       allDay: true,
@@ -490,6 +496,7 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
 
   // Function to unschedule a remote course
   const handleRemoteCourseUnschedule = (courseId: string) => {
+    setDraggingCourseId(null);
     // Remove the course from scheduled remote courses
     setScheduledRemoteCourses(prev =>
       prev.filter(item => item.course.id !== courseId),
@@ -522,8 +529,8 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
             className="w-32"
             onChange={handleSemesterChange}
             options={[
-              { value: '1247', label: 'Fall 2024' },
               { value: '1251', label: 'Spring 2025' },
+              { value: '1254', label: 'Summer 2025' },
             ]}
           />
           <Select

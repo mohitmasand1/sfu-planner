@@ -45,13 +45,16 @@ const CalendarEventComponent: React.FC<CalendarEventProps> = ({
         offeringId?: string;
         courseId: string;
         eventId?: string;
-        eventType?: 'lecture' | 'lab' | 'tutorial' | 'placeholder';
+        eventType?: 'lecture' | 'lab' | 'tutorial' | 'remote' | 'placeholder';
       },
       void,
       { isOver: boolean }
     >({
       accept: ['COURSE', 'SCHEDULED_COURSE'],
       canDrop: item => {
+        // console.log('canDrop called with item:', item, 'event:', event);
+        if (!item) return false;
+
         if (event.labSessionId) {
           // Lab placeholder
           return (
@@ -96,6 +99,12 @@ const CalendarEventComponent: React.FC<CalendarEventProps> = ({
     });
 
     useEffect(() => {
+      console.log('isOver: ' + isOver);
+      console.log('hoveredOfferingId: ' + hoveredOfferingId);
+      // console.log('eventType: ' + event.eventType)
+      // console.log('offeringID: ' + event.offeringId)
+      // console.log('labId: ' + event.labSessionId)
+      // console.log('labId: ' + event.tutorialSessionId)
       if (
         event.eventType === 'placeholder' &&
         !event.labSessionId &&
@@ -132,13 +141,14 @@ const CalendarEventComponent: React.FC<CalendarEventProps> = ({
     return (
       <div
         ref={drop}
-        className={`h-full w-full border-2 border-dashed ${
+        className={`flex flex-col justify-center h-full w-full border-2 border-dashed ${
           isHighlighted
             ? 'border-green-500 bg-green-100'
             : 'border-gray-400 bg-gray-200'
         }`}
       >
-        <div className="text-center text-gray-700">{title}</div>
+        <label className="text-center text-gray-700">{title}</label>
+        <label className="text-center text-gray-700">{event.section}</label>
       </div>
     );
   }
@@ -172,6 +182,7 @@ const CalendarEventComponent: React.FC<CalendarEventProps> = ({
   });
 
   useEffect(() => {
+    console.log('isDragging:', isDragging);
     if (isDragging) {
       onDragStart(event.courseId, event.id, event.eventType);
     }
@@ -186,7 +197,8 @@ const CalendarEventComponent: React.FC<CalendarEventProps> = ({
         isDragging ? 'opacity-50' : ''
       }`}
     >
-      {title}
+      <label>{title}</label>
+      <label>{event.section}</label>
     </div>
   );
 };

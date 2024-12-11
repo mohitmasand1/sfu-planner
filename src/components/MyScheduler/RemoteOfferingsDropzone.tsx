@@ -106,7 +106,7 @@ const RemoteOfferingItem: React.FC<RemoteOfferingItemProps> = ({
     void,
     { isOver: boolean }
   >({
-    accept: 'COURSE',
+    accept: ['COURSE', 'SCHEDULED_COURSE', 'SCHEDULED_REMOTE_COURSE'],
     drop: item => {
       if (item.courseId === course.id) {
         onRemoteOfferingSelect(course.id, offering.id);
@@ -158,6 +158,7 @@ const ScheduledRemoteCourseItem: React.FC<ScheduledRemoteCourseItemProps> = ({
   });
 
   useEffect(() => {
+    // console.log(`isDragging: ${isDragging}, courseId: ${course.id}`);
     if (isDragging) {
       onDragStart(course.id, undefined, 'remote');
     } else {
