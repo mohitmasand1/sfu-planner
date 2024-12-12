@@ -74,3 +74,8 @@ export interface RequiredText {
   details: string;
   isbn?: string;
 }
+
+export interface SemesterData {
+  value: string;
+  label: string;
+}

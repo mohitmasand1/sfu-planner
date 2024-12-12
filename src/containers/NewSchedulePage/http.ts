@@ -1,5 +1,5 @@
 import { convertToTermCode } from './termcode-converter';
-import { Option, Major, CourseNumber, CourseOffering } from './types'
+import { Option, Major, CourseNumber, CourseOffering, SemesterData } from './types'
 
 export async function fetchMajors(
     year: string,
@@ -72,3 +72,11 @@ export async function fetchMajors(
     const data: CourseSection = await response.json();
     return data;
   }
+
+  export const fetchSemesters = async (): Promise<SemesterData[]> => {
+    const response = await fetch('http://localhost:5000/api/terms/terms'); // Adjust URL if hosted differently
+    if (!response.ok) {
+      throw new Error(`Error fetching semesters: ${response.statusText}`);
+    }
+    return await response.json();
+  };

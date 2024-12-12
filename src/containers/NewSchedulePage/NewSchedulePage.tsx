@@ -6,7 +6,7 @@ import type { CollapseProps, ModalProps, PopconfirmProps } from 'antd';
 import type { Event as CustomEvent } from '../../components/MyScheduler/types';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { fetchMajorCourses, fetchMajors, fetchCourseOfferings } from './http';
-import { CourseOffering, modalData, Option } from './types';
+import { CourseOffering, modalData, Option, SemesterData } from './types';
 import { CloudUploadOutlined, CloseOutlined } from '@ant-design/icons';
 import SaveInstancePage from '../SaveInstanceModal/SaveInstancePage';
 import LoadingOverlay from '../../components/Loading/LoadingOverlay';
@@ -34,10 +34,11 @@ const colors = [
 export interface NewSchedulePageProps {
   setTermCode: React.Dispatch<React.SetStateAction<string>>;
   termCode: string;
+  semesters?: SemesterData[];
 }
 
 const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
-  const { termCode, setTermCode } = props;
+  const { termCode, setTermCode, semesters } = props;
   // const { termCode } = useOutletContext<SharedContext>();
   const term = parseTermCode(termCode);
 
@@ -520,6 +521,9 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
 
   // console.log(scheduledCourses);
 
+  const semesterOptions =
+    semesters?.map(sem => ({ value: sem.value, label: sem.label })) || [];
+
   return (
     <DndProvider backend={HTML5Backend}>
       <div className="flex flex-col flex-1 w-full items-center min-h-0 overflow-hidden">
@@ -528,10 +532,7 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
             defaultValue={termCode}
             className="w-32"
             onChange={handleSemesterChange}
-            options={[
-              { value: '1251', label: 'Spring 2025' },
-              { value: '1254', label: 'Summer 2025' },
-            ]}
+            options={semesterOptions}
           />
           <Select
             showSearch

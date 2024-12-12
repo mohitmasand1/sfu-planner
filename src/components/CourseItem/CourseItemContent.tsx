@@ -24,6 +24,7 @@ const CourseItemContent: React.FC<CourseItemContentProps> = props => {
     {
       queryKey: [professorDisplayName],
       queryFn: () => fetchRateMyProfRating(professorDisplayName),
+      enabled: professorDisplayName !== '',
     },
   );
 
@@ -33,7 +34,7 @@ const CourseItemContent: React.FC<CourseItemContentProps> = props => {
       queryFn: () => fetchAverageCourseGrade(courseName),
     });
 
-  const rating = `${RMPRatingData?.rating || 'N/A'}/5`;
+  const rating = RMPRatingData?.rating ? `${RMPRatingData.rating}/5` : 'N/A';
   // console.log(isbn13);
 
   return (

@@ -30,3 +30,40 @@ def generate_term_codes():
         term_codes.append(code)
 
     return jsonify(term_codes)
+
+@term_bp.route("/terms", methods=["GET"])
+def available_semesters():
+    # Get current date and year
+    current_date = datetime.datetime.now()
+    current_year = current_date.year
+    current_month = current_date.month
+
+    # Define semester mappings
+    semester_codes = {1: "Spring", 4: "Summer", 7: "Fall"}
+
+    # Determine current and next semesters
+    if 1 <= current_month <= 3:  # Jan–Mar
+        current_semester = (current_year, 1)  # Spring of current year
+        next_semester = (current_year, 4)    # Summer of current year
+    elif 4 <= current_month <= 6:  # Apr–Jun
+        current_semester = (current_year, 4)  # Summer of current year
+        next_semester = (current_year, 7)    # Fall of current year
+    elif 7 <= current_month <= 9:  # Jul–Sep
+        current_semester = (current_year, 7)  # Fall of current year
+        next_semester = (current_year + 1, 1)  # Spring of next year
+    elif 10 <= current_month <= 12:  # Oct–Dec
+        current_semester = (current_year + 1, 1)  # Spring of next year
+        next_semester = (current_year + 1, 4)  # Summer of next year
+
+    # Generate term code and label
+    def format_term(year, semester_code):
+        term_code = f"1{str(year % 100).zfill(2)}{semester_code}"
+        label = f"{semester_codes[semester_code]} {year}"
+        return {"value": term_code, "label": label}
+
+    # Return response
+    response = [
+        format_term(*current_semester),
+        format_term(*next_semester)
+    ]
+    return jsonify(response)
