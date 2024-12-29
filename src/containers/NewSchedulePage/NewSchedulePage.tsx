@@ -172,7 +172,7 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
   };
 
   const handleDragEnd = () => {
-    console.log('handleDragEnd called');
+    // console.log('handleDragEnd called');
     setDraggingCourseId(null);
     setDraggingEventId(null);
     setDraggingEventType(null);
@@ -196,8 +196,6 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
       });
     }
   };
-
-  // console.log('new code - ' + termCode);
 
   const isAppliedCourseReSelected = () => {
     return !!allCourses.find(
@@ -540,8 +538,8 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
   };
 
   // console.log(scheduledCourses);
-  console.log('page re-rendered');
-  console.log('isEventDragging: ' + isEventDragging);
+  // console.log('page re-rendered');
+  // console.log('isEventDragging: ' + isEventDragging);
 
   const semesterOptions =
     semesters?.map(sem => ({ value: sem.value, label: sem.label })) || [];

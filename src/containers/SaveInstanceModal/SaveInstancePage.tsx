@@ -10,11 +10,11 @@ type FieldType = {
 };
 
 const onFinish: FormProps<FieldType>['onFinish'] = values => {
-  console.log('Success:', values);
+  // console.log('Success:', values);
 };
 
 const onFinishFailed: FormProps<FieldType>['onFinishFailed'] = errorInfo => {
-  console.log('Failed:', errorInfo);
+  // console.log('Failed:', errorInfo);
 };
 
 const SaveInstancePage: React.FC<SaveInstancePageProps> = props => {

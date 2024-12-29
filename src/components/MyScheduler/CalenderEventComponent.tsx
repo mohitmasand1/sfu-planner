@@ -82,7 +82,7 @@ const CalendarEventComponent: React.FC<CalendarEventProps> = ({
       },
       drop: item => {
         if (item.type === 'SCHEDULED_REMOTE_COURSE') {
-          console.log('dropped remote course to calender');
+          // console.log('dropped remote course to calender');
           onRemoveRemoteCourse(item.courseId);
         }
         if (event.labSessionId) {
@@ -163,10 +163,10 @@ const CalendarEventComponent: React.FC<CalendarEventProps> = ({
       type: 'SCHEDULED_COURSE',
     },
     collect: monitor => {
-      console.log('Drag state updated:', {
-        isDragging: monitor.isDragging(),
-        didDrop: monitor.didDrop(),
-      });
+      // console.log('Drag state updated:', {
+      //   isDragging: monitor.isDragging(),
+      //   didDrop: monitor.didDrop(),
+      // });
       return { isDragging: monitor.isDragging() };
     },
     end: () => {
@@ -175,9 +175,9 @@ const CalendarEventComponent: React.FC<CalendarEventProps> = ({
   });
 
   useEffect(() => {
-    console.log('isDragging:', isDragging);
+    // console.log('isDragging:', isDragging);
     if (isDragging) {
-      console.log('eventID of drag: ' + event.id);
+      // console.log('eventID of drag: ' + event.id);
       onDragStart(event.courseId, event.id, event.eventType);
     }
   }, [isDragging, event.courseId, event.id, event.eventType, onDragStart]);
