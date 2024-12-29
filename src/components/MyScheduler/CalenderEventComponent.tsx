@@ -1,6 +1,6 @@
 // src/components/CalendarEventComponent.tsx
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useDrag, useDrop } from 'react-dnd';
 import { Event as CalendarEvent } from './types';
 
@@ -26,6 +26,7 @@ interface CalendarEventProps {
   onDragEnd: () => void;
   onPlaceholderHover: (offeringId: string | null) => void;
   hoveredOfferingId: string | null;
+  onRemoveRemoteCourse: (courseId: string) => void;
 }
 
 const CalendarEventComponent: React.FC<CalendarEventProps> = ({
@@ -38,6 +39,7 @@ const CalendarEventComponent: React.FC<CalendarEventProps> = ({
   onDragEnd,
   onPlaceholderHover,
   hoveredOfferingId,
+  onRemoveRemoteCourse,
 }) => {
   if (event.isPlaceholder) {
     const [{ isOver }, drop] = useDrop<
@@ -46,11 +48,12 @@ const CalendarEventComponent: React.FC<CalendarEventProps> = ({
         courseId: string;
         eventId?: string;
         eventType?: 'lecture' | 'lab' | 'tutorial' | 'remote' | 'placeholder';
+        type: string;
       },
       void,
       { isOver: boolean }
     >({
-      accept: ['COURSE', 'SCHEDULED_COURSE'],
+      accept: ['COURSE', 'SCHEDULED_COURSE', 'SCHEDULED_REMOTE_COURSE'],
       canDrop: item => {
         // console.log('canDrop called with item:', item, 'event:', event);
         if (!item) return false;
@@ -78,6 +81,10 @@ const CalendarEventComponent: React.FC<CalendarEventProps> = ({
         }
       },
       drop: item => {
+        if (item.type === 'SCHEDULED_REMOTE_COURSE') {
+          console.log('dropped remote course to calender');
+          onRemoveRemoteCourse(item.courseId);
+        }
         if (event.labSessionId) {
           // Lab placeholder
           onLabDrop(item.courseId, event.offeringId!, event.labSessionId!);
@@ -96,38 +103,20 @@ const CalendarEventComponent: React.FC<CalendarEventProps> = ({
       collect: monitor => ({
         isOver: !!monitor.isOver() && monitor.canDrop(),
       }),
-    });
-
-    useEffect(() => {
-      console.log('isOver: ' + isOver);
-      console.log('hoveredOfferingId: ' + hoveredOfferingId);
-      // console.log('eventType: ' + event.eventType)
-      // console.log('offeringID: ' + event.offeringId)
-      // console.log('labId: ' + event.labSessionId)
-      // console.log('labId: ' + event.tutorialSessionId)
-      if (
-        event.eventType === 'placeholder' &&
-        !event.labSessionId &&
-        !event.tutorialSessionId
-      ) {
-        // This is a lecture placeholder
-        if (isOver) {
-          onPlaceholderHover(event.offeringId!);
+      hover: () => {
+        if (!event.labSessionId && !event.tutorialSessionId) {
+          onPlaceholderHover(event?.offeringId!);
         }
-      }
-      // Do not set onPlaceholderHover(null) here
-    }, [
-      isOver,
-      event.offeringId,
-      event.eventType,
-      event.labSessionId,
-      event.tutorialSessionId,
-      onPlaceholderHover,
-    ]);
+      },
+    });
 
     let isHighlighted = false;
 
-    if (event.eventType === 'placeholder' && !event.labSessionId) {
+    if (
+      event.eventType === 'placeholder' &&
+      !event.labSessionId &&
+      !event.tutorialSessionId
+    ) {
       // Lecture placeholder
       isHighlighted = hoveredOfferingId === event.offeringId;
     } else if (event.eventType === 'placeholder' && event.labSessionId) {
@@ -173,9 +162,13 @@ const CalendarEventComponent: React.FC<CalendarEventProps> = ({
       offeringId: event.offeringId,
       type: 'SCHEDULED_COURSE',
     },
-    collect: monitor => ({
-      isDragging: monitor.isDragging(),
-    }),
+    collect: monitor => {
+      console.log('Drag state updated:', {
+        isDragging: monitor.isDragging(),
+        didDrop: monitor.didDrop(),
+      });
+      return { isDragging: monitor.isDragging() };
+    },
     end: () => {
       onDragEnd();
     },
@@ -184,15 +177,19 @@ const CalendarEventComponent: React.FC<CalendarEventProps> = ({
   useEffect(() => {
     console.log('isDragging:', isDragging);
     if (isDragging) {
+      console.log('eventID of drag: ' + event.id);
       onDragStart(event.courseId, event.id, event.eventType);
     }
   }, [isDragging, event.courseId, event.id, event.eventType, onDragStart]);
 
   // event.eventType === 'lecture' ? 'bg-blue-600' : 'bg-green-600';
 
+  const dragRef = useRef<HTMLDivElement>(null);
+  drag(dragRef);
+
   return (
     <div
-      ref={drag}
+      ref={dragRef}
       className={`flex flex-col h-full justify-center items-center border-y-[1px] border-gray-500 border-dashed ${event.className} text-black rounded p-1 ${
         isDragging ? 'opacity-50' : ''
       }`}

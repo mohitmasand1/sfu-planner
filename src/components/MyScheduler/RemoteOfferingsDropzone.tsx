@@ -33,12 +33,26 @@ const RemoteOfferingsDropzone: React.FC<RemoteOfferingsDropzoneProps> = ({
     if (draggingCourseId) {
       const course = allCourses.find(c => c.id === draggingCourseId);
       if (course) {
-        const remoteOfferings = course.availableOfferings.filter(
+        // Identify all remote offerings
+        let remoteOfferings = course.availableOfferings.filter(
           offering =>
             (!offering.lectures || offering.lectures.length === 0) &&
             (!offering.labs || offering.labs.length === 0) &&
             (!offering.tutorials || offering.tutorials.length === 0),
         );
+
+        // Find if there's already a scheduled remote offering
+        const alreadyScheduled = scheduledRemoteCourses.find(
+          item => item.course.id === draggingCourseId,
+        );
+
+        // Filter out the already scheduled offering
+        if (alreadyScheduled) {
+          remoteOfferings = remoteOfferings.filter(
+            off => off.id !== alreadyScheduled.offering.id,
+          );
+        }
+
         setRemoteOfferings(remoteOfferings);
         setCurrentCourse(course);
       }
@@ -46,7 +60,7 @@ const RemoteOfferingsDropzone: React.FC<RemoteOfferingsDropzoneProps> = ({
       setRemoteOfferings([]);
       setCurrentCourse(null);
     }
-  }, [draggingCourseId, allCourses]);
+  }, [draggingCourseId, allCourses, scheduledRemoteCourses]);
 
   return (
     <div className="flex justify-center items-center flex-col border-2 border-dashed p-4 w-full">
@@ -120,8 +134,8 @@ const RemoteOfferingItem: React.FC<RemoteOfferingItemProps> = ({
   return (
     <div
       ref={drop}
-      className={`border p-2 cursor-pointer ${
-        isOver ? 'bg-blue-100' : 'bg-white'
+      className={`p-2 cursor-pointer border-2 border-dashed ${
+        isOver ? 'border-green-500 bg-green-100' : 'border-gray-400 bg-gray-200'
       }`}
       style={{ minWidth: '150px', textAlign: 'center' }}
     >
@@ -145,7 +159,6 @@ interface ScheduledRemoteCourseItemProps {
 const ScheduledRemoteCourseItem: React.FC<ScheduledRemoteCourseItemProps> = ({
   course,
   offering,
-  onRemoteCourseUnschedule,
   onDragStart,
   onDragEnd,
 }) => {
@@ -155,14 +168,13 @@ const ScheduledRemoteCourseItem: React.FC<ScheduledRemoteCourseItemProps> = ({
     collect: monitor => ({
       isDragging: monitor.isDragging(),
     }),
+    end: () => onDragEnd(),
   });
 
   useEffect(() => {
     // console.log(`isDragging: ${isDragging}, courseId: ${course.id}`);
     if (isDragging) {
-      onDragStart(course.id, undefined, 'remote');
-    } else {
-      onDragEnd();
+      onDragStart(course.id, 'remote', 'remote');
     }
   }, [isDragging, course.id, onDragStart, onDragEnd]);
 

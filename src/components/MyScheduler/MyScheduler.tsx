@@ -48,6 +48,7 @@ interface MySchedulerProps {
     | null;
   onPlaceholderHover: (offeringId: string | null) => void;
   hoveredOfferingId: string | null;
+  onRemoveRemoteCourse: (courseId: string) => void;
 }
 
 const MyScheduler: React.FC<MySchedulerProps> = ({
@@ -62,6 +63,7 @@ const MyScheduler: React.FC<MySchedulerProps> = ({
   draggingEventType,
   onPlaceholderHover,
   hoveredOfferingId,
+  onRemoveRemoteCourse,
 }) => {
   const today = new Date(2024, 0, 1);
 
@@ -255,7 +257,7 @@ const MyScheduler: React.FC<MySchedulerProps> = ({
   const placeholderEvents: Event[] = [];
   if (draggingCourseId) {
     const course = allCourses.find(c => c.id === draggingCourseId);
-    if (!course) return;
+    if (!course) return [];
 
     if (draggingEventType === 'lab') {
       // Dragging a lab event to switch lab sessions within the same offering
@@ -266,7 +268,7 @@ const MyScheduler: React.FC<MySchedulerProps> = ({
       );
 
       offering?.labs?.forEach(lab => {
-        if (currentEvent?.labSessionId === lab.id) return; // Skip current lab
+        if (currentEvent?.labSessionId === lab.id) return []; // Skip current lab
 
         const start = getDateForDay(lab.day, lab.startTime);
         const end = getDateForDay(lab.day, lab.endTime);
@@ -293,7 +295,7 @@ const MyScheduler: React.FC<MySchedulerProps> = ({
       );
 
       offering?.tutorials?.forEach(tutorial => {
-        if (currentEvent?.tutorialSessionId === tutorial.id) return; // Skip current tutorial
+        if (currentEvent?.tutorialSessionId === tutorial.id) return []; // Skip current tutorial
 
         const start = getDateForDay(tutorial.day, tutorial.startTime);
         const end = getDateForDay(tutorial.day, tutorial.endTime);
@@ -318,7 +320,7 @@ const MyScheduler: React.FC<MySchedulerProps> = ({
         const currentOfferingId = events
           .filter(e => e.eventType !== 'remote')
           .find(e => e.courseId === draggingCourseId)?.offeringId;
-        if (currentOfferingId === offering.id) return;
+        if (currentOfferingId === offering.id) return [];
 
         // Create placeholders for lectures
         offering.lectures.forEach(lecture => {
@@ -373,6 +375,7 @@ const MyScheduler: React.FC<MySchedulerProps> = ({
                 onDragEnd={onDragEnd}
                 onPlaceholderHover={onPlaceholderHover}
                 hoveredOfferingId={hoveredOfferingId}
+                onRemoveRemoteCourse={onRemoveRemoteCourse}
               />
             ),
           }}

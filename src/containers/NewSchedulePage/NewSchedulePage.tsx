@@ -463,48 +463,60 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
   };
 
   // Function to handle remote offering selection
-  const handleRemoteOfferingSelect = (courseId: string, offeringId: string) => {
-    // Remove existing events for this course
-    setEvents(prevEvents => prevEvents.filter(e => e.courseId !== courseId));
+  const handleRemoteOfferingSelect = (
+    courseId: string,
+    newOfferingId: string,
+  ) => {
+    // 1. Check if this course is already scheduled
+    const alreadyScheduled =
+      scheduledRemoteCourses.find(sc => sc.course.id === courseId) ||
+      scheduledCourses.find(sc => sc.course.id === courseId);
 
-    // Remove the course from the course list
-    setCourses(prevCourses => prevCourses.filter(c => c.id !== courseId));
+    if (alreadyScheduled) {
+      onRemoveRemoteCourse(courseId);
+      // c) remove from scheduled courses
+      setScheduledCourses(prev =>
+        prev.filter(item => item.course.id !== courseId),
+      );
+    }
 
+    // 2. Schedule the NEW offering
     const course = allCourses.find(c => c.id === courseId);
     if (!course) return;
 
-    const offering = course.availableOfferings.find(o => o.id === offeringId);
+    const offering = course.availableOfferings.find(
+      o => o.id === newOfferingId,
+    );
     if (!offering) return;
 
-    // Create a placeholder event representing the remote offering
     const newEvent: CustomEvent = {
-      id: `event-${courseId}-remote-${offering.id}`,
+      id: `event-${courseId}-remote-${newOfferingId}`,
       className: course.className || '',
       title: `${course.name} (Remote)`,
       section: offering.specificData.info.section,
-      start: new Date(), // Arbitrary date
-      end: new Date(), // Arbitrary date
+      start: new Date(), // Arbitrary
+      end: new Date(), // Arbitrary
       allDay: true,
       courseId,
-      offeringId,
+      offeringId: newOfferingId,
       eventType: 'remote',
     };
 
+    // Add new event
     setEvents(prevEvents => [...prevEvents, newEvent]);
+
+    // Add new scheduled remote
     setScheduledRemoteCourses(prev => [...prev, { course, offering }]);
-    handleDragEnd(); // Reset dragging state
+
+    // 3. End the drag
+    //handleDragEnd();
   };
 
   // Function to unschedule a remote course
   const handleRemoteCourseUnschedule = (courseId: string) => {
-    setDraggingCourseId(null);
+    //setDraggingCourseId(null);
     // Remove the course from scheduled remote courses
-    setScheduledRemoteCourses(prev =>
-      prev.filter(item => item.course.id !== courseId),
-    );
-
-    // Remove the event from events
-    setEvents(prevEvents => prevEvents.filter(e => e.courseId !== courseId));
+    onRemoveRemoteCourse(courseId);
 
     // Add the course back to the course list
     const course = allCourses.find(c => c.id === courseId);
@@ -519,7 +531,17 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
     }
   };
 
+  const onRemoveRemoteCourse = (courseId: string) => {
+    setScheduledRemoteCourses(prev =>
+      prev.filter(item => item.course.id !== courseId),
+    );
+
+    setEvents(prevEvents => prevEvents.filter(e => e.courseId !== courseId));
+  };
+
   // console.log(scheduledCourses);
+  console.log('page re-rendered');
+  console.log('isEventDragging: ' + isEventDragging);
 
   const semesterOptions =
     semesters?.map(sem => ({ value: sem.value, label: sem.label })) || [];
@@ -596,6 +618,7 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
               draggingEventType={draggingEventType}
               onPlaceholderHover={setHoveredOfferingId} // Pass the setter function
               hoveredOfferingId={hoveredOfferingId}
+              onRemoveRemoteCourse={onRemoveRemoteCourse}
             />
             <RemoteOfferingsDropzone
               allCourses={allCourses}
