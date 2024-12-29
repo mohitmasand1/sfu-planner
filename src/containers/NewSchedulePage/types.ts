@@ -20,6 +20,7 @@ export interface SelectedCourseKey {
 export interface Major {
   text: string;
   value: string;
+  name: string;
 }
 
 export interface CourseNumber {

@@ -14,7 +14,7 @@ export async function fetchMajors(
     }
     const data: Major[] = await response.json();
     return data.map(item => ({
-      label: item.text, // Assuming 'text' is the field you want to display
+      label: item.text + " - " + item.name, // Assuming 'text' is the field you want to display
       value: item.value, // Keep the value field as is
     }));
   }
@@ -32,7 +32,7 @@ export async function fetchMajors(
       throw new Error('Network response was not ok');
     }
     const data: CourseNumber[] = await response.json();
-    return data.map(item => ({
+    return data.filter(item => item.title !== undefined).map(item => ({
       label: `${item.value} - ${item.title}`, // Assuming 'text' is the field you want to display
       value: item.value, // Keep the value field as is
     }));

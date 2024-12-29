@@ -200,7 +200,10 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
   const isAppliedCourseReSelected = () => {
     return !!allCourses.find(
       course =>
-        course.name === majorSelected?.toUpperCase() + ' ' + numberSelected,
+        course.name ===
+        majorSelected?.toUpperCase() +
+          ' ' +
+          numberSelected?.toString().toUpperCase(),
     );
   };
 
