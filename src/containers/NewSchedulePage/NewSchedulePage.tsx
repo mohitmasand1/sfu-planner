@@ -17,9 +17,7 @@ import MyScheduler from '../../components/MyScheduler/MyScheduler';
 import CourseList from '../../components/MyScheduler/CourseList';
 import RemoteOfferingsDropzone from '../../components/MyScheduler/RemoteOfferingsDropzone';
 import SearchControls from '../SearchControls/SearchControls';
-
-const SAVE_ICON_SIZE = 22;
-const CLOSE_ICON_SIZE = 20;
+import SchedulerSection from '../SchedulerSection/SchedulerSection';
 
 const colors = [
   'bg-selection-1',
@@ -501,9 +499,53 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
           onClickSearch={onClickSearch}
           isAppliedCourseReSelected={isAppliedCourseReSelected}
         />
-        <div className="flex flex-row flex-1 w-full overflow-hidden justify-center items-start min-h-0 px-6 pb-6 gap-4">
+        <SchedulerSection
+          allCourses={allCourses}
+          events={events}
+          setEvents={setEvents}
+          courses={courses}
+          setCourses={setCourses}
+          draggingCourseId={draggingCourseId}
+          draggingEventId={draggingEventId}
+          draggingEventType={draggingEventType}
+          handleDragStart={handleDragStart}
+          handleDragEnd={handleDragEnd}
+          handleRemoteOfferingSelect={handleRemoteOfferingSelect}
+          scheduledRemoteCourses={scheduledRemoteCourses}
+          handleRemoteCourseUnschedule={handleRemoteCourseUnschedule}
+          setHoveredOfferingId={setHoveredOfferingId}
+          hoveredOfferingId={hoveredOfferingId}
+          handleRemoveRemoteCourse={handleRemoveRemoteCourse}
+          handleRemoveCourse={handleRemoveCourse}
+          scheduledCourses={scheduledCourses}
+          isEventDragging={isEventDragging}
+          handleDeleteCourseFromList={handleDeleteCourseFromList}
+          getItems={getItems}
+          panelStyle={panelStyle}
+          token={token}
+          handleSaveSchedule={handleSaveSchedule}
+          handleDeleteAllSelections={handleDeleteAllSelections}
+        />
+        {/* <div className="flex flex-row flex-1 w-full overflow-hidden justify-center items-start min-h-0 px-6 pb-6 gap-4">
+          <SchedulerSection
+            allCourses={allCourses}
+            events={events}
+            setEvents={setEvents}
+            courses={courses}
+            setCourses={setCourses}
+            draggingCourseId={draggingCourseId}
+            draggingEventId={draggingEventId}
+            draggingEventType={draggingEventType}
+            handleDragStart={handleDragStart}
+            handleDragEnd={handleDragEnd}
+            handleRemoteOfferingSelect={handleRemoteOfferingSelect}
+            scheduledRemoteCourses={scheduledRemoteCourses}
+            handleRemoteCourseUnschedule={handleRemoteCourseUnschedule}
+            setHoveredOfferingId={setHoveredOfferingId}
+            hoveredOfferingId={hoveredOfferingId}
+            onRemoveRemoteCourse={handleRemoveRemoteCourse}
+          />
           <div className="flex flex-col flex-[3] justify-center min-h-0 h-full overflow-hidden gap-2">
-            {/* <Calender termCode={termCode} events={appliedSchedule} /> */}
             <MyScheduler
               allCourses={allCourses}
               events={events}
@@ -577,7 +619,7 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
               )}
             </div>
           </div>
-        </div>
+        </div> */}
         {contextHolder}
         {loading && <LoadingOverlay />}{' '}
         <Modal
