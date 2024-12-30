@@ -232,6 +232,8 @@ const SchedulerSection: React.FC<SchedulerSectionProps> = ({
         setCourses([]);
         // Clear scheduled courses
         setScheduledCourses([]);
+        // Clear scheduled remote courses
+        setScheduledRemoteCourses([]);
         // Reset dragging state
         handleDragEnd();
         sessionStorage.removeItem('schedule');

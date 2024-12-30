@@ -108,9 +108,18 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
     setCourses([]);
     // Clear scheduled courses
     setScheduledCourses([]);
-    // // Reset dragging state
-    // handleDragEnd();
-    // TODO: free all colors
+    // Clear scheduled remote courses
+    setScheduledRemoteCourses([]);
+
+    // free all colors
+    allCourses.forEach(course => {
+      const courseKey = course.name;
+      const removedColor = courseColorMapRef.current[courseKey];
+      if (removedColor) {
+        availableColorsRef.current.push(removedColor);
+        delete courseColorMapRef.current[courseKey];
+      }
+    });
   };
 
   const onClickSearch = async (
