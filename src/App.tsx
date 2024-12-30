@@ -1,17 +1,12 @@
 import NavBar from './containers/NavBar/NavBar';
-import {
-  useQuery,
-} from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import NewSchedulePage from './containers/NewSchedulePage/NewSchedulePage';
 import { fetchSemesters } from './containers/NewSchedulePage/http';
 import { SemesterData } from './containers/NewSchedulePage/types';
 
 function App() {
-
-  const {
-    data: semesters,
-  } = useQuery<SemesterData[]>({
+  const { data: semesters } = useQuery<SemesterData[]>({
     queryKey: ['semesters'],
     queryFn: fetchSemesters,
   });
@@ -34,14 +29,14 @@ function App() {
   }, [termCode]);
 
   return (
-      <div className="flex flex-col w-screen h-screen items-center overflow-hidden">
-        <NavBar termCode={termCode} setTermCode={setTermCode} />
-        <NewSchedulePage
-          termCode={termCode}
-          setTermCode={setTermCode}
-          semesters={semesters}
-        />
-      </div>
+    <div className="flex flex-col w-screen h-screen items-center overflow-hidden">
+      <NavBar termCode={termCode} setTermCode={setTermCode} />
+      <NewSchedulePage
+        termCode={termCode}
+        setTermCode={setTermCode}
+        semesters={semesters}
+      />
+    </div>
   );
 }
 

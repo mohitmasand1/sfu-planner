@@ -14,12 +14,12 @@ const deleteIconStyle: React.CSSProperties = {
 interface CourseItemLabelProps {
   course: { course: Course; offering: Offering };
   cancel?: (e?: React.MouseEvent<HTMLElement>) => void;
-  showConfirm: (event: React.MouseEvent<HTMLSpanElement>) => void;
+  showPopover: (event: React.MouseEvent<HTMLSpanElement>) => void;
   confirm: (courseKey: string, courseId: string) => () => void;
 }
 
 const CourseItemLabel: React.FC<CourseItemLabelProps> = props => {
-  const { course, cancel, showConfirm, confirm } = props;
+  const { course, cancel, showPopover, confirm } = props;
   const { specificData } = course.offering;
   const { info, professor } = specificData;
   // console.log(course);
@@ -59,7 +59,7 @@ const CourseItemLabel: React.FC<CourseItemLabelProps> = props => {
         onConfirm={confirm(courseKey, course.course.id)}
         onCancel={cancel}
       >
-        <DeleteOutlined style={deleteIconStyle} onClick={showConfirm} />
+        <DeleteOutlined style={deleteIconStyle} onClick={showPopover} />
       </Popconfirm>
     </div>
   );

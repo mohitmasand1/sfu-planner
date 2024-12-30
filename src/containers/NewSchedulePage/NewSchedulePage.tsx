@@ -1,12 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
-import { Button, Collapse, Select, theme, Modal, Tooltip, message } from 'antd';
+import { Collapse, theme, Modal, Tooltip, message } from 'antd';
 import type { CollapseProps, ModalProps, PopconfirmProps } from 'antd';
 import type { Event as CustomEvent } from '../../components/MyScheduler/types';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { fetchMajorCourses, fetchMajors, fetchCourseOfferings } from './http';
-import { CourseOffering, modalData, Option, SemesterData } from './types';
+import { useQueryClient } from '@tanstack/react-query';
+import { fetchCourseOfferings } from './http';
+import { CourseOffering, modalData, SemesterData } from './types';
 import { CloudUploadOutlined, CloseOutlined } from '@ant-design/icons';
 import SaveInstancePage from '../SaveInstanceModal/SaveInstancePage';
 import LoadingOverlay from '../../components/Loading/LoadingOverlay';
@@ -16,6 +16,7 @@ import { parseTermCode } from '../../utils/parseTermCode';
 import MyScheduler from '../../components/MyScheduler/MyScheduler';
 import CourseList from '../../components/MyScheduler/CourseList';
 import RemoteOfferingsDropzone from '../../components/MyScheduler/RemoteOfferingsDropzone';
+import SearchControls from '../SearchControls/SearchControls';
 
 const SAVE_ICON_SIZE = 22;
 const CLOSE_ICON_SIZE = 20;
@@ -39,7 +40,6 @@ export interface NewSchedulePageProps {
 
 const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
   const { termCode, setTermCode, semesters } = props;
-  // const { termCode } = useOutletContext<SharedContext>();
   const term = parseTermCode(termCode);
 
   // Create a ref to store the course-to-color mapping
@@ -49,21 +49,12 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
   const { token } = theme.useToken();
   const [modal, contextHolder] = Modal.useModal();
 
-  const [majorSelected, setMajorSelected] = useState<string | null | undefined>(
-    null,
-  );
-  const [numberSelected, setNumberSelected] = useState<
-    string | number | null | undefined
-  >(null);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [modalContent, setModalContent] = useState<modalData>({
     title: '',
     content: <></>,
   });
   const [loading, setLoading] = useState(false);
-  // const [appliedCourses, setAppliedCourses] = useState<CourseOffering[]>(
-  //   JSON.parse(sessionStorage.getItem('schedule') || '[]'),
-  // );
   const [allCourses, setAllCourses] = useState<Course[]>([]);
   const [courses, setCourses] = useState<Course[]>(allCourses);
   const [events, setEvents] = useState<CustomEvent[]>([]);
@@ -79,36 +70,9 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
     null,
   );
   const [isEventDragging, setIsEventDragging] = useState<boolean>(false);
-  // State to keep track of scheduled remote courses
   const [scheduledRemoteCourses, setScheduledRemoteCourses] = useState<
     { course: Course; offering: Offering }[]
   >([]);
-
-  // Added to track the previous termCode
-  const previousTermCode = useRef(termCode);
-
-  useEffect(() => {
-    // Check if termCode has changed
-    if (previousTermCode.current !== termCode) {
-      // setAppliedCourses([]);
-      setMajorSelected(null);
-      setNumberSelected(null);
-      sessionStorage.removeItem('schedule');
-      // console.log('changed termCode');
-      // Update previousTermCode to the new termCode
-      previousTermCode.current = termCode;
-      // Clear all courses
-      setAllCourses([]);
-      // Clear events
-      setEvents([]);
-      // Clear unscheduled courses
-      setCourses([]);
-      // Clear scheduled courses
-      setScheduledCourses([]);
-      // Reset dragging state
-      handleDragEnd();
-    }
-  }, [termCode]);
 
   useEffect(() => {
     // Map courseId to offeringId
@@ -153,6 +117,93 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
     });
   }, [allCourses, events]);
 
+  const handleRemoveCourse = (courseId: string) => {
+    // Remove all events for this course
+    setEvents(prevEvents => prevEvents.filter(e => e.courseId !== courseId));
+
+    // Add the course back to the course list
+    const course = allCourses.find(c => c.id === courseId);
+    if (course) {
+      setCourses(prevCourses => {
+        // Prevent duplicates
+        if (!prevCourses.find(c => c.id === courseId)) {
+          return [...prevCourses, course];
+        }
+        return prevCourses;
+      });
+    }
+  };
+
+  // Header Controls
+
+  const handleSemesterChange = (value: string) => {
+    setTermCode(value);
+    setAllCourses([]);
+    // Clear events
+    setEvents([]);
+    // Clear unscheduled courses
+    setCourses([]);
+    // Clear scheduled courses
+    setScheduledCourses([]);
+    // Reset dragging state
+    handleDragEnd();
+    // free all colors
+  };
+
+  const onClickSearch = async (
+    major: string | null | undefined,
+    number: string | number | null | undefined,
+  ) => {
+    setLoading(true);
+    const PreviewingCourseData = await queryClient.fetchQuery<
+      CourseOffering[],
+      Error
+    >({
+      queryKey: [term.year, term.semester, major, number],
+      queryFn: () =>
+        fetchCourseOfferings(term.year, term.semester, major, number),
+    });
+    setLoading(false);
+    // console.log(JSON.stringify(PreviewingCourseData));
+
+    // Get the course identifier (you can use course key or any unique identifier)
+    const courseKey = PreviewingCourseData[0].specificData.info.name; // Assuming `key` is a unique identifier for the course
+
+    // Check if the course already has a color assigned
+    let classColor = courseColorMapRef.current[courseKey];
+    if (!classColor) {
+      // Assign a new color from the available pool
+      if (availableColorsRef.current.length > 0) {
+        classColor = availableColorsRef.current.pop() as string; // Take a color from the end of the available list
+        courseColorMapRef.current[courseKey] = classColor;
+      } else {
+        console.error('No available colors left!');
+      }
+    }
+
+    const courseObj = {
+      id: crypto.randomUUID(),
+      className: classColor,
+      name: PreviewingCourseData[0].specificData.info.name,
+      availableOfferings: transformCourseData(PreviewingCourseData),
+    } as Course;
+    setAllCourses(all => [...all, courseObj]);
+    // console.log(courseObj);
+  };
+
+  const isAppliedCourseReSelected = (
+    major: string | null | undefined,
+    number: string | number | null | undefined,
+  ) => {
+    return !!allCourses.find(
+      course =>
+        course.name ===
+        major?.toUpperCase() + ' ' + number?.toString().toUpperCase(),
+    );
+  };
+
+  // SchedulerSection
+
   const handleDragStart = (
     courseId: string,
     eventId?: string,
@@ -180,45 +231,9 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
     setIsEventDragging(false);
   };
 
-  const handleRemoveCourse = (courseId: string) => {
-    // Remove all events for this course
-    setEvents(prevEvents => prevEvents.filter(e => e.courseId !== courseId));
-
-    // Add the course back to the course list
-    const course = allCourses.find(c => c.id === courseId);
-    if (course) {
-      setCourses(prevCourses => {
-        // Prevent duplicates
-        if (!prevCourses.find(c => c.id === courseId)) {
-          return [...prevCourses, course];
-        }
-        return prevCourses;
-      });
-    }
-  };
-
-  const isAppliedCourseReSelected = () => {
-    return !!allCourses.find(
-      course =>
-        course.name ===
-        majorSelected?.toUpperCase() +
-          ' ' +
-          numberSelected?.toString().toUpperCase(),
-    );
-  };
-
-  const updateMajorSelectionMade = (value: string) => {
-    setMajorSelected(value);
-    if (numberSelected) {
-      setNumberSelected(null);
-    }
-  };
-
-  const updateNumberSelectionMade = (value: string | number) => {
-    setNumberSelected(value);
-  };
-
-  const showConfirm = (event: React.MouseEvent<HTMLSpanElement>) => {
+  const showCourseSelectionDeleteConfirm = (
+    event: React.MouseEvent<HTMLSpanElement>,
+  ) => {
     event.stopPropagation();
   };
 
@@ -236,7 +251,7 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
     }
   };
 
-  const confirm = (courseKey: string, courseId: string) => () => {
+  const handleScheduledDelete = (courseKey: string, courseId: string) => () => {
     // Remove the course from allCourses
     setAllCourses(prevAllCourses =>
       prevAllCourses.filter(c => c.id !== courseId),
@@ -262,7 +277,7 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
     message.success('Removed');
   };
 
-  const cancel: PopconfirmProps['onCancel'] = e => {
+  const handleScheduledDeleteCancel: PopconfirmProps['onCancel'] = e => {
     // console.log(e);
     e?.stopPropagation();
   };
@@ -285,24 +300,9 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
     setIsModalOpen(true);
   };
 
-  const handleCancel = () => {
+  const handleModalCancel = () => {
     setIsModalOpen(false);
   };
-
-  const { data: majorNames } = useQuery<Option[], Error>({
-    queryKey: ['majors', termCode],
-    queryFn: () => fetchMajors(term.year, term.semester),
-  });
-
-  const { data: majorNumbers } = useQuery<Option[], Error>({
-    queryKey: ['numbers', majorSelected, termCode],
-    queryFn: () => {
-      if (majorSelected)
-        return fetchMajorCourses(term.year, term.semester, majorSelected);
-      return Promise.resolve([]);
-    },
-    enabled: !!majorSelected, // Only run this query when a major is selected
-  });
 
   const panelStyle: React.CSSProperties = {
     marginBottom: 24,
@@ -348,52 +348,7 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
     });
   };
 
-  const onClickSearch = async () => {
-    setLoading(true);
-    const PreviewingCourseData = await queryClient.fetchQuery<
-      CourseOffering[],
-      Error
-    >({
-      queryKey: [term.year, term.semester, majorSelected, numberSelected],
-      queryFn: () =>
-        fetchCourseOfferings(
-          term.year,
-          term.semester,
-          majorSelected,
-          numberSelected,
-        ),
-    });
-    setLoading(false);
-    // console.log(JSON.stringify(PreviewingCourseData));
-    // const fullCourseName = `${majorNames?.filter(major => majorSelected == major.value)[0].label} ${majorNumbers?.filter(number => number.value == numberSelected)[0].label}`;
-    // setAppliedCourses(applied => [...applied, PreviewingCourseData[0]]);
-
-    // Get the course identifier (you can use course key or any unique identifier)
-    const courseKey = PreviewingCourseData[0].specificData.info.name; // Assuming `key` is a unique identifier for the course
-
-    // Check if the course already has a color assigned
-    let classColor = courseColorMapRef.current[courseKey];
-    if (!classColor) {
-      // Assign a new color from the available pool
-      if (availableColorsRef.current.length > 0) {
-        classColor = availableColorsRef.current.pop() as string; // Take a color from the end of the available list
-        courseColorMapRef.current[courseKey] = classColor;
-      } else {
-        console.error('No available colors left!');
-      }
-    }
-
-    const courseObj = {
-      id: crypto.randomUUID(),
-      className: classColor,
-      name: PreviewingCourseData[0].specificData.info.name,
-      availableOfferings: transformCourseData(PreviewingCourseData),
-    } as Course;
-    setAllCourses(all => [...all, courseObj]);
-    // console.log(courseObj);
-  };
-
-  const onClickSave = (event: React.MouseEvent<HTMLSpanElement>) => {
+  const handleSaveSchedule = (event: React.MouseEvent<HTMLSpanElement>) => {
     showModal(event, 'Save', <SaveInstancePage />, {
       okText: 'Confirm',
       onOk: () => {
@@ -402,7 +357,7 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
     });
   };
 
-  const onClickDeleteAll = () => {
+  const handleDeleteAllSelections = () => {
     modal.warning({
       title: 'Delete all selections',
       content: <div>Delete all selections?</div>,
@@ -448,19 +403,15 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
         label: (
           <CourseItemLabel
             course={course}
-            cancel={cancel}
-            showConfirm={showConfirm}
-            confirm={confirm}
+            cancel={handleScheduledDeleteCancel}
+            showPopover={showCourseSelectionDeleteConfirm}
+            confirm={handleScheduledDelete}
           />
         ),
         children: <CourseItemContent course={course} />,
         style: itemPanelStyle,
       };
     });
-  };
-
-  const handleSemesterChange = (value: string) => {
-    setTermCode(value);
   };
 
   // Function to handle remote offering selection
@@ -474,7 +425,7 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
       scheduledCourses.find(sc => sc.course.id === courseId);
 
     if (alreadyScheduled) {
-      onRemoveRemoteCourse(courseId);
+      handleRemoveRemoteCourse(courseId);
       // c) remove from scheduled courses
       setScheduledCourses(prev =>
         prev.filter(item => item.course.id !== courseId),
@@ -508,16 +459,13 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
 
     // Add new scheduled remote
     setScheduledRemoteCourses(prev => [...prev, { course, offering }]);
-
-    // 3. End the drag
-    //handleDragEnd();
   };
 
   // Function to unschedule a remote course
   const handleRemoteCourseUnschedule = (courseId: string) => {
     //setDraggingCourseId(null);
     // Remove the course from scheduled remote courses
-    onRemoveRemoteCourse(courseId);
+    handleRemoveRemoteCourse(courseId);
 
     // Add the course back to the course list
     const course = allCourses.find(c => c.id === courseId);
@@ -532,7 +480,7 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
     }
   };
 
-  const onRemoveRemoteCourse = (courseId: string) => {
+  const handleRemoveRemoteCourse = (courseId: string) => {
     setScheduledRemoteCourses(prev =>
       prev.filter(item => item.course.id !== courseId),
     );
@@ -540,69 +488,19 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
     setEvents(prevEvents => prevEvents.filter(e => e.courseId !== courseId));
   };
 
-  // console.log(scheduledCourses);
-  // console.log('page re-rendered');
-  // console.log('isEventDragging: ' + isEventDragging);
-
   const semesterOptions =
     semesters?.map(sem => ({ value: sem.value, label: sem.label })) || [];
 
   return (
     <DndProvider backend={HTML5Backend}>
       <div className="flex flex-col flex-1 w-full items-center min-h-0 overflow-hidden">
-        <div className="flex justify-center items-center gap-4 flex-wrap p-4 w-full flex-none">
-          <Select
-            defaultValue={termCode}
-            className="w-32"
-            onChange={handleSemesterChange}
-            options={semesterOptions}
-          />
-          <Select
-            showSearch
-            style={{ width: 300 }}
-            placeholder="Select major"
-            optionFilterProp="children"
-            filterOption={(input, option) =>
-              (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
-            }
-            filterSort={(optionA, optionB) =>
-              (optionA?.label ?? '')
-                .toLowerCase()
-                .localeCompare((optionB?.label ?? '').toLowerCase())
-            }
-            options={majorNames}
-            value={majorSelected}
-            onSelect={updateMajorSelectionMade}
-          />
-          <Select
-            showSearch
-            style={{ width: 300 }}
-            placeholder="Select course number"
-            optionFilterProp="children"
-            filterOption={(input, option) =>
-              (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
-            }
-            filterSort={(optionA, optionB) =>
-              (optionA?.label ?? '')
-                .toLowerCase()
-                .localeCompare((optionB?.label ?? '').toLowerCase())
-            }
-            options={majorNumbers}
-            disabled={!majorSelected}
-            value={numberSelected}
-            onSelect={updateNumberSelectionMade}
-          />
-          <Button
-            type="primary"
-            size="middle"
-            disabled={
-              !numberSelected || !majorSelected || isAppliedCourseReSelected()
-            }
-            onClick={onClickSearch}
-          >
-            Add
-          </Button>
-        </div>
+        <SearchControls
+          termCode={termCode}
+          semesterOptions={semesterOptions}
+          onSemesterChange={handleSemesterChange}
+          onClickSearch={onClickSearch}
+          isAppliedCourseReSelected={isAppliedCourseReSelected}
+        />
         <div className="flex flex-row flex-1 w-full overflow-hidden justify-center items-start min-h-0 px-6 pb-6 gap-4">
           <div className="flex flex-col flex-[3] justify-center min-h-0 h-full overflow-hidden gap-2">
             {/* <Calender termCode={termCode} events={appliedSchedule} /> */}
@@ -619,7 +517,7 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
               draggingEventType={draggingEventType}
               onPlaceholderHover={setHoveredOfferingId} // Pass the setter function
               hoveredOfferingId={hoveredOfferingId}
-              onRemoveRemoteCourse={onRemoveRemoteCourse}
+              onRemoveRemoteCourse={handleRemoveRemoteCourse}
             />
             <RemoteOfferingsDropzone
               allCourses={allCourses}
@@ -662,7 +560,7 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
                         fontSize: SAVE_ICON_SIZE,
                         color: 'grey',
                       }}
-                      onClick={onClickSave}
+                      onClick={handleSaveSchedule}
                     />
                   </Tooltip>
                   <Tooltip title="Delete current schedule">
@@ -672,7 +570,7 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
                         fontSize: CLOSE_ICON_SIZE,
                         color: 'grey',
                       }}
-                      onClick={onClickDeleteAll}
+                      onClick={handleDeleteAllSelections}
                     />
                   </Tooltip>
                 </div>
@@ -686,7 +584,7 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
           title={modalContent.title}
           open={isModalOpen}
           // onOk={handleOk}
-          onCancel={handleCancel}
+          onCancel={handleModalCancel}
           closable={false}
           {...modalContent.modalProps}
           className="!w-full top-12"
