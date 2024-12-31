@@ -139,7 +139,10 @@ const RemoteOfferingItem: React.FC<RemoteOfferingItemProps> = ({
       }`}
       style={{ minWidth: '150px', textAlign: 'center' }}
     >
-      Offering {offering.id}
+      <label className="text-center text-gray-700">{course.name} </label>
+      <label className="text-center text-gray-700">
+        {offering.specificData.info.section}
+      </label>
     </div>
   );
 };

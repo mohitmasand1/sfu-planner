@@ -163,10 +163,6 @@ const CalendarEventComponent: React.FC<CalendarEventProps> = ({
       type: 'SCHEDULED_COURSE',
     },
     collect: monitor => {
-      // console.log('Drag state updated:', {
-      //   isDragging: monitor.isDragging(),
-      //   didDrop: monitor.didDrop(),
-      // });
       return { isDragging: monitor.isDragging() };
     },
     end: () => {
