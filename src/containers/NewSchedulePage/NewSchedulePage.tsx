@@ -245,6 +245,12 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
   const semesterOptions =
     semesters?.map(sem => ({ value: sem.value, label: sem.label })) || [];
 
+  console.log('allCourses - ', allCourses);
+  console.log('courses - ', courses);
+  console.log('scheduledCourses - ', scheduledCourses);
+  console.log('scheduledRemoteCourses - ', scheduledRemoteCourses);
+  console.log('events - ', events);
+
   return (
     <DndProvider backend={HTML5Backend}>
       <div className="flex flex-col flex-1 w-full items-center min-h-0 overflow-hidden">

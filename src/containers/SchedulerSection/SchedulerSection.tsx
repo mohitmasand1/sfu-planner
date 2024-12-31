@@ -175,6 +175,8 @@ const SchedulerSection: React.FC<SchedulerSectionProps> = ({
 
     // Add new scheduled remote
     setScheduledRemoteCourses(prev => [...prev, { course, offering }]);
+
+    setScheduledCourses(prev => [...prev, { course, offering }]);
   };
 
   // Function to unschedule a remote course
