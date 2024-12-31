@@ -74,9 +74,16 @@ const CourseList: React.FC<CourseListProps> = ({
             bottom: 0,
             left: 0,
             width: '100%',
-            height: '5px',
+            height: '4px',
             cursor: 'row-resize',
             backgroundColor: '#e0e0e0',
+            transition: 'background-color 0.3s', // Smooth transition on hover
+          }}
+          onMouseEnter={e => {
+            e.currentTarget.style.backgroundColor = '#b0b0b0'; // Darker gray on hover
+          }}
+          onMouseLeave={e => {
+            e.currentTarget.style.backgroundColor = '#e0e0e0'; // Restore original color
           }}
         />
       }

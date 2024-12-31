@@ -15,6 +15,9 @@ import { CloseOutlined, CloudUploadOutlined } from '@ant-design/icons';
 import CourseItemLabel from '../../components/CourseItem/CourseItemLabel';
 import CourseItemContent from '../../components/CourseItem/CourseItemContent';
 import { HookAPI } from 'antd/es/modal/useModal';
+import Card from '../../components/Card/Card';
+import Split from 'react-split';
+import './styles.css';
 
 interface SchedulerSectionProps {
   allCourses: Course[];
@@ -318,80 +321,98 @@ const SchedulerSection: React.FC<SchedulerSectionProps> = ({
 
   return (
     <div className="flex flex-row flex-1 w-full overflow-hidden justify-center items-start min-h-0 px-6 pb-6 gap-4">
-      <div className="flex flex-col flex-[3] justify-center min-h-0 h-full overflow-hidden gap-2">
-        <MyScheduler
-          allCourses={allCourses}
-          events={events}
-          setEvents={setEvents}
-          courses={courses}
-          setCourses={setCourses}
-          onDragStart={handleDragStart}
-          onDragEnd={handleDragEnd}
-          draggingCourseId={draggingCourseId}
-          draggingEventId={draggingEventId}
-          draggingEventType={draggingEventType}
-          onPlaceholderHover={setHoveredOfferingId} // Pass the setter function
-          hoveredOfferingId={hoveredOfferingId}
-          onRemoveRemoteCourse={handleRemoveRemoteCourse}
-        />
-        <RemoteOfferingsDropzone
-          allCourses={allCourses}
-          draggingCourseId={draggingCourseId}
-          onRemoteOfferingSelect={handleRemoteOfferingSelect}
-          scheduledRemoteCourses={scheduledRemoteCourses}
-          onRemoteCourseUnschedule={handleRemoteCourseUnschedule}
-          onDragStart={handleDragStart}
-          onDragEnd={handleDragEnd}
-        />
-      </div>
-      <div className="flex flex-col flex-[2] min-h-0 overflow-hidden max-h-full gap-4">
-        <CourseList
-          courses={courses}
-          onDragStart={handleDragStart}
-          onDragEnd={handleDragEnd}
-          onRemoveCourse={handleRemoveCourse}
-          isEventDragging={isEventDragging}
-          onDeleteCourse={handleDeleteCourseFromList}
-          onRemoteCourseUnschedule={handleRemoteCourseUnschedule}
-        />
-        <div className="flex flex-col flex-1 overflow-y-auto min-h-0">
-          {scheduledCourses.length > 0 && (
-            <Collapse
-              bordered={false}
-              defaultActiveKey={['1']}
-              style={{
-                background: token.colorBgContainer,
-                overflowY: 'auto',
-              }}
-              items={getItems(panelStyle)}
+      <Split
+        sizes={[60, 40]} // Initial sizes as percentages
+        minSize={[480, 350]} // Minimum size for each pane in pixels
+        gutterSize={3} // Thickness of the resizer bar
+        gutterAlign="center"
+        direction="horizontal" // Specifies horizontal split
+        className="flex h-full w-full"
+        gutter={(_, direction) => {
+          const gutter = document.createElement('div');
+          gutter.className = `gutter gutter-${direction}`;
+          return gutter;
+        }}
+      >
+        <Card className="rounded-md mr-2">
+          <div className="flex flex-col flex-[3] justify-center min-h-0 h-full overflow-hidden gap-2">
+            <MyScheduler
+              allCourses={allCourses}
+              events={events}
+              setEvents={setEvents}
+              courses={courses}
+              setCourses={setCourses}
+              onDragStart={handleDragStart}
+              onDragEnd={handleDragEnd}
+              draggingCourseId={draggingCourseId}
+              draggingEventId={draggingEventId}
+              draggingEventType={draggingEventType}
+              onPlaceholderHover={setHoveredOfferingId} // Pass the setter function
+              hoveredOfferingId={hoveredOfferingId}
+              onRemoveRemoteCourse={handleRemoveRemoteCourse}
             />
-          )}
-          {(getItems(panelStyle)?.length || 0) > 0 && (
-            <div className="flex flex-none self-center gap-6 overflow-auto h-10">
-              <Tooltip title="Save schedule">
-                <CloudUploadOutlined
+            <RemoteOfferingsDropzone
+              allCourses={allCourses}
+              draggingCourseId={draggingCourseId}
+              onRemoteOfferingSelect={handleRemoteOfferingSelect}
+              scheduledRemoteCourses={scheduledRemoteCourses}
+              onRemoteCourseUnschedule={handleRemoteCourseUnschedule}
+              onDragStart={handleDragStart}
+              onDragEnd={handleDragEnd}
+            />
+          </div>
+        </Card>
+        <Card className="rounded-md ml-2">
+          <div className="flex flex-col flex-[2] min-h-0 overflow-hidden max-h-full gap-4">
+            <CourseList
+              courses={courses}
+              onDragStart={handleDragStart}
+              onDragEnd={handleDragEnd}
+              onRemoveCourse={handleRemoveCourse}
+              isEventDragging={isEventDragging}
+              onDeleteCourse={handleDeleteCourseFromList}
+              onRemoteCourseUnschedule={handleRemoteCourseUnschedule}
+            />
+            <div className="flex flex-col flex-1 overflow-y-auto min-h-0">
+              {scheduledCourses.length > 0 && (
+                <Collapse
+                  bordered={false}
+                  defaultActiveKey={['1']}
                   style={{
-                    cursor: 'pointer',
-                    fontSize: SAVE_ICON_SIZE,
-                    color: 'grey',
+                    background: token.colorBgContainer,
+                    overflowY: 'auto',
                   }}
-                  onClick={handleSaveSchedule}
+                  items={getItems(panelStyle)}
                 />
-              </Tooltip>
-              <Tooltip title="Delete current schedule">
-                <CloseOutlined
-                  style={{
-                    cursor: 'pointer',
-                    fontSize: CLOSE_ICON_SIZE,
-                    color: 'grey',
-                  }}
-                  onClick={handleDeleteAllSelections}
-                />
-              </Tooltip>
+              )}
+              {(getItems(panelStyle)?.length || 0) > 0 && (
+                <div className="flex flex-none self-center gap-6 overflow-auto h-10">
+                  <Tooltip title="Save schedule">
+                    <CloudUploadOutlined
+                      style={{
+                        cursor: 'pointer',
+                        fontSize: SAVE_ICON_SIZE,
+                        color: 'grey',
+                      }}
+                      onClick={handleSaveSchedule}
+                    />
+                  </Tooltip>
+                  <Tooltip title="Delete current schedule">
+                    <CloseOutlined
+                      style={{
+                        cursor: 'pointer',
+                        fontSize: CLOSE_ICON_SIZE,
+                        color: 'grey',
+                      }}
+                      onClick={handleDeleteAllSelections}
+                    />
+                  </Tooltip>
+                </div>
+              )}
             </div>
-          )}
-        </div>
-      </div>
+          </div>
+        </Card>
+      </Split>
     </div>
   );
 };

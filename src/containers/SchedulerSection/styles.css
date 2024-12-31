@@ -1,0 +1,14 @@
+.gutter {
+  background-color: #e0e0e0; /* Light gray background */
+  cursor: col-resize; /* Change cursor on hover */
+  transition: background-color 0.3s;
+}
+
+.gutter:hover {
+  background-color: #b0b0b0; /* Darker gray on hover */
+}
+
+.gutter-horizontal {
+  width: 5px; /* Matches the gutterSize in the Split component */
+  height: 100%; /* Full height of the container */
+}
