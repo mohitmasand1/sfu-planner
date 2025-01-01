@@ -319,11 +319,18 @@ const SchedulerSection: React.FC<SchedulerSectionProps> = ({
     });
   };
 
+  const totalCredits = scheduledCourses.reduce(
+    (acc, course) => acc + parseInt(course.offering.specificData.info.units),
+    0,
+  );
+
+  const numOfCourses = scheduledCourses.length;
+
   return (
     <div className="flex flex-row flex-1 w-full overflow-hidden justify-center items-start min-h-0 px-6 pb-6 gap-4">
       <Split
         sizes={[60, 40]} // Initial sizes as percentages
-        minSize={[480, 350]} // Minimum size for each pane in pixels
+        minSize={[550, 350]} // Minimum size for each pane in pixels
         gutterSize={3} // Thickness of the resizer bar
         gutterAlign="center"
         direction="horizontal" // Specifies horizontal split
@@ -373,7 +380,7 @@ const SchedulerSection: React.FC<SchedulerSectionProps> = ({
               onDeleteCourse={handleDeleteCourseFromList}
               onRemoteCourseUnschedule={handleRemoteCourseUnschedule}
             />
-            <div className="flex flex-col flex-1 overflow-y-auto min-h-0">
+            <div className="flex flex-col flex-1 overflow-y-auto scrollbar min-h-0 gap-3">
               {scheduledCourses.length > 0 && (
                 <Collapse
                   bordered={false}
@@ -386,27 +393,33 @@ const SchedulerSection: React.FC<SchedulerSectionProps> = ({
                 />
               )}
               {(getItems(panelStyle)?.length || 0) > 0 && (
-                <div className="flex flex-none self-center gap-6 overflow-auto h-10">
-                  <Tooltip title="Save schedule">
-                    <CloudUploadOutlined
-                      style={{
-                        cursor: 'pointer',
-                        fontSize: SAVE_ICON_SIZE,
-                        color: 'grey',
-                      }}
-                      onClick={handleSaveSchedule}
-                    />
-                  </Tooltip>
-                  <Tooltip title="Delete current schedule">
-                    <CloseOutlined
-                      style={{
-                        cursor: 'pointer',
-                        fontSize: CLOSE_ICON_SIZE,
-                        color: 'grey',
-                      }}
-                      onClick={handleDeleteAllSelections}
-                    />
-                  </Tooltip>
+                <div className="flex flex-col gap-2">
+                  <div className="flex justify-center gap-4">
+                    <label>{`Courses: ${numOfCourses}`}</label>
+                    <label>{`Total Credits: ${totalCredits}`}</label>
+                  </div>
+                  <div className="flex flex-none self-center gap-6 overflow-auto scrollbar h-10">
+                    <Tooltip title="Save schedule">
+                      <CloudUploadOutlined
+                        style={{
+                          cursor: 'pointer',
+                          fontSize: SAVE_ICON_SIZE,
+                          color: 'grey',
+                        }}
+                        onClick={handleSaveSchedule}
+                      />
+                    </Tooltip>
+                    <Tooltip title="Delete current schedule">
+                      <CloseOutlined
+                        style={{
+                          cursor: 'pointer',
+                          fontSize: CLOSE_ICON_SIZE,
+                          color: 'grey',
+                        }}
+                        onClick={handleDeleteAllSelections}
+                      />
+                    </Tooltip>
+                  </div>
                 </div>
               )}
             </div>

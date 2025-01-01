@@ -91,7 +91,7 @@ const CourseList: React.FC<CourseListProps> = ({
       <div className="relative" style={{ height: courseList1Height }}>
         <div
           ref={drop}
-          className={`flex-none justify-center items-center w-full border-gray-300 p-4 overflow-y-auto border rounded-md ${backgroundColor} ${
+          className={`flex-none justify-center items-center w-full border-gray-300 p-4 overflow-y-auto scrollbar border rounded-md ${backgroundColor} ${
             isOver ? 'bg-red-100' : ''
           }`}
           style={{ height: 'calc(100% - 5px)' }}

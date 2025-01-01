@@ -14,3 +14,32 @@
     /* add more as needed */
   }
   
+  /* ScrollStyles.module.css */
+/* Scrollbar container */
+::-webkit-scrollbar {
+  width: 8px; /* Width of the scrollbar */
+  height: 8px; /* Height of the scrollbar (for horizontal scrollbars) */
+}
+
+/* Scrollbar track */
+::-webkit-scrollbar-track {
+  background: transparent; /* Makes the track invisible */
+}
+
+/* Scrollbar thumb */
+::-webkit-scrollbar-thumb {
+  background: #c1c1c1; /* Slightly darker gray for the thumb */
+  border-radius: 10px; /* Rounded corners */
+  border: 2px solid transparent; /* Ensures the thumb looks clean */
+}
+
+/* Hover effect for the thumb */
+::-webkit-scrollbar-thumb:hover {
+  background: #a0a0a0; /* Darker gray on hover */
+}
+
+/* For Firefox */
+* {
+  scrollbar-width: thin; /* Thin scrollbar */
+  scrollbar-color: #c1c1c1 transparent; /* Thumb color and transparent track */
+}
