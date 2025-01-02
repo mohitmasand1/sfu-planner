@@ -254,6 +254,7 @@ const SchedulerSection: React.FC<SchedulerSectionProps> = ({
           }
         });
       },
+      centered: true,
     });
   };
 

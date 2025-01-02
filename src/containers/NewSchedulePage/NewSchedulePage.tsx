@@ -234,7 +234,7 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
   };
 
   const handleSaveSchedule = (event: React.MouseEvent<HTMLSpanElement>) => {
-    showModal(event, 'Save', <SaveInstancePage />, {
+    showModal(event, 'Save Schedule', <SaveInstancePage />, {
       okText: 'Confirm',
       onOk: () => {
         setIsModalOpen(false);
@@ -286,7 +286,8 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
           onCancel={handleModalCancel}
           closable={false}
           {...modalContent.modalProps}
-          className="!w-full top-12"
+          className="top-12"
+          centered
         >
           {modalContent.content}
         </Modal>
