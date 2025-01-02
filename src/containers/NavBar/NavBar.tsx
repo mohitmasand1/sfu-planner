@@ -21,7 +21,8 @@ const NavBar: React.FC<NavBarProps> = () => {
           Instructions
         </Button>
       </div>
-      <Tooltip title="Load schedule">
+      <label className="p-5 text-white">SFU API</label>
+      {/* <Tooltip title="Load schedule">
         <DownloadOutlined
           style={{
             cursor: 'pointer',
@@ -30,7 +31,7 @@ const NavBar: React.FC<NavBarProps> = () => {
             padding: '20px',
           }}
         />
-      </Tooltip>
+      </Tooltip> */}
     </div>
   );
 };

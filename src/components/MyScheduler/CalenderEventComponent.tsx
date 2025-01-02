@@ -136,8 +136,10 @@ const CalendarEventComponent: React.FC<CalendarEventProps> = ({
             : 'border-gray-400 bg-gray-200'
         }`}
       >
-        <label className="text-center text-gray-700">{title}</label>
-        <label className="text-center text-gray-700">{event.section}</label>
+        <label className="text-sm text-center text-gray-700">{title}</label>
+        <label className="text-sm text-center text-gray-700">
+          {event.section}
+        </label>
       </div>
     );
   }
@@ -186,12 +188,12 @@ const CalendarEventComponent: React.FC<CalendarEventProps> = ({
   return (
     <div
       ref={dragRef}
-      className={`flex flex-col h-full justify-center items-center border-y-[1px] border-gray-500 border-dashed ${event.className} text-black rounded p-1 ${
+      className={`flex flex-col h-full justify-center items-center border-y-[1px] border-gray-500 border ${event.className} text-black rounded-lg p-1 ${
         isDragging ? 'opacity-50' : ''
       }`}
     >
-      <label>{title}</label>
-      <label>{event.section}</label>
+      <label className="text-sm">{title}</label>
+      <label className="text-sm">{event.section}</label>
     </div>
   );
 };

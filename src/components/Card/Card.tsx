@@ -19,7 +19,7 @@ const Card: React.FC<CardProps> = ({
     <div
       className={`inherit h-full w-full flex flex-col p-3 ${
         bordered ? 'border border-gray-300' : ''
-      } ${shadow ? 'shadow-md' : ''} bg-white ${className}`}
+      } ${shadow ? 'shadow-lg' : ''} bg-white ${className}`}
       style={style}
     >
       {children}

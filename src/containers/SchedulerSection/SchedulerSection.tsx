@@ -4,6 +4,7 @@ import RemoteOfferingsDropzone from '../../components/MyScheduler/RemoteOffering
 import type { Event as CustomEvent } from '../../components/MyScheduler/types';
 import CourseList from '../../components/MyScheduler/CourseList';
 import {
+  Button,
   Collapse,
   CollapseProps,
   message,
@@ -82,6 +83,7 @@ const SchedulerSection: React.FC<SchedulerSectionProps> = ({
     null,
   );
   const [isEventDragging, setIsEventDragging] = useState<boolean>(false);
+  const [activeKeys, setActiveKeys] = useState<string[]>([]);
 
   const panelStyle: React.CSSProperties = {
     marginBottom: 24,
@@ -319,6 +321,18 @@ const SchedulerSection: React.FC<SchedulerSectionProps> = ({
     });
   };
 
+  const handleRevealHideAll = () => {
+    const items = getItems(panelStyle);
+    // If any panel is open, close all.
+    // If none are open, open all.
+    if (activeKeys.length > 0) {
+      setActiveKeys([]);
+    } else {
+      const allKeys = items?.map(item => item.key as string) || [];
+      setActiveKeys(allKeys);
+    }
+  };
+
   const totalCredits = scheduledCourses.reduce(
     (acc, course) => acc + parseInt(course.offering.specificData.info.units),
     0,
@@ -329,7 +343,7 @@ const SchedulerSection: React.FC<SchedulerSectionProps> = ({
   return (
     <div className="flex flex-row flex-1 w-full overflow-hidden justify-center items-start min-h-0 px-6 pb-6 gap-4">
       <Split
-        sizes={[60, 40]} // Initial sizes as percentages
+        sizes={[67, 33]} // Initial sizes as percentages
         minSize={[550, 350]} // Minimum size for each pane in pixels
         gutterSize={3} // Thickness of the resizer bar
         gutterAlign="center"
@@ -384,22 +398,51 @@ const SchedulerSection: React.FC<SchedulerSectionProps> = ({
               {scheduledCourses.length > 0 && (
                 <Collapse
                   bordered={false}
-                  defaultActiveKey={['1']}
+                  defaultActiveKey={['0']}
                   style={{
                     background: token.colorBgContainer,
                     overflowY: 'auto',
                   }}
                   items={getItems(panelStyle)}
+                  activeKey={activeKeys}
+                  onChange={keys => setActiveKeys(keys as string[])}
                 />
               )}
               {(getItems(panelStyle)?.length || 0) > 0 && (
                 <div className="flex flex-col gap-2">
                   <div className="flex justify-center gap-4">
-                    <label>{`Courses: ${numOfCourses}`}</label>
-                    <label>{`Total Credits: ${totalCredits}`}</label>
+                    <label className="text-sm">{`Courses: ${numOfCourses}`}</label>
+                    <label className="text-sm">{`Total Credits: ${totalCredits}`}</label>
                   </div>
-                  <div className="flex flex-none self-center gap-6 overflow-auto scrollbar h-10">
-                    <Tooltip title="Save schedule">
+                  <div className="flex flex-wrap justify-center self-center gap-4 scrollbar">
+                    <Button
+                      className="bg-sky-100 text-neutral-900"
+                      type="primary"
+                      onClick={handleSaveSchedule}
+                    >
+                      Save
+                    </Button>
+                    <Button
+                      className="bg-sky-100 text-neutral-900"
+                      type="primary"
+                      onClick={handleDeleteAllSelections}
+                    >
+                      Clear
+                    </Button>
+                    <Button
+                      className="bg-sky-100 text-neutral-900"
+                      type="primary"
+                    >
+                      Load
+                    </Button>
+                    <Button
+                      className="bg-sky-100 text-neutral-900"
+                      type="primary"
+                      onClick={handleRevealHideAll}
+                    >
+                      Open/Close All
+                    </Button>
+                    {/* <Tooltip title="Save schedule">
                       <CloudUploadOutlined
                         style={{
                           cursor: 'pointer',
@@ -418,7 +461,7 @@ const SchedulerSection: React.FC<SchedulerSectionProps> = ({
                         }}
                         onClick={handleDeleteAllSelections}
                       />
-                    </Tooltip>
+                    </Tooltip> */}
                   </div>
                 </div>
               )}

@@ -63,8 +63,8 @@ const CourseList: React.FC<CourseListProps> = ({
       height={courseList1Height}
       width={0}
       axis="y"
-      minConstraints={[0, 50]}
-      maxConstraints={[Infinity, Infinity]}
+      minConstraints={[0, 100]}
+      maxConstraints={[Infinity, 400]}
       onResize={handleResize}
       handle={
         <span
@@ -74,7 +74,7 @@ const CourseList: React.FC<CourseListProps> = ({
             bottom: 0,
             left: 0,
             width: '100%',
-            height: '4px',
+            height: '3px',
             cursor: 'row-resize',
             backgroundColor: '#e0e0e0',
             transition: 'background-color 0.3s', // Smooth transition on hover

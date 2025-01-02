@@ -63,7 +63,7 @@ const RemoteOfferingsDropzone: React.FC<RemoteOfferingsDropzoneProps> = ({
   }, [draggingCourseId, allCourses, scheduledRemoteCourses]);
 
   return (
-    <div className="flex justify-center items-center flex-col border-2 border-dashed p-4 w-full">
+    <div className="flex justify-center items-center flex-col border-2 border-dashed p-3 w-full">
       {draggingCourseId && currentCourse ? (
         remoteOfferings.length > 0 ? (
           <div className="flex flex-1 flex-wrap gap-4">
@@ -77,12 +77,12 @@ const RemoteOfferingsDropzone: React.FC<RemoteOfferingsDropzoneProps> = ({
             ))}
           </div>
         ) : (
-          <p className="flex-1">
-            No remote offerings available for this course.
+          <p className="flex-1 text-sm">
+            No remote options available for this course
           </p>
         )
       ) : (
-        <p className="flex-1">Remote course offerings will appear here</p>
+        <p className="flex-1 text-sm">Remote options will appear here</p>
       )}
       {scheduledRemoteCourses.length > 0 && (
         <div className="flex-1 mt-4">
@@ -134,7 +134,7 @@ const RemoteOfferingItem: React.FC<RemoteOfferingItemProps> = ({
   return (
     <div
       ref={drop}
-      className={`p-2 cursor-pointer border-2 border-dashed ${
+      className={`p-1 cursor-pointer border-2 border-dashed rounded-lg ${
         isOver ? 'border-green-500 bg-green-100' : 'border-gray-400 bg-gray-200'
       }`}
       style={{ minWidth: '150px', textAlign: 'center' }}
@@ -175,7 +175,6 @@ const ScheduledRemoteCourseItem: React.FC<ScheduledRemoteCourseItemProps> = ({
   });
 
   useEffect(() => {
-    // console.log(`isDragging: ${isDragging}, courseId: ${course.id}`);
     if (isDragging) {
       onDragStart(course.id, 'remote', 'remote');
     }
@@ -184,7 +183,7 @@ const ScheduledRemoteCourseItem: React.FC<ScheduledRemoteCourseItemProps> = ({
   return (
     <div
       ref={drag}
-      className={`border p-2 cursor-pointer ${
+      className={`border border-gray-500 text-black rounded-lg p-1 cursor-pointer ${
         isDragging ? 'opacity-50' : 'opacity-100'
       } ${course.className}`}
       style={{ minWidth: '150px', textAlign: 'center' }}
