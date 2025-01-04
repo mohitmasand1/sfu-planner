@@ -11,6 +11,7 @@ declare global {
     interface Offering {
         className?: string,
         id: string;
+        path: string;
         lectures: LectureTime[];
         labs?: LabSession[]; // Optional labs
         tutorials?: TutorialSession[];
@@ -38,4 +39,21 @@ declare global {
         endTime: Date;
         section: string;
     }
+
+    interface GetResponse {
+        message: string;
+        data: CourseIDs[];
+    }
+
+    interface CourseIDs {
+        offering: string;
+        lab?: string;
+        tutorial?: string;
+    }
+
+    interface ScheduleResponse {
+        name: string;
+        course_ids: CourseIDs[];
+    }
+
 }

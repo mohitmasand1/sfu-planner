@@ -1,17 +1,18 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
-import { Modal } from 'antd';
+import { Form, Modal } from 'antd';
 import type { ModalProps } from 'antd';
 import type { Event as CustomEvent } from '../../components/MyScheduler/types';
-import { useQueryClient } from '@tanstack/react-query';
-import { fetchCourseOfferings } from './http';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { fetchCourseOfferings, saveSchedule } from './http';
 import { CourseOffering, modalData, SemesterData } from './types';
 import SaveInstancePage from '../SaveInstanceModal/SaveInstancePage';
 import LoadingOverlay from '../../components/Loading/LoadingOverlay';
 import { parseTermCode } from '../../utils/parseTermCode';
 import SearchControls from '../SearchControls/SearchControls';
 import SchedulerSection from '../SchedulerSection/SchedulerSection';
+import LoadInstance from '../LoadInstance/LoadInstance';
 
 const colors = [
   'bg-selection-1',
@@ -38,13 +39,13 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
   const courseColorMapRef = useRef<{ [key: string]: string }>({});
   const availableColorsRef = useRef<string[]>([...colors]); // Initially, all colors are available
   const queryClient = useQueryClient();
-  const [modal, contextHolder] = Modal.useModal();
 
-  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-  const [modalContent, setModalContent] = useState<modalData>({
-    title: '',
-    content: <></>,
-  });
+  // const [confirmLoading, setConfirmLoading] = useState(false);
+  // const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  // const [modalContent, setModalContent] = useState<modalData>({
+  //   title: '',
+  //   content: <></>,
+  // });
   const [loading, setLoading] = useState(false);
   const [allCourses, setAllCourses] = useState<Course[]>([]);
   const [courses, setCourses] = useState<Course[]>(allCourses);
@@ -174,27 +175,27 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
     );
   };
 
-  const showModal = (
-    event: React.MouseEvent<HTMLSpanElement>,
-    title: string,
-    content?: React.ReactNode,
-    modalProps?: ModalProps,
-  ) => {
-    event.stopPropagation();
-    if (modalContent) {
-      setModalContent({ title, content, modalProps });
-    } else {
-      setModalContent({
-        title: 'Default title',
-        content: <label>No modal data</label>,
-      });
-    }
-    setIsModalOpen(true);
-  };
+  // const showModal = (
+  //   event: React.MouseEvent<HTMLSpanElement>,
+  //   title: string,
+  //   content?: React.ReactNode,
+  //   modalProps?: ModalProps,
+  // ) => {
+  //   event.stopPropagation();
+  //   if (modalContent) {
+  //     setModalContent({ title, content, modalProps });
+  //   } else {
+  //     setModalContent({
+  //       title: 'Default title',
+  //       content: <label>No modal data</label>,
+  //     });
+  //   }
+  //   setIsModalOpen(true);
+  // };
 
-  const handleModalCancel = () => {
-    setIsModalOpen(false);
-  };
+  // const handleModalCancel = () => {
+  //   setIsModalOpen(false);
+  // };
 
   const transformCourseData = (data: CourseOffering[]) => {
     return data.map(offering => {
@@ -223,24 +224,82 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
         section: tut.section,
       }));
 
+      const path = (
+        offering.specificData.info.path.split('?')[1] || ''
+      ).replace(/\//g, '-');
+
       return {
         id: offering.associatedClass,
+        path,
         lectures,
         labs,
         tutorials,
         specificData,
-      };
+      } as Offering;
     });
   };
 
   const handleSaveSchedule = (event: React.MouseEvent<HTMLSpanElement>) => {
-    showModal(event, 'Save Schedule', <SaveInstancePage />, {
-      okText: 'Confirm',
-      onOk: () => {
-        setIsModalOpen(false);
-      },
-    });
+    // showModal(event, 'Save Schedule', <SaveInstancePage form={[form]} />, {
+    //   okText: 'Confirm',
+    //   confirmLoading: confirmLoading,
+    //   onOk: async () => {
+    //     setIsModalOpen(false);
+    //     try {
+    //       setConfirmLoading(true); // Start loading
+    //       const values = await form.validateFields(); // Validate and get form values
+    //       const scheduleName = values.scheduleName;
+    //       if (scheduledCourses.length === 0) {
+    //         Modal.error({
+    //           title: 'Error',
+    //           content: 'No courses have been scheduled to save.',
+    //         });
+    //         return;
+    //       }
+    //       const scheduleData = {
+    //         name: scheduleName, // Use the captured schedule name
+    //         course_ids: scheduledCourses.map(course => ({
+    //           offering: course.offering.path,
+    //           lab:
+    //             events.find(
+    //               e =>
+    //                 e.offeringId == course.offering.id && e.eventType === 'lab',
+    //             )?.section || '',
+    //           tutorial:
+    //             events.find(
+    //               e =>
+    //                 e.offeringId == course.offering.id &&
+    //                 e.eventType === 'tutorial',
+    //             )?.section || '',
+    //         })),
+    //       };
+    //       console.log(scheduleData);
+    //       // Perform the save mutation
+    //       await saveScheduleMutation.mutateAsync(scheduleData);
+    //       // Show success message
+    //       Modal.success({
+    //         title: 'Success',
+    //         content: 'Your schedule has been saved successfully!',
+    //       });
+    //       setIsModalOpen(false); // Close the modal
+    //     } catch (error) {
+    //       if (error instanceof Error) {
+    //         Modal.error({
+    //           title: 'Error',
+    //           content: error.message,
+    //         });
+    //       }
+    //     } finally {
+    //       setConfirmLoading(false); // Stop loading
+    //       form.resetFields(); // Reset form fields
+    //     }
+    //   },
+    // });
   };
+
+  // const handleLoadSchedule = (event: React.MouseEvent<HTMLSpanElement>) => {
+  //   showModal(event, 'Load Schedule', <LoadInstance />);
+  // };
 
   const semesterOptions =
     semesters?.map(sem => ({ value: sem.value, label: sem.label })) || [];
@@ -272,25 +331,10 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
           setScheduledRemoteCourses={setScheduledRemoteCourses}
           scheduledRemoteCourses={scheduledRemoteCourses}
           scheduledCourses={scheduledCourses}
-          handleSaveSchedule={handleSaveSchedule}
           courseColorMapRef={courseColorMapRef}
           availableColorsRef={availableColorsRef}
-          modal={modal}
         />
-        {contextHolder}
         {loading && <LoadingOverlay />}{' '}
-        <Modal
-          title={modalContent.title}
-          open={isModalOpen}
-          // onOk={handleOk}
-          onCancel={handleModalCancel}
-          closable={false}
-          {...modalContent.modalProps}
-          className="top-12"
-          centered
-        >
-          {modalContent.content}
-        </Modal>
       </div>
     </DndProvider>
   );

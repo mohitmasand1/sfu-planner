@@ -80,3 +80,7 @@ export interface SemesterData {
   value: string;
   label: string;
 }
+
+export interface SaveScheduleResponse {
+  message: string;
+};

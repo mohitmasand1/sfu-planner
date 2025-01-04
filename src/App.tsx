@@ -1,11 +1,15 @@
 import NavBar from './containers/NavBar/NavBar';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import NewSchedulePage from './containers/NewSchedulePage/NewSchedulePage';
-import { fetchSemesters } from './containers/NewSchedulePage/http';
+import { fetchSemesters, fetchOnLoad } from './containers/NewSchedulePage/http';
 import { SemesterData } from './containers/NewSchedulePage/types';
 
 function App() {
+  const { mutate: getOnLoad } = useMutation<GetResponse>({
+    mutationFn: fetchOnLoad,
+  });
+
   const { data: semesters } = useQuery<SemesterData[]>({
     queryKey: ['semesters'],
     queryFn: fetchSemesters,
@@ -27,6 +31,10 @@ function App() {
       localStorage.setItem('term', JSON.stringify(termCode));
     }
   }, [termCode]);
+
+  useEffect(() => {
+    getOnLoad();
+  }, [getOnLoad]);
 
   return (
     <div className="flex flex-col w-screen h-screen items-center overflow-hidden">

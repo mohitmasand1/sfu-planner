@@ -10,15 +10,19 @@ import {
   message,
   PopconfirmProps,
   theme,
-  Tooltip,
+  Form,
+  Modal,
 } from 'antd';
-import { CloseOutlined, CloudUploadOutlined } from '@ant-design/icons';
 import CourseItemLabel from '../../components/CourseItem/CourseItemLabel';
 import CourseItemContent from '../../components/CourseItem/CourseItemContent';
-import { HookAPI } from 'antd/es/modal/useModal';
 import Card from '../../components/Card/Card';
 import Split from 'react-split';
 import './styles.css';
+import { useModals } from '../../hooks/ModalsContext';
+import { useMutation } from '@tanstack/react-query';
+import { saveSchedule } from '../NewSchedulePage/http';
+import SaveInstancePage from '../SaveInstanceModal/SaveInstancePage';
+import LoadInstance from '../LoadInstance/LoadInstance';
 
 interface SchedulerSectionProps {
   allCourses: Course[];
@@ -45,12 +49,10 @@ interface SchedulerSectionProps {
   >;
   scheduledRemoteCourses: { course: Course; offering: Offering }[];
   scheduledCourses: { course: Course; offering: Offering }[];
-  handleSaveSchedule: (event: React.MouseEvent<HTMLSpanElement>) => void;
   courseColorMapRef: React.MutableRefObject<{
     [key: string]: string;
   }>;
   availableColorsRef: React.MutableRefObject<string[]>;
-  modal: HookAPI;
 }
 
 const SchedulerSection: React.FC<SchedulerSectionProps> = ({
@@ -64,15 +66,12 @@ const SchedulerSection: React.FC<SchedulerSectionProps> = ({
   setScheduledRemoteCourses,
   scheduledRemoteCourses,
   scheduledCourses,
-  handleSaveSchedule,
   courseColorMapRef,
   availableColorsRef,
-  modal,
 }) => {
-  const SAVE_ICON_SIZE = 22;
-  const CLOSE_ICON_SIZE = 20;
-
   const { token } = theme.useToken();
+  const { openModal } = useModals();
+  const [form] = Form.useForm();
 
   const [draggingCourseId, setDraggingCourseId] = useState<string | null>(null);
   const [draggingEventId, setDraggingEventId] = useState<string | null>(null);
@@ -226,36 +225,35 @@ const SchedulerSection: React.FC<SchedulerSectionProps> = ({
   };
 
   const handleDeleteAllSelections = () => {
-    modal.warning({
-      title: 'Delete all selections',
-      content: <div>Delete all selections?</div>,
-      onOk() {
-        message.success('Deleted all');
-        // Clear all courses
-        setAllCourses([]);
-        // Clear events
-        setEvents([]);
-        // Clear unscheduled courses
-        setCourses([]);
-        // Clear scheduled courses
-        setScheduledCourses([]);
-        // Clear scheduled remote courses
-        setScheduledRemoteCourses([]);
-        // Reset dragging state
-        handleDragEnd();
-        sessionStorage.removeItem('schedule');
-
-        allCourses.forEach(course => {
-          const courseKey = course.name;
-          const removedColor = courseColorMapRef.current[courseKey];
-          if (removedColor) {
-            availableColorsRef.current.push(removedColor);
-            delete courseColorMapRef.current[courseKey];
-          }
-        });
-      },
-      centered: true,
-    });
+    // modal.warning({
+    //   title: 'Delete all selections',
+    //   content: <div>Delete all selections?</div>,
+    //   onOk() {
+    //     message.success('Deleted all');
+    //     // Clear all courses
+    //     setAllCourses([]);
+    //     // Clear events
+    //     setEvents([]);
+    //     // Clear unscheduled courses
+    //     setCourses([]);
+    //     // Clear scheduled courses
+    //     setScheduledCourses([]);
+    //     // Clear scheduled remote courses
+    //     setScheduledRemoteCourses([]);
+    //     // Reset dragging state
+    //     handleDragEnd();
+    //     sessionStorage.removeItem('schedule');
+    //     allCourses.forEach(course => {
+    //       const courseKey = course.name;
+    //       const removedColor = courseColorMapRef.current[courseKey];
+    //       if (removedColor) {
+    //         availableColorsRef.current.push(removedColor);
+    //         delete courseColorMapRef.current[courseKey];
+    //       }
+    //     });
+    //   },
+    //   centered: true,
+    // });
   };
 
   const handleScheduledDelete = (courseKey: string, courseId: string) => () => {
@@ -332,6 +330,73 @@ const SchedulerSection: React.FC<SchedulerSectionProps> = ({
       const allKeys = items?.map(item => item.key as string) || [];
       setActiveKeys(allKeys);
     }
+  };
+
+  const handleSaveSchedule = async () => {
+    try {
+      const values = await form.validateFields(); // Validate and get form values
+      const scheduleName = values.scheduleName;
+
+      if (scheduledCourses.length === 0) {
+        Modal.error({
+          title: 'Error',
+          content: 'No courses have been scheduled to save.',
+        });
+        return;
+      }
+
+      const scheduleData = {
+        name: scheduleName, // Use the captured schedule name
+        course_ids: scheduledCourses.map(course => ({
+          offering: course.offering.path,
+          lab:
+            events.find(
+              e => e.offeringId == course.offering.id && e.eventType === 'lab',
+            )?.section || '',
+          tutorial:
+            events.find(
+              e =>
+                e.offeringId == course.offering.id &&
+                e.eventType === 'tutorial',
+            )?.section || '',
+        })),
+      };
+
+      console.log(scheduleData);
+
+      // Perform the save mutation
+      await saveScheduleMutation.mutateAsync(scheduleData);
+
+      // Show success message
+      Modal.success({
+        title: 'Success',
+        content: 'Your schedule has been saved successfully!',
+      });
+    } catch (error) {
+      if (error instanceof Error) {
+        Modal.error({
+          title: 'Error',
+          content: error.message,
+        });
+      }
+    } finally {
+      form.resetFields(); // Reset form fields
+    }
+  };
+
+  const saveScheduleMutation = useMutation({
+    mutationFn: saveSchedule,
+  });
+
+  const handleLoadSchedule = () => {
+    // showModal(event, 'Load Schedule', <LoadInstance />);
+    // click on the card
+    // with the card we can identify the name of the schedule
+    // clear all current schedule/course state lists
+    // fetch the course data based on the id's e.g. 2025-spring-cmpt-120-d100 -> [2025 spring cmpt 120 d100] for each course
+    // run it thru the onSearchClick code
+    // save transformed data into a list. Now we need to add it as if its being searched for, and then dragged
+    // we can add it to the scheduledCourses / scheduledRemoteCourses
   };
 
   const totalCredits = scheduledCourses.reduce(
@@ -419,7 +484,15 @@ const SchedulerSection: React.FC<SchedulerSectionProps> = ({
                     <Button
                       className="bg-sky-100 text-neutral-900"
                       type="primary"
-                      onClick={handleSaveSchedule}
+                      onClick={() =>
+                        openModal({
+                          title: 'Save Schedule',
+                          content: <SaveInstancePage form={[form]} />,
+                          okText: 'Save',
+                          cancelText: 'Cancel',
+                          onOk: handleSaveSchedule,
+                        })
+                      }
                     >
                       Save
                     </Button>
@@ -433,6 +506,15 @@ const SchedulerSection: React.FC<SchedulerSectionProps> = ({
                     <Button
                       className="bg-sky-100 text-neutral-900"
                       type="primary"
+                      onClick={() =>
+                        openModal({
+                          title: 'Load Schedule',
+                          content: <LoadInstance />,
+                          okText: 'Load',
+                          cancelText: 'Cancel',
+                          onOk: handleLoadSchedule,
+                        })
+                      }
                     >
                       Load
                     </Button>

@@ -1,5 +1,5 @@
 import { convertToTermCode } from './termcode-converter';
-import { Option, Major, CourseNumber, CourseOffering, SemesterData } from './types'
+import { Option, Major, CourseNumber, CourseOffering, SemesterData, SaveScheduleResponse } from './types'
 
 export async function fetchMajors(
     year: string,
@@ -80,3 +80,48 @@ export async function fetchMajors(
     }
     return await response.json();
   };
+
+  export async function fetchOnLoad(): Promise<GetResponse> {
+    const response = await fetch('http://localhost:5000/api/user/uuid', {
+      method: 'GET',
+    });
+  
+    if (!response.ok) {
+      throw new Error('Failed to fetch data');
+    }
+  
+    // Adjust the return type based on your actual API response
+    return (await response.json()) as GetResponse;
+  }
+
+  export async function saveSchedule(scheduleData: { name: string; course_ids: CourseIDs[] }): Promise<SaveScheduleResponse> {
+    const response = await fetch('http://localhost:5000/api/user/save', {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(scheduleData),
+    });
+  
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to save schedule');
+    }
+  
+    return response.json();
+  };
+
+  export async function getSchedules(): Promise<ScheduleResponse[]> {
+    const response = await fetch('http://localhost:5000/api/user', {
+      method: 'GET',
+      credentials: 'include',
+    });
+  
+    if (!response.ok) {
+      throw new Error('Failed to fetch data');
+    }
+  
+    // Adjust the return type based on your actual API response
+    return (await response.json()) as ScheduleResponse[];
+  }

@@ -1,39 +1,24 @@
 import React from 'react';
-import type { FormProps } from 'antd';
 import { Form, Input } from 'antd';
 
-interface SaveInstancePageProps {}
+interface SaveInstancePageProps {
+  form: ReturnType<typeof Form.useForm>; // Form instance passed from parent
+}
 
-type FieldType = {
-  scheduleName?: string;
-  remember?: string;
-};
-
-const onFinish: FormProps<FieldType>['onFinish'] = values => {
-  // console.log('Success:', values);
-};
-
-const onFinishFailed: FormProps<FieldType>['onFinishFailed'] = errorInfo => {
-  // console.log('Failed:', errorInfo);
-};
-
-const SaveInstancePage: React.FC<SaveInstancePageProps> = props => {
-  const {} = props;
+const SaveInstancePage: React.FC<SaveInstancePageProps> = ({ form }) => {
   return (
     <Form
+      form={form[0]} // Connect the parent form instance
       name="basic"
       labelCol={{ span: 8 }}
       wrapperCol={{ span: 16 }}
       style={{ maxWidth: 600 }}
-      initialValues={{ remember: true }}
-      onFinish={onFinish}
-      onFinishFailed={onFinishFailed}
       autoComplete="off"
     >
-      <Form.Item<FieldType>
+      <Form.Item
         label="Schedule Name"
         name="scheduleName"
-        rules={[{ required: true, message: 'Please input your username!' }]}
+        rules={[{ required: true, message: 'Please input the schedule name!' }]}
       >
         <Input />
       </Form.Item>

@@ -5,6 +5,7 @@ import { GoogleOAuthProvider } from '@react-oauth/google';
 
 import './index.css';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ModalsProvider } from './hooks/ModalsContext';
 
 const queryClient = new QueryClient();
 
@@ -15,7 +16,9 @@ root.render(
   <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID || ''}>
     <React.StrictMode>
       <QueryClientProvider client={queryClient}>
-        <App />
+        <ModalsProvider>
+          <App />
+        </ModalsProvider>
       </QueryClientProvider>
     </React.StrictMode>
   </GoogleOAuthProvider>,
