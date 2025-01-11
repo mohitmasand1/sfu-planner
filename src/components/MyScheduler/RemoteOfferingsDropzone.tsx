@@ -6,25 +6,25 @@ import { useDrop, useDrag } from 'react-dnd';
 interface RemoteOfferingsDropzoneProps {
   allCourses: Course[];
   draggingCourseId: string | null;
-  onRemoteOfferingSelect: (courseId: string, offeringId: string) => void;
   scheduledRemoteCourses: { course: Course; offering: Offering }[];
-  onRemoteCourseUnschedule: (courseId: string) => void;
   onDragStart: (
     courseId: string,
     eventId?: string,
     eventType?: 'remote',
   ) => void;
   onDragEnd: () => void;
+  onScheduleRemoteCourse: (courseId: string, offeringId: string) => void;
+  onUnscheduleCourse: (courseId: string) => void;
 }
 
 const RemoteOfferingsDropzone: React.FC<RemoteOfferingsDropzoneProps> = ({
   allCourses,
   draggingCourseId,
-  onRemoteOfferingSelect,
   scheduledRemoteCourses,
-  onRemoteCourseUnschedule,
   onDragStart,
   onDragEnd,
+  onScheduleRemoteCourse,
+  onUnscheduleCourse,
 }) => {
   const [remoteOfferings, setRemoteOfferings] = useState<Offering[]>([]);
   const [currentCourse, setCurrentCourse] = useState<Course | null>(null);
@@ -72,7 +72,7 @@ const RemoteOfferingsDropzone: React.FC<RemoteOfferingsDropzoneProps> = ({
                 key={offering.id}
                 course={currentCourse}
                 offering={offering}
-                onRemoteOfferingSelect={onRemoteOfferingSelect}
+                onRemoteOfferingSelect={onScheduleRemoteCourse}
               />
             ))}
           </div>
@@ -92,7 +92,7 @@ const RemoteOfferingsDropzone: React.FC<RemoteOfferingsDropzoneProps> = ({
                 key={course.id}
                 course={course}
                 offering={offering}
-                onRemoteCourseUnschedule={onRemoteCourseUnschedule}
+                onRemoteCourseUnschedule={onUnscheduleCourse}
                 onDragStart={onDragStart}
                 onDragEnd={onDragEnd}
               />

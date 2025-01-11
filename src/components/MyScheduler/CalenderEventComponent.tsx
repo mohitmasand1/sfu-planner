@@ -7,17 +7,17 @@ import { Event as CalendarEvent } from './types';
 interface CalendarEventProps {
   event: CalendarEvent;
   title: string;
-  onCourseDrop: (courseId: string, offeringId: string) => void;
-  onLabDrop: (
-    courseId: string,
-    offeringId: string,
-    labSessionId: string,
-  ) => void;
-  onTutorialDrop: (
-    courseId: string,
-    offeringId: string,
-    tutorialSessionId: string,
-  ) => void;
+  // onCourseDrop: (courseId: string, offeringId: string) => void;
+  // onLabDrop: (
+  //   courseId: string,
+  //   offeringId: string,
+  //   labSessionId: string,
+  // ) => void;
+  // onTutorialDrop: (
+  //   courseId: string,
+  //   offeringId: string,
+  //   tutorialSessionId: string,
+  // ) => void;
   onDragStart: (
     courseId: string,
     eventId?: string,
@@ -26,20 +26,36 @@ interface CalendarEventProps {
   onDragEnd: () => void;
   onPlaceholderHover: (offeringId: string | null) => void;
   hoveredOfferingId: string | null;
-  onRemoveRemoteCourse: (courseId: string) => void;
+  // onRemoveRemoteCourse: (courseId: string) => void;
+  onScheduleInPersonCourse: (courseId: string, offeringId: string) => void;
+  onSwitchLab: (
+    courseId: string,
+    offeringId: string,
+    labSessionId: string,
+  ) => void;
+  onSwitchTutorial: (
+    courseId: string,
+    offeringId: string,
+    tutorialSessionId: string,
+  ) => void;
+  onUnscheduleCourse: (courseId: string) => void;
 }
 
 const CalendarEventComponent: React.FC<CalendarEventProps> = ({
   event,
   title,
-  onCourseDrop,
-  onLabDrop,
-  onTutorialDrop,
+  // onCourseDrop,
+  // onLabDrop,
+  // onTutorialDrop,
   onDragStart,
   onDragEnd,
   onPlaceholderHover,
   hoveredOfferingId,
-  onRemoveRemoteCourse,
+  // onRemoveRemoteCourse,
+  onScheduleInPersonCourse,
+  onSwitchLab,
+  onSwitchTutorial,
+  onUnscheduleCourse,
 }) => {
   if (event.isPlaceholder) {
     const [{ isOver }, drop] = useDrop<
@@ -83,21 +99,21 @@ const CalendarEventComponent: React.FC<CalendarEventProps> = ({
       drop: item => {
         if (item.type === 'SCHEDULED_REMOTE_COURSE') {
           // console.log('dropped remote course to calender');
-          onRemoveRemoteCourse(item.courseId);
+          onUnscheduleCourse(item.courseId);
         }
         if (event.labSessionId) {
           // Lab placeholder
-          onLabDrop(item.courseId, event.offeringId!, event.labSessionId!);
+          onSwitchLab(item.courseId, event.offeringId!, event.labSessionId!);
         } else if (event.tutorialSessionId) {
           // Tutorial placeholder
-          onTutorialDrop(
+          onSwitchTutorial(
             item.courseId,
             event.offeringId!,
             event.tutorialSessionId!,
           );
         } else {
           // Lecture placeholder
-          onCourseDrop(item.courseId, event.offeringId!);
+          onScheduleInPersonCourse(item.courseId, event.offeringId!);
         }
       },
       collect: monitor => ({

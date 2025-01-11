@@ -11,10 +11,9 @@ interface CourseListProps {
   courses: Course[];
   onDragStart: (courseId: string) => void;
   onDragEnd: () => void;
-  onRemoveCourse: (courseId: string) => void;
+  onRemoveCourse: (courseId: string, courseKey: string) => void;
   isEventDragging: boolean;
-  onDeleteCourse: (courseId: string, courseKey: string) => void;
-  onRemoteCourseUnschedule: (courseId: string) => void;
+  onUnscheduleCourse: (courseId: string) => void;
 }
 
 const CourseList: React.FC<CourseListProps> = ({
@@ -23,8 +22,7 @@ const CourseList: React.FC<CourseListProps> = ({
   onDragEnd,
   onRemoveCourse,
   isEventDragging,
-  onDeleteCourse,
-  onRemoteCourseUnschedule,
+  onUnscheduleCourse,
 }) => {
   const [courseList1Height, setCourseList1Height] = useState<number>(198); // Initial height in pixels
 
@@ -43,9 +41,9 @@ const CourseList: React.FC<CourseListProps> = ({
     accept: ['SCHEDULED_COURSE', 'SCHEDULED_REMOTE_COURSE'],
     drop: item => {
       if (item.type === 'SCHEDULED_COURSE') {
-        onRemoveCourse(item.courseId);
+        onUnscheduleCourse(item.courseId);
       } else if (item.type === 'SCHEDULED_REMOTE_COURSE') {
-        onRemoteCourseUnschedule(item.courseId);
+        onUnscheduleCourse(item.courseId);
       }
     },
     collect: monitor => ({
@@ -103,7 +101,7 @@ const CourseList: React.FC<CourseListProps> = ({
                 course={course}
                 onDragStart={onDragStart}
                 onDragEnd={onDragEnd}
-                onDeleteCourse={onDeleteCourse}
+                onDeleteCourse={onRemoveCourse}
               />
             ))}
           {courses.length == 0 && <Empty description="No courses" />}

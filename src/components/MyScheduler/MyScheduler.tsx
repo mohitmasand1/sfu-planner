@@ -28,9 +28,7 @@ const localizer = dateFnsLocalizer({
 interface MySchedulerProps {
   allCourses: Course[];
   events: Event[];
-  setEvents: React.Dispatch<React.SetStateAction<Event[]>>;
   courses: Course[];
-  setCourses: React.Dispatch<React.SetStateAction<Course[]>>;
   onDragStart: (
     courseId: string,
     eventId?: string,
@@ -48,14 +46,23 @@ interface MySchedulerProps {
     | null;
   onPlaceholderHover: (offeringId: string | null) => void;
   hoveredOfferingId: string | null;
-  onRemoveRemoteCourse: (courseId: string) => void;
+  onScheduleInPersonCourse: (courseId: string, offeringId: string) => void;
+  onSwitchLab: (
+    courseId: string,
+    offeringId: string,
+    labSessionId: string,
+  ) => void;
+  onSwitchTutorial: (
+    courseId: string,
+    offeringId: string,
+    tutorialSessionId: string,
+  ) => void;
+  onUnscheduleCourse: (courseId: string) => void;
 }
 
 const MyScheduler: React.FC<MySchedulerProps> = ({
   allCourses,
   events,
-  setEvents,
-  setCourses,
   onDragStart,
   onDragEnd,
   draggingCourseId,
@@ -63,19 +70,12 @@ const MyScheduler: React.FC<MySchedulerProps> = ({
   draggingEventType,
   onPlaceholderHover,
   hoveredOfferingId,
-  onRemoveRemoteCourse,
+  onScheduleInPersonCourse,
+  onSwitchLab,
+  onSwitchTutorial,
+  onUnscheduleCourse,
 }) => {
   const today = new Date(2024, 0, 1);
-
-  React.useEffect(() => {
-    setCourses(() => {
-      // Keep only unscheduled courses
-      const scheduledCourseIds = events.map(e => e.courseId);
-      return allCourses.filter(
-        course => !scheduledCourseIds.includes(course.id),
-      );
-    });
-  }, [allCourses, events]);
 
   const getDateForDay = (dayOfWeek: number, time: Date): Date => {
     const currentDay = today.getDay();
@@ -84,172 +84,6 @@ const MyScheduler: React.FC<MySchedulerProps> = ({
     date.setDate(today.getDate() + diff);
     date.setHours(time.getHours(), time.getMinutes(), 0, 0);
     return date;
-  };
-
-  const handleCourseDrop = (courseId: string, offeringId: string) => {
-    // Remove existing events for this course
-    setEvents(prevEvents => prevEvents.filter(e => e.courseId !== courseId));
-
-    // Remove the course from the course list
-    setCourses(prevCourses => prevCourses.filter(c => c.id !== courseId));
-
-    const course = allCourses.find(c => c.id === courseId);
-    if (!course) return;
-
-    const offering = course.availableOfferings.find(o => o.id === offeringId);
-    if (!offering) return;
-
-    const newEvents: Event[] = [];
-
-    // Schedule lectures
-    newEvents.push(
-      ...offering.lectures.map(lecture => {
-        const start = getDateForDay(lecture.day, lecture.startTime);
-        const end = getDateForDay(lecture.day, lecture.endTime);
-
-        return {
-          id: `event-${courseId}-${lecture.id}`,
-          className: course?.className || '',
-          title: `${course!.name} Lecture`,
-          section: offering.specificData.info.section,
-          start,
-          end,
-          courseId,
-          offeringId,
-          eventType: 'lecture' as const,
-        } as Event;
-      }),
-    );
-
-    // Schedule default lab (first one)
-    if (offering.labs && offering.labs.length > 0) {
-      const lab = offering.labs[0];
-      const start = getDateForDay(lab.day, lab.startTime);
-      const end = getDateForDay(lab.day, lab.endTime);
-
-      newEvents.push({
-        id: `event-${courseId}-lab-${lab.id}`,
-        className: course?.className || '',
-        title: `${course!.name} Lab`,
-        section: lab.section,
-        start,
-        end,
-        courseId,
-        offeringId,
-        eventType: 'lab' as const,
-        labSessionId: lab.id,
-      } as Event);
-    }
-    // Schedule default tutorial (first one)
-    if (offering.tutorials && offering.tutorials.length > 0) {
-      const tutorial = offering.tutorials[0];
-      const start = getDateForDay(tutorial.day, tutorial.startTime);
-      const end = getDateForDay(tutorial.day, tutorial.endTime);
-
-      newEvents.push({
-        id: `event-${courseId}-tutorial-${tutorial.id}`,
-        className: course?.className || '',
-        title: `${course.name} Tutorial`,
-        section: tutorial.section,
-        start,
-        end,
-        courseId,
-        offeringId,
-        eventType: 'tutorial',
-        tutorialSessionId: tutorial.id,
-      } as Event);
-    }
-
-    setEvents(prevEvents => [...prevEvents, ...newEvents]);
-    onDragEnd();
-  };
-
-  const handleLabDrop = (
-    courseId: string,
-    offeringId: string,
-    labSessionId: string,
-  ) => {
-    // Update lab event
-    setEvents(prevEvents => {
-      // Remove existing lab for this course and offering
-      const filteredEvents = prevEvents.filter(
-        e => !(e.courseId === courseId && e.eventType === 'lab'),
-      );
-
-      const course = allCourses.find(c => c.id === courseId);
-      const offering = course?.availableOfferings.find(
-        o => o.id === offeringId,
-      );
-      if (!offering) return filteredEvents;
-
-      const lab = offering.labs?.find(l => l.id === labSessionId);
-      if (!lab) return filteredEvents;
-
-      const start = getDateForDay(lab.day, lab.startTime);
-      const end = getDateForDay(lab.day, lab.endTime);
-
-      const newLabEvent: Event = {
-        className: course?.className || '',
-        id: `event-${courseId}-lab-${lab.id}`,
-        title: `${course!.name} Lab`,
-        section: lab.section,
-        start,
-        end,
-        courseId,
-        offeringId,
-        eventType: 'lab',
-        labSessionId: lab.id,
-      };
-
-      return [...filteredEvents, newLabEvent];
-    });
-
-    onDragEnd();
-  };
-
-  const handleTutorialDrop = (
-    courseId: string,
-    offeringId: string,
-    tutorialSessionId: string,
-  ) => {
-    // Update tutorial event
-    setEvents(prevEvents => {
-      // Remove existing tutorial for this course and offering
-      const filteredEvents = prevEvents.filter(
-        e => !(e.courseId === courseId && e.eventType === 'tutorial'),
-      );
-
-      const course = allCourses.find(c => c.id === courseId);
-      const offering = course?.availableOfferings.find(
-        o => o.id === offeringId,
-      );
-      if (!offering) return filteredEvents;
-
-      const tutorial = offering.tutorials?.find(
-        t => t.id === tutorialSessionId,
-      );
-      if (!tutorial) return filteredEvents;
-
-      const start = getDateForDay(tutorial.day, tutorial.startTime);
-      const end = getDateForDay(tutorial.day, tutorial.endTime);
-
-      const newTutorialEvent: Event = {
-        className: course?.className || '',
-        id: `event-${courseId}-tutorial-${tutorial.id}`,
-        title: `${course!.name} Tutorial`,
-        section: tutorial.section,
-        start,
-        end,
-        courseId,
-        offeringId,
-        eventType: 'tutorial',
-        tutorialSessionId: tutorial.id,
-      };
-
-      return [...filteredEvents, newTutorialEvent];
-    });
-
-    onDragEnd();
   };
 
   // Generate placeholder events when dragging
@@ -349,7 +183,6 @@ const MyScheduler: React.FC<MySchedulerProps> = ({
   );
 
   return (
-    // <DndProvider backend={HTML5Backend}>
     <div className="flex h-full flex-grow overflow-auto scrollbar">
       <div className="flex-1 flex-grow h-full">
         <Calendar
@@ -368,21 +201,20 @@ const MyScheduler: React.FC<MySchedulerProps> = ({
             event: props => (
               <CalendarEventComponent
                 {...props}
-                onCourseDrop={handleCourseDrop}
-                onLabDrop={handleLabDrop}
-                onTutorialDrop={handleTutorialDrop}
                 onDragStart={onDragStart}
                 onDragEnd={onDragEnd}
                 onPlaceholderHover={onPlaceholderHover}
                 hoveredOfferingId={hoveredOfferingId}
-                onRemoveRemoteCourse={onRemoveRemoteCourse}
+                onScheduleInPersonCourse={onScheduleInPersonCourse}
+                onSwitchLab={onSwitchLab}
+                onSwitchTutorial={onSwitchTutorial}
+                onUnscheduleCourse={onUnscheduleCourse}
               />
             ),
           }}
         />
       </div>
     </div>
-    // </DndProvider>
   );
 };
 

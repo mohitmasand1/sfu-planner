@@ -7,7 +7,7 @@ import {
   Button,
   Collapse,
   CollapseProps,
-  message,
+  // message,
   PopconfirmProps,
   theme,
   Form,
@@ -26,51 +26,51 @@ import LoadInstance from '../LoadInstance/LoadInstance';
 
 interface SchedulerSectionProps {
   allCourses: Course[];
-  setAllCourses: React.Dispatch<React.SetStateAction<Course[]>>;
   events: CustomEvent[];
-  setEvents: React.Dispatch<React.SetStateAction<CustomEvent[]>>;
   courses: Course[];
-  setCourses: React.Dispatch<React.SetStateAction<Course[]>>;
-  setScheduledCourses: React.Dispatch<
-    React.SetStateAction<
-      {
-        course: Course;
-        offering: Offering;
-      }[]
-    >
-  >;
-  setScheduledRemoteCourses: React.Dispatch<
-    React.SetStateAction<
-      {
-        course: Course;
-        offering: Offering;
-      }[]
-    >
-  >;
   scheduledRemoteCourses: { course: Course; offering: Offering }[];
   scheduledCourses: { course: Course; offering: Offering }[];
+  scheduleInPersonCourse: (courseId: string, offeringId: string) => void;
+  scheduleRemoteCourse: (courseId: string, offeringId: string) => void;
+  switchLab: (
+    courseId: string,
+    offeringId: string,
+    labSessionId: string,
+  ) => void;
+  switchTutorial: (
+    courseId: string,
+    offeringId: string,
+    tutorialSessionId: string,
+  ) => void;
+  unscheduleCourse: (courseId: string) => void;
+  handleDeleteCourseFromList: (courseId: string, courseKey: string) => void;
+  handleScheduledDelete: (courseKey: string, courseId: string) => () => void;
+  // loadSchedule: (savedData: any) => void; // Or your real type
+  clearAll: () => void;
   courseColorMapRef: React.MutableRefObject<{
     [key: string]: string;
   }>;
-  availableColorsRef: React.MutableRefObject<string[]>;
 }
 
 const SchedulerSection: React.FC<SchedulerSectionProps> = ({
   allCourses,
-  setAllCourses,
   events,
-  setEvents,
   courses,
-  setCourses,
-  setScheduledCourses,
-  setScheduledRemoteCourses,
   scheduledRemoteCourses,
   scheduledCourses,
+  scheduleInPersonCourse,
+  scheduleRemoteCourse,
+  switchLab,
+  switchTutorial,
+  unscheduleCourse,
+  handleDeleteCourseFromList,
+  handleScheduledDelete,
+  // loadSchedule,
+  clearAll,
   courseColorMapRef,
-  availableColorsRef,
 }) => {
   const { token } = theme.useToken();
-  const { openModal } = useModals();
+  const { openModal, closeModal } = useModals();
   const [form] = Form.useForm();
 
   const [draggingCourseId, setDraggingCourseId] = useState<string | null>(null);
@@ -110,7 +110,6 @@ const SchedulerSection: React.FC<SchedulerSectionProps> = ({
   };
 
   const handleDragEnd = () => {
-    // console.log('handleDragEnd called');
     setDraggingCourseId(null);
     setDraggingEventId(null);
     setDraggingEventType(null);
@@ -118,172 +117,7 @@ const SchedulerSection: React.FC<SchedulerSectionProps> = ({
     setIsEventDragging(false);
   };
 
-  const handleRemoveCourse = (courseId: string) => {
-    // Remove all events for this course
-    setEvents(prevEvents => prevEvents.filter(e => e.courseId !== courseId));
-
-    // Add the course back to the course list
-    const course = allCourses.find(c => c.id === courseId);
-    if (course) {
-      setCourses(prevCourses => {
-        // Prevent duplicates
-        if (!prevCourses.find(c => c.id === courseId)) {
-          return [...prevCourses, course];
-        }
-        return prevCourses;
-      });
-    }
-  };
-
-  const handleRemoteOfferingSelect = (
-    courseId: string,
-    newOfferingId: string,
-  ) => {
-    // 1. Check if this course is already scheduled
-    const alreadyScheduled =
-      scheduledRemoteCourses.find(sc => sc.course.id === courseId) ||
-      scheduledCourses.find(sc => sc.course.id === courseId);
-
-    if (alreadyScheduled) {
-      handleRemoveRemoteCourse(courseId);
-      // c) remove from scheduled courses
-      setScheduledCourses(prev =>
-        prev.filter(item => item.course.id !== courseId),
-      );
-    }
-
-    // 2. Schedule the NEW offering
-    const course = allCourses.find(c => c.id === courseId);
-    if (!course) return;
-
-    const offering = course.availableOfferings.find(
-      o => o.id === newOfferingId,
-    );
-    if (!offering) return;
-
-    const newEvent: CustomEvent = {
-      id: `event-${courseId}-remote-${newOfferingId}`,
-      className: course.className || '',
-      title: `${course.name} (Remote)`,
-      section: offering.specificData.info.section,
-      start: new Date(), // Arbitrary
-      end: new Date(), // Arbitrary
-      allDay: true,
-      courseId,
-      offeringId: newOfferingId,
-      eventType: 'remote',
-    };
-
-    // Add new event
-    setEvents(prevEvents => [...prevEvents, newEvent]);
-
-    // Add new scheduled remote
-    setScheduledRemoteCourses(prev => [...prev, { course, offering }]);
-
-    setScheduledCourses(prev => [...prev, { course, offering }]);
-  };
-
-  // Function to unschedule a remote course
-  const handleRemoteCourseUnschedule = (courseId: string) => {
-    //setDraggingCourseId(null);
-    // Remove the course from scheduled remote courses
-    handleRemoveRemoteCourse(courseId);
-
-    // Add the course back to the course list
-    const course = allCourses.find(c => c.id === courseId);
-    if (course) {
-      setCourses(prevCourses => {
-        // Prevent duplicates
-        if (!prevCourses.find(c => c.id === courseId)) {
-          return [...prevCourses, course];
-        }
-        return prevCourses;
-      });
-    }
-  };
-
-  const handleRemoveRemoteCourse = (courseId: string) => {
-    setScheduledRemoteCourses(prev =>
-      prev.filter(item => item.course.id !== courseId),
-    );
-
-    setEvents(prevEvents => prevEvents.filter(e => e.courseId !== courseId));
-  };
-
-  const handleDeleteCourseFromList = (courseId: string, courseKey: string) => {
-    // Remove the course from unscheduled courses
-    setCourses(prevCourses => prevCourses.filter(c => c.id !== courseId));
-    // Also remove the course from allCourses
-    setAllCourses(prevAllCourses =>
-      prevAllCourses.filter(c => c.id !== courseId),
-    );
-    const removedColor = courseColorMapRef.current[courseKey];
-    if (removedColor) {
-      availableColorsRef.current.push(removedColor);
-      delete courseColorMapRef.current[courseKey];
-    }
-  };
-
-  const handleDeleteAllSelections = () => {
-    // modal.warning({
-    //   title: 'Delete all selections',
-    //   content: <div>Delete all selections?</div>,
-    //   onOk() {
-    //     message.success('Deleted all');
-    //     // Clear all courses
-    //     setAllCourses([]);
-    //     // Clear events
-    //     setEvents([]);
-    //     // Clear unscheduled courses
-    //     setCourses([]);
-    //     // Clear scheduled courses
-    //     setScheduledCourses([]);
-    //     // Clear scheduled remote courses
-    //     setScheduledRemoteCourses([]);
-    //     // Reset dragging state
-    //     handleDragEnd();
-    //     sessionStorage.removeItem('schedule');
-    //     allCourses.forEach(course => {
-    //       const courseKey = course.name;
-    //       const removedColor = courseColorMapRef.current[courseKey];
-    //       if (removedColor) {
-    //         availableColorsRef.current.push(removedColor);
-    //         delete courseColorMapRef.current[courseKey];
-    //       }
-    //     });
-    //   },
-    //   centered: true,
-    // });
-  };
-
-  const handleScheduledDelete = (courseKey: string, courseId: string) => () => {
-    // Remove the course from allCourses
-    setAllCourses(prevAllCourses =>
-      prevAllCourses.filter(c => c.id !== courseId),
-    );
-    // Remove any events associated with the course
-    setEvents(prevEvents => prevEvents.filter(e => e.courseId !== courseId));
-    // Remove the course from unscheduled courses
-    setCourses(prevCourses => prevCourses.filter(c => c.id !== courseId));
-    // Remove the course from remote courses, incase it was a remote course
-    setScheduledRemoteCourses(prevRemotes =>
-      prevRemotes.filter(c => c.course.id !== courseId),
-    );
-    // Reset dragging state if necessary
-    if (draggingCourseId === courseId) {
-      handleDragEnd();
-    }
-    // Restore the color to the available pool
-    const removedColor = courseColorMapRef.current[courseKey];
-    if (removedColor) {
-      availableColorsRef.current.push(removedColor);
-      delete courseColorMapRef.current[courseKey];
-    }
-    message.success('Removed');
-  };
-
   const handleScheduledDeleteCancel: PopconfirmProps['onCancel'] = e => {
-    // console.log(e);
     e?.stopPropagation();
   };
 
@@ -381,6 +215,7 @@ const SchedulerSection: React.FC<SchedulerSectionProps> = ({
       }
     } finally {
       form.resetFields(); // Reset form fields
+      closeModal();
     }
   };
 
@@ -426,9 +261,7 @@ const SchedulerSection: React.FC<SchedulerSectionProps> = ({
             <MyScheduler
               allCourses={allCourses}
               events={events}
-              setEvents={setEvents}
               courses={courses}
-              setCourses={setCourses}
               onDragStart={handleDragStart}
               onDragEnd={handleDragEnd}
               draggingCourseId={draggingCourseId}
@@ -436,14 +269,17 @@ const SchedulerSection: React.FC<SchedulerSectionProps> = ({
               draggingEventType={draggingEventType}
               onPlaceholderHover={setHoveredOfferingId} // Pass the setter function
               hoveredOfferingId={hoveredOfferingId}
-              onRemoveRemoteCourse={handleRemoveRemoteCourse}
+              onScheduleInPersonCourse={scheduleInPersonCourse}
+              onSwitchLab={switchLab}
+              onSwitchTutorial={switchTutorial}
+              onUnscheduleCourse={unscheduleCourse}
             />
             <RemoteOfferingsDropzone
               allCourses={allCourses}
               draggingCourseId={draggingCourseId}
-              onRemoteOfferingSelect={handleRemoteOfferingSelect}
+              onScheduleRemoteCourse={scheduleRemoteCourse}
               scheduledRemoteCourses={scheduledRemoteCourses}
-              onRemoteCourseUnschedule={handleRemoteCourseUnschedule}
+              onUnscheduleCourse={unscheduleCourse}
               onDragStart={handleDragStart}
               onDragEnd={handleDragEnd}
             />
@@ -455,10 +291,9 @@ const SchedulerSection: React.FC<SchedulerSectionProps> = ({
               courses={courses}
               onDragStart={handleDragStart}
               onDragEnd={handleDragEnd}
-              onRemoveCourse={handleRemoveCourse}
+              onRemoveCourse={handleDeleteCourseFromList}
               isEventDragging={isEventDragging}
-              onDeleteCourse={handleDeleteCourseFromList}
-              onRemoteCourseUnschedule={handleRemoteCourseUnschedule}
+              onUnscheduleCourse={unscheduleCourse}
             />
             <div className="flex flex-col flex-1 overflow-y-auto scrollbar min-h-0 gap-3">
               {scheduledCourses.length > 0 && (
@@ -499,7 +334,7 @@ const SchedulerSection: React.FC<SchedulerSectionProps> = ({
                     <Button
                       className="bg-sky-100 text-neutral-900"
                       type="primary"
-                      onClick={handleDeleteAllSelections}
+                      onClick={clearAll}
                     >
                       Clear
                     </Button>
@@ -525,26 +360,6 @@ const SchedulerSection: React.FC<SchedulerSectionProps> = ({
                     >
                       Open/Close All
                     </Button>
-                    {/* <Tooltip title="Save schedule">
-                      <CloudUploadOutlined
-                        style={{
-                          cursor: 'pointer',
-                          fontSize: SAVE_ICON_SIZE,
-                          color: 'grey',
-                        }}
-                        onClick={handleSaveSchedule}
-                      />
-                    </Tooltip>
-                    <Tooltip title="Delete current schedule">
-                      <CloseOutlined
-                        style={{
-                          cursor: 'pointer',
-                          fontSize: CLOSE_ICON_SIZE,
-                          color: 'grey',
-                        }}
-                        onClick={handleDeleteAllSelections}
-                      />
-                    </Tooltip> */}
                   </div>
                 </div>
               )}
