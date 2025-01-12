@@ -6,17 +6,6 @@ import { DeleteOutlined } from '@ant-design/icons';
 
 const { Text } = Typography;
 
-// type OutputCourse = {
-//   offering: string;
-//   tutorial: string[];
-//   lab: string[];
-// };
-
-// type OutputSchedule = {
-//   name: string;
-//   course_ids: OutputCourse[];
-// };
-
 interface LoadInstanceProps {
   onClickSchedule: (schedule: OutputSchedule) => void;
 }

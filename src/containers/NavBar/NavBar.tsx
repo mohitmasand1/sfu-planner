@@ -1,5 +1,4 @@
-import { DownloadOutlined } from '@ant-design/icons';
-import { Button, Tooltip } from 'antd';
+import { Button } from 'antd';
 import React from 'react';
 
 interface NavBarProps {
@@ -8,7 +7,6 @@ interface NavBarProps {
 }
 
 const NavBar: React.FC<NavBarProps> = () => {
-  const Load_ICON_SIZE = 20;
 
   return (
     <div className="flex justify-between items-center w-full border-b bg-red-700 flex-none">

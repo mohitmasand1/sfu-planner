@@ -265,45 +265,6 @@ def create_events(courseSchedule):
 
     return lectures
 
-# def create_events(course_schedule):
-#     events = []
-#     timezone = pytz.timezone('America/Vancouver')  # Pacific Time Zone
-
-#     # Define the first full week of January 2024 (Monday to Friday)
-#     week_start_date = timezone.localize(datetime.datetime(2024, 1, 1))  # Monday, January 1, 2024
-
-#     for course in course_schedule:
-#         # Set default start and end times to '00:00' if they are not provided
-#         start_time_str = course.get('startTime', '00:00') or '00:00'
-#         end_time_str = course.get('endTime', '00:00') or '00:00'
-        
-#         # Parse the times into datetime.time objects
-#         start_time = datetime.datetime.strptime(start_time_str, '%H:%M').time()
-#         end_time = datetime.datetime.strptime(end_time_str, '%H:%M').time()
-#         days = course.get('days', '').replace(',', '').split()
-#         rrule_days = [days_mapping[day] for day in days]
-
-#         for day in rrule_days:
-#             # Calculate the exact date for this day in the first week of January 2024
-#             event_date = week_start_date + datetime.timedelta(days=day)
-
-#             # Ensure event times are in the correct timezone
-#             event_start = timezone.localize(datetime.datetime.combine(event_date, start_time))
-#             event_end = timezone.localize(datetime.datetime.combine(event_date, end_time))
-            
-#             # Check if the event is already in the list to avoid duplicates
-#             event_exists = any(e['start'] == event_start.isoformat() and e['end'] == event_end.isoformat() for e in events)
-            
-#             if not event_exists:
-#                 events.append({
-#                     'campus': course.get('campus', 'Burnaby'),
-#                     'sectionCode': course.get('sectionCode', ''),
-#                     'start': event_start.isoformat(),
-#                     'end': event_end.isoformat()
-#                 })
-
-#     return events
-
 def process_course_number_and_section_data(course_number_data, year, term, major, course_number):
     nested_classes = process_course_number_data(course_number_data)
 

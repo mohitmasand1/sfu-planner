@@ -27,14 +27,12 @@ def create_app():
     CORS(app, supports_credentials=True, origins=["*"])
     
     # Register blueprints
-    from app.routes.auth_routes import auth_bp
     from app.routes.rmp_routes import rmp_bp
     from app.routes.sfuapi_routes import sfuapi_bp
     from app.routes.term_routes import term_bp
     from app.routes.cd_routes import cd_bp
     from app.routes.user_routes import user_bp
     
-    app.register_blueprint(auth_bp, url_prefix='/api/auth')
     app.register_blueprint(rmp_bp, url_prefix='/api/rmp')
     app.register_blueprint(sfuapi_bp, url_prefix='/api/sfuapi')
     app.register_blueprint(term_bp, url_prefix='/api/terms')

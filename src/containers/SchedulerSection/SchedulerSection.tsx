@@ -21,7 +21,7 @@ import './styles.css';
 import { useModals } from '../../hooks/ModalsContext';
 import { useMutation } from '@tanstack/react-query';
 import { saveSchedule } from '../NewSchedulePage/http';
-import SaveInstancePage from '../SaveInstanceModal/SaveInstancePage';
+import SaveInstancePage from '../SaveInstance/SaveInstance';
 import LoadInstance from '../LoadInstance/LoadInstance';
 
 interface SchedulerSectionProps {

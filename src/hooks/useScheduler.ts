@@ -5,17 +5,8 @@ import { useState, useCallback, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { fetchCourseOfferings } from '../containers/NewSchedulePage/http';
 import { parseTermCode } from '../utils/parseTermCode';
-import { CourseOffering, Event as CustomEvent } from '../containers/NewSchedulePage/types';
+import { CourseOffering } from '../containers/NewSchedulePage/types';
 import { Event } from '../components/MyScheduler/types'
-
-// [Optional] If you have types in a separate file, import them:
-// import type { } from '../types';
-
-interface SavedScheduleItem {
-  offering: string;       // e.g., "CS-12345" or some path
-  lab?: string;           // e.g., lab session ID
-  tutorial?: string;      // e.g., tutorial session ID
-}
 
 // The signature of the custom hook
 export function useScheduler(termCode: string) {
@@ -40,7 +31,7 @@ export function useScheduler(termCode: string) {
     { course: Course; offering: Offering }[]
   >([]);
 
-  // For color assignment (same logic as in your code)
+  // For color assignment
   const colors = [
     'bg-selection-1',
     'bg-selection-2',
@@ -56,7 +47,6 @@ export function useScheduler(termCode: string) {
 
   // ---------------------------
   // Utility: getDateForDay
-  // (copied from MyScheduler for scheduling events)
   // ---------------------------
   const today = new Date(2024, 0, 1);
   const getDateForDay = useCallback((dayOfWeek: number, time: Date): Date => {
@@ -70,7 +60,6 @@ export function useScheduler(termCode: string) {
 
   // ---------------------------
   // Add or Search a Course
-  // (Similar to your onClickSearch, but moved here)
   // ---------------------------
   const addCourse = useCallback(async (major: string, number: string | number | null | undefined) => {
     // 1. Fetch data from server
@@ -140,7 +129,6 @@ export function useScheduler(termCode: string) {
 
   // ---------------------------
   // scheduleInPersonCourse
-  // (Moves logic from MyScheduler.handleCourseDrop)
   // ---------------------------
   const scheduleInPersonCourse = useCallback(
     (courseId: string, offeringId: string) => {
@@ -218,7 +206,6 @@ export function useScheduler(termCode: string) {
 
   // ---------------------------
   // switchLab
-  // (Moves logic from MyScheduler.handleLabDrop)
   // ---------------------------
   const switchLab = useCallback(
     (courseId: string, offeringId: string, labSessionId: string) => {
@@ -256,7 +243,6 @@ export function useScheduler(termCode: string) {
 
   // ---------------------------
   // switchTutorial
-  // (Moves logic from MyScheduler.handleTutorialDrop)
   // ---------------------------
   const switchTutorial = useCallback(
     (courseId: string, offeringId: string, tutorialSessionId: string) => {
@@ -294,7 +280,6 @@ export function useScheduler(termCode: string) {
 
   // ---------------------------
   // scheduleRemoteCourse
-  // (Moves logic from RemoteOfferingsDropzone.handleRemoteOfferingSelect)
   // ---------------------------
   const scheduleRemoteCourse = useCallback(
     (courseId: string, offeringId: string) => {
@@ -393,7 +378,6 @@ export function useScheduler(termCode: string) {
 
   // -------------------------------------------------------------------
   // 3) Deleting from a Scheduled Course
-  //    (includes removing events, remote scheduling, etc.)
   // -------------------------------------------------------------------
   const handleScheduledDelete = useCallback(
     (courseKey: string, courseId: string) => () => {
@@ -429,8 +413,6 @@ export function useScheduler(termCode: string) {
       // message.success('Removed');
     },
     [
-      // draggingCourseId,
-      // handleDragEnd,
       setAllCourses,
       setEvents,
       setCourses,
@@ -518,7 +500,6 @@ export function useScheduler(termCode: string) {
 
   // ---------------------------
   // loadSchedule
-  // (New method to programmatically schedule a saved set of courses)
   // ---------------------------
   const loadSchedule = useCallback(
     async (savedSchedule: OutputSchedule) => {
@@ -594,7 +575,6 @@ export function useScheduler(termCode: string) {
 
   // ---------------------------
   // Reset / Clear
-  // (Analogous to handleDeleteAllSelections)
   // ---------------------------
   const clearAll = useCallback(() => {
     // Clear states
@@ -632,7 +612,7 @@ export function useScheduler(termCode: string) {
     handleScheduledDelete,
     loadSchedule,
     clearAll,
-    // Refs for color if needed (or hide them behind a function)
+    // Refs for color
     courseColorMapRef,
     availableColorsRef,
   };
