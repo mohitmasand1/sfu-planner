@@ -25,7 +25,7 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
     scheduledCourses,
     scheduledRemoteCourses,
     addCourse,
-    // loadSchedule,
+    loadSchedule,
     scheduleRemoteCourse,
     scheduleInPersonCourse,
     switchLab,
@@ -94,9 +94,10 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
           unscheduleCourse={unscheduleCourse}
           handleDeleteCourseFromList={handleDeleteCourseFromList}
           handleScheduledDelete={handleScheduledDelete}
-          // loadSchedule={loadSchedule}
+          loadSchedule={loadSchedule}
           clearAll={clearAll}
           courseColorMapRef={courseColorMapRef}
+          setLoading={setLoading}
         />
         {loading && <LoadingOverlay />}{' '}
       </div>

@@ -6,20 +6,23 @@ import { DeleteOutlined } from '@ant-design/icons';
 
 const { Text } = Typography;
 
-type OutputCourse = {
-  offering: string;
-  tutorial: string[];
-  lab: string[];
-};
+// type OutputCourse = {
+//   offering: string;
+//   tutorial: string[];
+//   lab: string[];
+// };
 
-type OutputSchedule = {
-  name: string;
-  course_ids: OutputCourse[];
-};
+// type OutputSchedule = {
+//   name: string;
+//   course_ids: OutputCourse[];
+// };
 
-interface LoadInstanceProps {}
+interface LoadInstanceProps {
+  onClickSchedule: (schedule: OutputSchedule) => void;
+}
 
-const LoadInstance: React.FC<LoadInstanceProps> = () => {
+const LoadInstance: React.FC<LoadInstanceProps> = props => {
+  const { onClickSchedule } = props;
   const { data } = useQuery<ScheduleResponse[]>({
     queryKey: [''],
     queryFn: () => getSchedules(),
@@ -68,7 +71,7 @@ const LoadInstance: React.FC<LoadInstanceProps> = () => {
             transition: 'box-shadow 0.3s, opacity 0.3s',
             backgroundColor: '#d1d5db',
           }}
-          onClick={() => {}}
+          onClick={() => onClickSchedule(schedule)}
         >
           <Space
             direction="horizontal"
@@ -88,25 +91,6 @@ const LoadInstance: React.FC<LoadInstanceProps> = () => {
         </Card>
       ))}
     </div>
-    // <div className="flex flex-col">
-    //   {transformedData?.map(course => (
-    //     <div className="flex flex-row">
-    //       <div>{course.name} - </div>
-    //       <div className="flex flex-row">
-    //         {course.course_ids.map(ids => (
-    //           <>
-    //             <div>
-    //               {ids.offering}
-    //               {`, `}
-    //             </div>
-    //             <div>{ids.tutorial.join(', ')}</div>
-    //             <div>{ids.lab.join(', ')}</div>
-    //           </>
-    //         ))}
-    //       </div>
-    //     </div>
-    //   ))}
-    // </div>
   );
 };
 

@@ -102,6 +102,8 @@ export function useScheduler(termCode: string) {
     // 4. Update allCourses and courses
     setAllCourses(all => [...all, courseObj]);
     setCourses(prev => [...prev, courseObj]);
+
+    return courseObj;
   }, [queryClient, term]);
 
   // Same transform logic as your code
@@ -435,70 +437,160 @@ export function useScheduler(termCode: string) {
       setScheduledRemoteCourses,
     ],
   );
+  
+  const scheduleInPersonCourses = useCallback(
+    (course: Course, offeringId: string) => {
+      // 1. Remove existing events for this course
+      console.log("SCHEDULING----")
+      setEvents(prev =>
+        prev.filter(e => e.courseId !== course.id),
+      );
+  
+      // 2. Remove the course from the unscheduled list
+      setCourses(prev =>
+        prev.filter(c => c.id !== course.id),
+      );
+  
+      // 3. Find the Offering directly from the passed-in Course
+      const offering = course.availableOfferings.find(o => o.id === offeringId);
+      if (!offering) return;
+  
+      // 4. Create new events for lectures
+      const newEvents: Event[] = offering.lectures.map(lecture => ({
+        id: `event-${course.id}-${lecture.id}`,
+        className: course.className || '',
+        title: `${course.name} Lecture`,
+        section: offering.specificData.info.section,
+        start: getDateForDay(lecture.day, lecture.startTime),
+        end: getDateForDay(lecture.day, lecture.endTime),
+        courseId: course.id,
+        offeringId,
+        eventType: 'lecture',
+      }));
+  
+      // 5. Also schedule the first lab if present
+      if (offering.labs && offering.labs.length > 0) {
+        const lab = offering.labs[0];
+        newEvents.push({
+          id: `event-${course.id}-lab-${lab.id}`,
+          className: course.className || '',
+          title: `${course.name} Lab`,
+          section: lab.section,
+          start: getDateForDay(lab.day, lab.startTime),
+          end: getDateForDay(lab.day, lab.endTime),
+          courseId: course.id,
+          offeringId,
+          eventType: 'lab',
+          labSessionId: lab.id,
+        } as Event);
+      }
+  
+      // 6. Also schedule the first tutorial if present
+      if (offering.tutorials && offering.tutorials.length > 0) {
+        const tut = offering.tutorials[0];
+        newEvents.push({
+          id: `event-${course.id}-tutorial-${tut.id}`,
+          className: course.className || '',
+          title: `${course.name} Tutorial`,
+          section: tut.section,
+          start: getDateForDay(tut.day, tut.startTime),
+          end: getDateForDay(tut.day, tut.endTime),
+          courseId: course.id,
+          offeringId,
+          eventType: 'tutorial',
+          tutorialSessionId: tut.id,
+        } as Event);
+      }
+  
+
+      // 7. Add them to events
+      setEvents(prev => [...prev, ...newEvents]);
+  
+      // 8. Update scheduledCourses
+      setScheduledCourses(prev => {
+        // Remove if already in scheduled
+        const filtered = prev.filter(item => item.course.id !== course.id);
+        return [...filtered, { course, offering }];
+      });
+    },
+    [getDateForDay],
+  );
 
   // ---------------------------
   // loadSchedule
   // (New method to programmatically schedule a saved set of courses)
   // ---------------------------
-  // const loadSchedule = useCallback(
-  //   async (savedSchedule: SavedScheduleItem[]) => {
-  //     // 1. For each saved item, find or fetch the course in allCourses
-  //     for (let item of savedSchedule) {
-  //       const { offering, lab, tutorial } = item;
+  const loadSchedule = useCallback(
+    async (savedSchedule: OutputSchedule) => {
+      // Loop through each course we want to schedule
+      clearAll();
 
-  //       // a) Find the course/offering in allCourses
-  //       let course = allCourses.find(c =>
-  //         c.availableOfferings.some(o => o.path === offering)
-  //       );
-
-  //       // b) If not found, fetch from API (if that's your workflow)
-  //       if (!course) {
-  //         // Example approach: parse major & number from the path or
-  //         // do whatever your logic is to fetch the missing course
-  //         // ...
-  //         // for safety, skip if you can't fetch
-  //         console.error(`Course for offering path ${offering} not found and not fetched.`);
-  //         continue;
-  //       }
-
-  //       // c) Find the correct offering
-  //       const courseOffering = course.availableOfferings.find(o => o.path === offering);
-  //       if (!courseOffering) {
-  //         console.error(`Offering path ${offering} not found in course ${course.name}`);
-  //         continue;
-  //       }
-
-  //       // d) Check if it's remote
-  //       const isRemote = !courseOffering.lectures?.length &&
-  //                        !courseOffering.labs?.length &&
-  //                        !courseOffering.tutorials?.length;
-
-  //       // e) If remote, schedule via scheduleRemoteCourse
-  //       if (isRemote) {
-  //         scheduleRemoteCourse(course.id, courseOffering.id);
-  //       } else {
-  //         // f) In-person => scheduleInPersonCourse
-  //         scheduleInPersonCourse(course.id, courseOffering.id);
-
-  //         // g) If the user selected a specific lab, switch it
-  //         if (lab) {
-  //           switchLab(course.id, courseOffering.id, lab);
-  //         }
-  //         // h) If the user selected a specific tutorial, switch it
-  //         if (tutorial) {
-  //           switchTutorial(course.id, courseOffering.id, tutorial);
-  //         }
-  //       }
-  //     }
-  //   },
-  //   [
-  //     allCourses,
-  //     scheduleInPersonCourse,
-  //     scheduleRemoteCourse,
-  //     switchLab,
-  //     switchTutorial,
-  //   ],
-  // );
+      for (const outputCourse of savedSchedule.course_ids) {
+        // 1) Parse the offering string, e.g. "2025-spring-cmpt-120-d200"
+        const [major, num, section] = outputCourse.offering.split(' ');
+        // major = "cmpt", num = "120", section = "d200"
+  
+        // 2) Add the course programmatically (simulating user search)
+        //    IMPORTANT: addCourse should return a newly created Course or null
+        const newCourse = await addCourse(major, num);
+        console.log(newCourse)
+        if (!newCourse) {
+          console.error(`Could not add course for: ${major} ${num}`);
+          continue;
+        }
+  
+        // 3) Find the correct offering by matching the 'section'
+        //    e.g. offering.specificData.info.section === "d200"
+        const offering = newCourse.availableOfferings.find(o =>
+          o.specificData.info.section?.toLowerCase() === section.toLowerCase()
+        );
+  
+        if (!offering) {
+          console.error(
+            `No offering found in course "${newCourse.name}" matching section "${section}".`
+          );
+          continue;
+        }  
+        // 4) Check if it’s remote or in-person
+        const isRemote =
+          (offering.lectures?.length ?? 0) === 0 &&
+          (offering.labs?.length ?? 0) === 0 &&
+          (offering.tutorials?.length ?? 0) === 0;
+  
+        // 5) Schedule the course
+        if (isRemote) {
+          // Remote course => scheduleRemoteCourse
+          scheduleRemoteCourse(newCourse.id, offering.id);
+        } else {
+          console.log("scheduling" + newCourse.id)
+          // In-person => scheduleInPersonCourse
+          scheduleInPersonCourses(newCourse, offering.id);
+        }
+  
+        // 6) If the user selected particular labs/tutorials, switch them now
+        //    For example, just use the first lab/tutorial in the arrays:
+        if (!isRemote) {
+          // Switch lab if present
+          if (outputCourse.lab && outputCourse.lab.length > 0) {
+            switchLab(newCourse.id, offering.id, outputCourse.lab[0]);
+          }
+          // Switch tutorial if present
+          if (outputCourse.tutorial && outputCourse.tutorial.length > 0) {
+            switchTutorial(newCourse.id, offering.id, outputCourse.tutorial[0]);
+          }
+        }
+      }
+  
+      console.log('Finished loading schedule:', savedSchedule.name);
+    },
+    [
+      addCourse,
+      scheduleRemoteCourse,
+      scheduleInPersonCourse,
+      switchLab,
+      switchTutorial,
+    ],
+  );
 
   // ---------------------------
   // Reset / Clear
@@ -538,7 +630,7 @@ export function useScheduler(termCode: string) {
     unscheduleCourse,
     handleDeleteCourseFromList,
     handleScheduledDelete,
-    // loadSchedule,
+    loadSchedule,
     clearAll,
     // Refs for color if needed (or hide them behind a function)
     courseColorMapRef,

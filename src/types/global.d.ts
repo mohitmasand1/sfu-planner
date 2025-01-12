@@ -56,4 +56,15 @@ declare global {
         course_ids: CourseIDs[];
     }
 
+    interface OutputCourse {
+        offering: string;
+        tutorial: string[];
+        lab: string[];
+    }
+
+    interface OutputSchedule {
+        name: string;
+        course_ids: OutputCourse[];
+    }
+
 }

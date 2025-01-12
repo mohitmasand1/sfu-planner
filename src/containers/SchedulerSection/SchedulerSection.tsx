@@ -45,11 +45,12 @@ interface SchedulerSectionProps {
   unscheduleCourse: (courseId: string) => void;
   handleDeleteCourseFromList: (courseId: string, courseKey: string) => void;
   handleScheduledDelete: (courseKey: string, courseId: string) => () => void;
-  // loadSchedule: (savedData: any) => void; // Or your real type
+  loadSchedule: (savedData: any) => void; // Or your real type
   clearAll: () => void;
   courseColorMapRef: React.MutableRefObject<{
     [key: string]: string;
   }>;
+  setLoading: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const SchedulerSection: React.FC<SchedulerSectionProps> = ({
@@ -65,8 +66,9 @@ const SchedulerSection: React.FC<SchedulerSectionProps> = ({
   unscheduleCourse,
   handleDeleteCourseFromList,
   handleScheduledDelete,
-  // loadSchedule,
+  loadSchedule,
   clearAll,
+  setLoading,
   courseColorMapRef,
 }) => {
   const { token } = theme.useToken();
@@ -219,20 +221,16 @@ const SchedulerSection: React.FC<SchedulerSectionProps> = ({
     }
   };
 
+  const handleLoadSchedule = async (savedSchedule: OutputSchedule) => {
+    closeModal();
+    setLoading(true);
+    await loadSchedule(savedSchedule);
+    setLoading(false);
+  };
+
   const saveScheduleMutation = useMutation({
     mutationFn: saveSchedule,
   });
-
-  const handleLoadSchedule = () => {
-    // showModal(event, 'Load Schedule', <LoadInstance />);
-    // click on the card
-    // with the card we can identify the name of the schedule
-    // clear all current schedule/course state lists
-    // fetch the course data based on the id's e.g. 2025-spring-cmpt-120-d100 -> [2025 spring cmpt 120 d100] for each course
-    // run it thru the onSearchClick code
-    // save transformed data into a list. Now we need to add it as if its being searched for, and then dragged
-    // we can add it to the scheduledCourses / scheduledRemoteCourses
-  };
 
   const totalCredits = scheduledCourses.reduce(
     (acc, course) => acc + parseInt(course.offering.specificData.info.units),
@@ -344,10 +342,13 @@ const SchedulerSection: React.FC<SchedulerSectionProps> = ({
                       onClick={() =>
                         openModal({
                           title: 'Load Schedule',
-                          content: <LoadInstance />,
+                          content: (
+                            <LoadInstance
+                              onClickSchedule={handleLoadSchedule}
+                            />
+                          ),
                           okText: 'Load',
-                          cancelText: 'Cancel',
-                          onOk: handleLoadSchedule,
+                          footer: null,
                         })
                       }
                     >
