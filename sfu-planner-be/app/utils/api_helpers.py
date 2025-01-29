@@ -11,6 +11,7 @@ import uuid
 
 load_dotenv()
 SFU_API_BASE_URL = os.getenv('SFU_API_BASE_URL')
+SFU_OUTLINE_URL = os.getenv('SFU_OUTLINE_URL')
 
 def parse_custom_date(date_str):
     # Extract the timezone abbreviation and date-time part
@@ -120,7 +121,7 @@ def process_course_section_data(data):
             'number': info.get('number', None),
             'units': info.get('units', None),
             'corequisites': info.get('corequisites', None),
-            'path': f"https://www.sfu.ca/outlines.html?{info.get('outlinePath', None)}",
+            'path': f"{SFU_OUTLINE_URL}?{info.get('outlinePath', None)}",
         }
 
     return formatted_data

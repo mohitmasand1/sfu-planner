@@ -6,6 +6,10 @@ import { Statistic } from 'antd';
 import { LinkOutlined } from '@ant-design/icons';
 import { convertToIsbn13 } from './isbn-converter';
 
+const BACKEND_RMP_API_URL = import.meta.env.VITE_BACKEND_RMP_API_URL;
+const COURSEDIGGERS_URL = import.meta.env.VITE_COURSEDIGGERS_URL;
+const SFU_SHOP_URL = import.meta.env.VITE_SFU_SHOP_URL;
+
 interface CourseItemContentProps {
   course: { course: Course; offering: Offering };
 }
@@ -46,7 +50,7 @@ const CourseItemContent: React.FC<CourseItemContentProps> = props => {
               <div className="flex flex-row gap-1">
                 <label>Professor Rating</label>
                 <a
-                  href={`https://www.ratemyprofessors.com/search/professors/1482?q=${professorDisplayName}`}
+                  href={`${BACKEND_RMP_API_URL}?q=${professorDisplayName}`}
                   target="_blank"
                 >
                   <LinkOutlined />
@@ -66,7 +70,7 @@ const CourseItemContent: React.FC<CourseItemContentProps> = props => {
             <div className="flex flex-col">
               <div className="flex flex-row gap-1">
                 <label>Average Grade</label>
-                <a href={`https://coursediggers.com/`} target="_blank">
+                <a href={COURSEDIGGERS_URL} target="_blank">
                   <LinkOutlined />
                 </a>
               </div>
@@ -84,10 +88,7 @@ const CourseItemContent: React.FC<CourseItemContentProps> = props => {
             <div className="flex flex-col">
               <div className="flex flex-row gap-1">
                 <label>Textbook ISBN</label>
-                <a
-                  href={`https://shop.sfu.ca/Item?item=${isbn13}`}
-                  target="_blank"
-                >
+                <a href={`${SFU_SHOP_URL}?item=${isbn13}`} target="_blank">
                   <LinkOutlined />
                 </a>
               </div>

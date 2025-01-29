@@ -1,13 +1,17 @@
 import { convertToTermCode } from './termcode-converter';
 import { Option, Major, CourseNumber, CourseOffering, SemesterData, SaveScheduleResponse } from './types'
 
+const BACKEND_API_URL = import.meta.env.VITE_BACKEND_API_URL
+const BACKEND_TERMS_API_URL = import.meta.env.VITE_BACKEND_TERMS_API_URL
+const BACKEND_USER_API_URL = import.meta.env.VITE_BACKEND_USER_API_URL
+
 export async function fetchMajors(
     year: string,
     term: string,
   ): Promise<Option[]> {
     const termCode = convertToTermCode(year, term);
     const response = await fetch(
-      `http://localhost:5000/api/sfuapi?termCode=${termCode}`,
+      `${BACKEND_API_URL}?termCode=${termCode}`,
     );
     if (!response.ok) {
       throw new Error('Network response was not ok');
@@ -26,7 +30,7 @@ export async function fetchMajors(
   ): Promise<Option[]> {
     const termCode = convertToTermCode(year, term);
     const response = await fetch(
-      `http://localhost:5000/api/sfuapi?termCode=${termCode}&major=${department}`,
+      `${BACKEND_API_URL}?termCode=${termCode}&major=${department}`,
     );
     if (!response.ok) {
       throw new Error('Network response was not ok');
@@ -46,7 +50,7 @@ export async function fetchMajors(
   ): Promise<CourseOffering[]> {
     const termCode = convertToTermCode(year, term);
     const response = await fetch(
-      `http://localhost:5000/api/sfuapi?termCode=${termCode}&major=${department}&course=${courseNumber}`,
+      `${BACKEND_API_URL}?termCode=${termCode}&major=${department}&course=${courseNumber}`,
     );
     if (!response.ok) {
       throw new Error('Network response was not ok');
@@ -64,7 +68,7 @@ export async function fetchMajors(
   ): Promise<CourseSection> {
     const termCode = convertToTermCode(year, term);
     const response = await fetch(
-      `http://localhost:5000/api/sfuapi?termCode=${termCode}&major=${department}&course=${courseNumber}&section=${courseSection}`,
+      `${BACKEND_API_URL}?termCode=${termCode}&major=${department}&course=${courseNumber}&section=${courseSection}`,
     );
     if (!response.ok) {
       throw new Error('Network response was not ok');
@@ -74,7 +78,7 @@ export async function fetchMajors(
   }
 
   export const fetchSemesters = async (): Promise<SemesterData[]> => {
-    const response = await fetch('http://localhost:5000/api/terms/terms'); // Adjust URL if hosted differently
+    const response = await fetch(`${BACKEND_TERMS_API_URL}`); // Adjust URL if hosted differently
     if (!response.ok) {
       throw new Error(`Error fetching semesters: ${response.statusText}`);
     }
@@ -82,7 +86,7 @@ export async function fetchMajors(
   };
 
   export async function fetchOnLoad(): Promise<GetResponse> {
-    const response = await fetch('http://localhost:5000/api/user/uuid', {
+    const response = await fetch(`${BACKEND_USER_API_URL}/uuid`, {
       method: 'GET',
     });
   
@@ -95,7 +99,7 @@ export async function fetchMajors(
   }
 
   export async function saveSchedule(scheduleData: { name: string; course_ids: CourseIDs[] }): Promise<SaveScheduleResponse> {
-    const response = await fetch('http://localhost:5000/api/user/save', {
+    const response = await fetch(`${BACKEND_USER_API_URL}/save`, {
       method: 'POST',
       credentials: 'include',
       headers: {
@@ -113,7 +117,7 @@ export async function fetchMajors(
   };
 
   export async function getSchedules(): Promise<ScheduleResponse[]> {
-    const response = await fetch('http://localhost:5000/api/user', {
+    const response = await fetch(`${BACKEND_USER_API_URL}`, {
       method: 'GET',
       credentials: 'include',
     });
