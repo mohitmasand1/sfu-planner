@@ -58,8 +58,8 @@ declare global {
 
     interface OutputCourse {
         offering: string;
-        tutorial: string[];
-        lab: string[];
+        tutorial: string;
+        lab: string;
     }
 
     interface OutputSchedule {

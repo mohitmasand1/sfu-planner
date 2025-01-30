@@ -215,12 +215,16 @@ export function useScheduler(termCode: string) {
           e => !(e.courseId === courseId && e.eventType === 'lab')
         );
 
+        console.log('searching for course to switch lab...')
+
         const course = allCourses.find(c => c.id === courseId);
         if (!course) return filtered;
         const offering = course.availableOfferings.find(o => o.id === offeringId);
         if (!offering) return filtered;
+        console.log('Searching Lab....')
         const lab = offering.labs?.find(l => l.id === labSessionId);
         if (!lab) return filtered;
+        console.log('lab being added - ', lab)
 
         const newLabEvent: Event = {
           id: `event-${courseId}-lab-${lab.id}`,
@@ -449,6 +453,10 @@ export function useScheduler(termCode: string) {
         offeringId,
         eventType: 'lecture',
       }));
+
+      console.log('Found offering:', offering);
+      console.log('Labs for this offering:', offering.labs);
+      console.log('Tutorials for this offering:', offering.tutorials);
   
       // 5. Also schedule the first lab if present
       if (offering.labs && offering.labs.length > 0) {
@@ -484,7 +492,7 @@ export function useScheduler(termCode: string) {
         } as Event);
       }
   
-
+      console.log('newEvents being added to events: ', newEvents)
       // 7. Add them to events
       setEvents(prev => [...prev, ...newEvents]);
   
@@ -496,6 +504,79 @@ export function useScheduler(termCode: string) {
       });
     },
     [getDateForDay],
+  );
+
+  const switchLabs = useCallback(
+    (course: Course, offeringId: string, labSessionId: string) => {
+      setEvents(prevEvents => {
+        // Remove existing lab for this course
+        const filtered = prevEvents.filter(
+          e => !(e.courseId === course?.id && e.eventType === 'lab')
+        );
+
+        console.log('searching for course to switch lab...')
+
+        // const course = allCourses.find(c => c.id === course?.id);
+        if (!course) return filtered;
+        const offering = course.availableOfferings.find(o => o.id === offeringId);
+        if (!offering) return filtered;
+        console.log('Searching Lab....')
+        const lab = offering.labs?.find(l => l.id === labSessionId);
+        if (!lab) return filtered;
+        console.log('lab being added - ', lab)
+
+        const newLabEvent: Event = {
+          id: `event-${course.id}-lab-${lab.id}`,
+          className: course.className || '',
+          title: `${course.name} Lab`,
+          section: lab.section,
+          start: getDateForDay(lab.day, lab.startTime),
+          end: getDateForDay(lab.day, lab.endTime),
+          courseId: course.id,
+          offeringId,
+          eventType: 'lab',
+          labSessionId: lab.id,
+        };
+
+        return [...filtered, newLabEvent];
+      });
+    },
+    [allCourses, getDateForDay],
+  );
+
+  const switchTutorials = useCallback(
+    (course: Course, offeringId: string, tutorialSessionId: string) => {
+      setEvents(prevEvents => {
+        const courseId = course?.id
+        // Remove existing tutorial for this course
+        const filtered = prevEvents.filter(
+          e => !(e.courseId === course?.id && e.eventType === 'tutorial')
+        );
+
+        // const course = allCourses.find(c => c.id === courseId);
+        if (!course) return filtered;
+        const offering = course.availableOfferings.find(o => o.id === offeringId);
+        if (!offering) return filtered;
+        const tut = offering.tutorials?.find(t => t.id === tutorialSessionId);
+        if (!tut) return filtered;
+
+        const newTutEvent: Event = {
+          id: `event-${courseId}-tutorial-${tut.id}`,
+          className: course.className || '',
+          title: `${course.name} Tutorial`,
+          section: tut.section,
+          start: getDateForDay(tut.day, tut.startTime),
+          end: getDateForDay(tut.day, tut.endTime),
+          courseId,
+          offeringId,
+          eventType: 'tutorial',
+          tutorialSessionId: tut.id,
+        };
+
+        return [...filtered, newTutEvent];
+      });
+    },
+    [allCourses, getDateForDay],
   );
 
   // ---------------------------
@@ -547,17 +628,21 @@ export function useScheduler(termCode: string) {
           // In-person => scheduleInPersonCourse
           scheduleInPersonCourses(newCourse, offering.id);
         }
+
+        const labId = offering.labs?.find(lab => lab.section == outputCourse.lab)?.id || ''
+        const tutId = offering.tutorials?.find(tut => tut.section == outputCourse.tutorial)?.id || ''
+        console.log('outputCourse LAB - ', labId)
   
         // 6) If the user selected particular labs/tutorials, switch them now
         //    For example, just use the first lab/tutorial in the arrays:
         if (!isRemote) {
           // Switch lab if present
           if (outputCourse.lab && outputCourse.lab.length > 0) {
-            switchLab(newCourse.id, offering.id, outputCourse.lab[0]);
+            switchLabs(newCourse, offering.id, labId);
           }
           // Switch tutorial if present
           if (outputCourse.tutorial && outputCourse.tutorial.length > 0) {
-            switchTutorial(newCourse.id, offering.id, outputCourse.tutorial[0]);
+            switchTutorials(newCourse, offering.id, tutId);
           }
         }
       }

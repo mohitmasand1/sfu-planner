@@ -23,8 +23,8 @@ const LoadInstance: React.FC<LoadInstanceProps> = props => {
       name: schedule.name,
       course_ids: schedule.course_ids.map(course => ({
         offering: transformOffering(course.offering),
-        tutorial: transformTutorial(course.tutorial || ''),
-        lab: transformTutorial(course.lab || ''),
+        tutorial: course.tutorial || '',
+        lab: course.lab || '',
       })),
     }));
   }
@@ -35,11 +35,6 @@ const LoadInstance: React.FC<LoadInstanceProps> = props => {
     if (parts.length < 4) return offering; // Return original if format is unexpected
     const [_, , major, number, section] = parts;
     return `${major.toUpperCase()} ${number.toUpperCase()} ${section.toUpperCase()}`;
-  }
-
-  function transformTutorial(tutorial: string): string[] {
-    // Transform "d101/d102" to ["D101", "D102"]
-    return tutorial ? tutorial.split('/').map(tut => tut.toUpperCase()) : [];
   }
 
   const transformedData: OutputSchedule[] = transformData(data || []);
