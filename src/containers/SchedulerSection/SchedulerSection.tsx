@@ -238,6 +238,7 @@ const SchedulerSection: React.FC<SchedulerSectionProps> = ({
   );
 
   const numOfCourses = scheduledCourses.length;
+  const hasScheduledCourses = (getItems(panelStyle)?.length || 0) > 0;
 
   return (
     <div className="flex flex-row flex-1 w-full overflow-hidden justify-center items-start min-h-0 px-6 pb-6 gap-4">
@@ -293,7 +294,7 @@ const SchedulerSection: React.FC<SchedulerSectionProps> = ({
               isEventDragging={isEventDragging}
               onUnscheduleCourse={unscheduleCourse}
             />
-            <div className="flex flex-col flex-1 overflow-y-auto scrollbar min-h-0 gap-3">
+            <div className="flex flex-col flex-1 overflow-y-auto scrollbar min-h-0 gap-3 h-full justify-between">
               {scheduledCourses.length > 0 && (
                 <Collapse
                   bordered={false}
@@ -307,63 +308,63 @@ const SchedulerSection: React.FC<SchedulerSectionProps> = ({
                   onChange={keys => setActiveKeys(keys as string[])}
                 />
               )}
-              {(getItems(panelStyle)?.length || 0) > 0 && (
-                <div className="flex flex-col gap-2">
-                  <div className="flex justify-center gap-4">
-                    <label className="text-sm">{`Courses: ${numOfCourses}`}</label>
-                    <label className="text-sm">{`Total Credits: ${totalCredits}`}</label>
-                  </div>
-                  <div className="flex flex-wrap justify-center self-center gap-4 scrollbar">
-                    <Button
-                      className="bg-sky-100 text-neutral-900"
-                      type="primary"
-                      onClick={() =>
-                        openModal({
-                          title: 'Save Schedule',
-                          content: <SaveInstancePage form={[form]} />,
-                          okText: 'Save',
-                          cancelText: 'Cancel',
-                          onOk: handleSaveSchedule,
-                        })
-                      }
-                    >
-                      Save
-                    </Button>
-                    <Button
-                      className="bg-sky-100 text-neutral-900"
-                      type="primary"
-                      onClick={clearAll}
-                    >
-                      Clear
-                    </Button>
-                    <Button
-                      className="bg-sky-100 text-neutral-900"
-                      type="primary"
-                      onClick={() =>
-                        openModal({
-                          title: 'Load Schedule',
-                          content: (
-                            <LoadInstance
-                              onClickSchedule={handleLoadSchedule}
-                            />
-                          ),
-                          okText: 'Load',
-                          footer: null,
-                        })
-                      }
-                    >
-                      Load
-                    </Button>
-                    <Button
-                      className="bg-sky-100 text-neutral-900"
-                      type="primary"
-                      onClick={handleRevealHideAll}
-                    >
-                      Open/Close All
-                    </Button>
-                  </div>
+
+              <div className="flex flex-col gap-2">
+                <div className="flex justify-center gap-4">
+                  <label className="text-sm">{`Courses: ${numOfCourses}`}</label>
+                  <label className="text-sm">{`Total Credits: ${totalCredits}`}</label>
                 </div>
-              )}
+                <div className="flex flex-wrap justify-center self-center gap-4 scrollbar">
+                  <Button
+                    className="bg-sky-100 text-neutral-900"
+                    type="primary"
+                    disabled={!hasScheduledCourses}
+                    onClick={() =>
+                      openModal({
+                        title: 'Save Schedule',
+                        content: <SaveInstancePage form={[form]} />,
+                        okText: 'Save',
+                        cancelText: 'Cancel',
+                        onOk: handleSaveSchedule,
+                      })
+                    }
+                  >
+                    Save
+                  </Button>
+                  <Button
+                    className="bg-sky-100 text-neutral-900"
+                    type="primary"
+                    disabled={!hasScheduledCourses}
+                    onClick={clearAll}
+                  >
+                    Clear
+                  </Button>
+                  <Button
+                    className="bg-sky-100 text-neutral-900"
+                    type="primary"
+                    onClick={() =>
+                      openModal({
+                        title: 'Load Schedule',
+                        content: (
+                          <LoadInstance onClickSchedule={handleLoadSchedule} />
+                        ),
+                        okText: 'Load',
+                        footer: null,
+                      })
+                    }
+                  >
+                    Load
+                  </Button>
+                  <Button
+                    className="bg-sky-100 text-neutral-900"
+                    type="primary"
+                    disabled={!hasScheduledCourses}
+                    onClick={handleRevealHideAll}
+                  >
+                    Open/Close All
+                  </Button>
+                </div>
+              </div>
             </div>
           </div>
         </Card>
