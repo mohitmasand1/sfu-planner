@@ -23,6 +23,7 @@ import { useMutation } from '@tanstack/react-query';
 import { saveSchedule } from '../NewSchedulePage/http';
 import SaveInstancePage from '../SaveInstance/SaveInstance';
 import LoadInstance from '../LoadInstance/LoadInstance';
+import SFUButton from '../../components/Button/SFUButton';
 
 interface SchedulerSectionProps {
   allCourses: Course[];
@@ -315,32 +316,65 @@ const SchedulerSection: React.FC<SchedulerSectionProps> = ({
                   <label className="text-sm">{`Total Credits: ${totalCredits}`}</label>
                 </div>
                 <div className="flex flex-wrap justify-center self-center gap-4 scrollbar">
-                  <Button
-                    className="bg-sky-100 text-neutral-900"
-                    type="primary"
+                  <SFUButton
                     disabled={!hasScheduledCourses}
                     onClick={() =>
                       openModal({
                         title: 'Save Schedule',
-                        content: <SaveInstancePage form={[form]} />,
+                        content: (
+                          <SaveInstancePage
+                            form={[form]}
+                            schedule={scheduledCourses}
+                          />
+                        ),
                         okText: 'Save',
                         cancelText: 'Cancel',
+                        centered: true,
                         onOk: handleSaveSchedule,
                       })
                     }
                   >
                     Save
-                  </Button>
-                  <Button
-                    className="bg-sky-100 text-neutral-900"
+                  </SFUButton>
+                  {/* <Button
+                    className="!bg-red-600 
+          !border-red-600 
+          !text-white 
+          hover:!bg-red-500 
+          hover:!border-red-500"
+                    type="primary"
+                    disabled={!hasScheduledCourses}
+                    onClick={() =>
+                      openModal({
+                        title: 'Save Schedule',
+                        content: (
+                          <SaveInstancePage
+                            form={[form]}
+                            schedule={scheduledCourses}
+                          />
+                        ),
+                        okText: 'Save',
+                        cancelText: 'Cancel',
+                        centered: true,
+                        onOk: handleSaveSchedule,
+                      })
+                    }
+                  >
+                    Save
+                  </Button> */}
+                  <SFUButton disabled={!hasScheduledCourses} onClick={clearAll}>
+                    Clear
+                  </SFUButton>
+                  {/* <Button
+                    className="bg-red-600"
                     type="primary"
                     disabled={!hasScheduledCourses}
                     onClick={clearAll}
                   >
                     Clear
-                  </Button>
-                  <Button
-                    className="bg-sky-100 text-neutral-900"
+                  </Button> */}
+                  {/* <Button
+                    className="bg-red-600"
                     type="primary"
                     onClick={() =>
                       openModal({
@@ -350,19 +384,41 @@ const SchedulerSection: React.FC<SchedulerSectionProps> = ({
                         ),
                         okText: 'Load',
                         footer: null,
+                        centered: true,
                       })
                     }
                   >
                     Load
-                  </Button>
-                  <Button
-                    className="bg-sky-100 text-neutral-900"
+                  </Button> */}
+                  <SFUButton
+                    onClick={() =>
+                      openModal({
+                        title: 'Load Schedule',
+                        content: (
+                          <LoadInstance onClickSchedule={handleLoadSchedule} />
+                        ),
+                        okText: 'Load',
+                        footer: null,
+                        centered: true,
+                      })
+                    }
+                  >
+                    Load
+                  </SFUButton>
+                  <SFUButton
+                    disabled={!hasScheduledCourses}
+                    onClick={handleRevealHideAll}
+                  >
+                    Open/Close All
+                  </SFUButton>
+                  {/* <Button
+                    className="bg-red-600"
                     type="primary"
                     disabled={!hasScheduledCourses}
                     onClick={handleRevealHideAll}
                   >
                     Open/Close All
-                  </Button>
+                  </Button> */}
                 </div>
               </div>
             </div>

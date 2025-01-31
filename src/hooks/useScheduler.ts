@@ -632,6 +632,7 @@ export function useScheduler(termCode: string) {
         const labId = offering.labs?.find(lab => lab.section == outputCourse.lab)?.id || ''
         const tutId = offering.tutorials?.find(tut => tut.section == outputCourse.tutorial)?.id || ''
         console.log('outputCourse LAB - ', labId)
+        console.log('outputCourse TUT - ', tutId)
   
         // 6) If the user selected particular labs/tutorials, switch them now
         //    For example, just use the first lab/tutorial in the arrays:

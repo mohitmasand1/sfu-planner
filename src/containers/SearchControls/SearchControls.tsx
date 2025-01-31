@@ -4,6 +4,7 @@ import { Option } from '../NewSchedulePage/types';
 import { useQuery } from '@tanstack/react-query';
 import { fetchMajorCourses, fetchMajors } from '../NewSchedulePage/http';
 import { parseTermCode } from '../../utils/parseTermCode';
+import SFUButton from '../../components/Button/SFUButton';
 
 const HeaderControls = ({
   termCode,
@@ -107,14 +108,22 @@ const HeaderControls = ({
         value={numberSelected}
         onSelect={updateNumberSelectionMade}
       />
-      <Button
+      {/* <Button
+        className="bg-red-600"
         type="primary"
         size="middle"
         disabled={isAddDisabled}
         onClick={() => onClickSearch(majorSelected, numberSelected)}
       >
         Add
-      </Button>
+      </Button> */}
+      <SFUButton
+        size="middle"
+        disabled={isAddDisabled}
+        onClick={() => onClickSearch(majorSelected, numberSelected)}
+      >
+        Add
+      </SFUButton>
     </div>
   );
 };
