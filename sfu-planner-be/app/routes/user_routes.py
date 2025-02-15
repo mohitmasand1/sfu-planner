@@ -48,6 +48,7 @@ def save_schedule():
 
     data = request.json
     schedule_name = data.get('name')
+    term = data.get('term')
     course_ids = data.get('course_ids')
 
     if not schedule_name or not course_ids or not is_valid_string(schedule_name):
@@ -64,15 +65,16 @@ def save_schedule():
 
         for schedule in schedules:
             if schedule['name'] == schedule_name:
+                schedule['term'] = term
                 schedule['course_ids'] = course_ids
                 break
         else:
-            schedules.append({"name": schedule_name, "course_ids": course_ids})
+            schedules.append({"name": schedule_name, "term": term, "course_ids": course_ids})
         mongo.db.schedules.update_one({"user_id": user_uuid}, {"$set": {"schedules": schedules}})
     else:
         mongo.db.schedules.insert_one({
             "user_id": user_uuid,
-            "schedules": [{"name": schedule_name, "course_ids": course_ids}]
+            "schedules": [{"name": schedule_name, "term": term, "course_ids": course_ids}]
         })
 
     return jsonify({"message": "Schedule saved successfully"})

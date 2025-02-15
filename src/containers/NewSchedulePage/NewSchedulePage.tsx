@@ -19,6 +19,7 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
   const [loading, setLoading] = useState(false);
 
   const {
+    term,
     allCourses,
     courses,
     events,
@@ -71,6 +72,8 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
   console.log('scheduledRemoteCourses - ', scheduledRemoteCourses);
   console.log('events - ', events);
 
+  console.log('TERMCODE IN NEWSCHEDULPAGE --', termCode);
+
   return (
     <DndProvider backend={HTML5Backend}>
       <div className="flex flex-col flex-1 w-full items-center min-h-0 overflow-hidden">
@@ -82,6 +85,8 @@ const NewSchedulePage: React.FC<NewSchedulePageProps> = props => {
           isAppliedCourseReSelected={isAppliedCourseReSelected}
         />
         <SchedulerSection
+          term={term}
+          setTermCode={setTermCode}
           allCourses={allCourses}
           events={events}
           courses={courses}

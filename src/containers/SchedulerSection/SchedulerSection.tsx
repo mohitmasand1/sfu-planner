@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { flushSync } from 'react-dom';
 import MyScheduler from '../../components/MyScheduler/MyScheduler';
 import RemoteOfferingsDropzone from '../../components/MyScheduler/RemoteOfferingsDropzone';
 import type { Event as CustomEvent } from '../../components/MyScheduler/types';
@@ -24,8 +25,11 @@ import { saveSchedule } from '../NewSchedulePage/http';
 import SaveInstancePage from '../SaveInstance/SaveInstance';
 import LoadInstance from '../LoadInstance/LoadInstance';
 import SFUButton from '../../components/Button/SFUButton';
+import { generateTermCode } from '../../utils/parseTermCode';
 
 interface SchedulerSectionProps {
+  term: { semester: string; year: string };
+  setTermCode: React.Dispatch<React.SetStateAction<string>>;
   allCourses: Course[];
   events: CustomEvent[];
   courses: Course[];
@@ -46,7 +50,7 @@ interface SchedulerSectionProps {
   unscheduleCourse: (courseId: string) => void;
   handleDeleteCourseFromList: (courseId: string, courseKey: string) => void;
   handleScheduledDelete: (courseKey: string, courseId: string) => () => void;
-  loadSchedule: (savedData: any) => void; // Or your real type
+  loadSchedule: (savedData: any, code: string) => Promise<void>; // Or your real type
   clearAll: () => void;
   courseColorMapRef: React.MutableRefObject<{
     [key: string]: string;
@@ -55,6 +59,8 @@ interface SchedulerSectionProps {
 }
 
 const SchedulerSection: React.FC<SchedulerSectionProps> = ({
+  term,
+  setTermCode,
   allCourses,
   events,
   courses,
@@ -184,6 +190,7 @@ const SchedulerSection: React.FC<SchedulerSectionProps> = ({
 
       const scheduleData = {
         name: scheduleName, // Use the captured schedule name
+        term,
         course_ids: scheduledCourses.map(course => ({
           offering: course.offering.path,
           lab:
@@ -207,12 +214,14 @@ const SchedulerSection: React.FC<SchedulerSectionProps> = ({
       // Show success message
       Modal.success({
         title: 'Success',
+        centered: true,
         content: 'Your schedule has been saved successfully!',
       });
     } catch (error) {
       if (error instanceof Error) {
         Modal.error({
           title: 'Error',
+          centered: true,
           content: error.message,
         });
       }
@@ -224,8 +233,13 @@ const SchedulerSection: React.FC<SchedulerSectionProps> = ({
 
   const handleLoadSchedule = async (savedSchedule: OutputSchedule) => {
     closeModal();
+    const term = generateTermCode(
+      savedSchedule.term.semester,
+      savedSchedule.term.year,
+    );
+    flushSync(() => setTermCode(term));
     setLoading(true);
-    await loadSchedule(savedSchedule);
+    await loadSchedule(savedSchedule, term);
     setLoading(false);
   };
 

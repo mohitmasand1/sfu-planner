@@ -1,5 +1,5 @@
 // src/hooks/useScheduler.ts
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 
 // For queries
 import { useQueryClient } from '@tanstack/react-query';
@@ -11,11 +11,12 @@ import { Event } from '../components/MyScheduler/types'
 // The signature of the custom hook
 export function useScheduler(termCode: string) {
   const queryClient = useQueryClient();
-  const term = parseTermCode(termCode);
+  // const term = parseTermCode(termCode);
 
   // ---------------------------
   // States
   // ---------------------------
+  const [term, setTerm] = useState(parseTermCode(termCode));
   // The "master" list of courses that have been searched/added
   const [allCourses, setAllCourses] = useState<Course[]>([]);
   // The "unscheduled" courses that appear in the CourseList
@@ -31,6 +32,10 @@ export function useScheduler(termCode: string) {
     { course: Course; offering: Offering }[]
   >([]);
 
+  useEffect(() => {
+    setTerm(parseTermCode(termCode))
+  }, [termCode])
+
   // For color assignment
   const colors = [
     'bg-selection-1',
@@ -44,6 +49,7 @@ export function useScheduler(termCode: string) {
   ];
   const courseColorMapRef = useRef<{ [key: string]: string }>({});
   const availableColorsRef = useRef<string[]>([...colors]);
+  console.log('TERMCODE IN USESCHEDULER --', termCode)
 
   // ---------------------------
   // Utility: getDateForDay
@@ -61,8 +67,9 @@ export function useScheduler(termCode: string) {
   // ---------------------------
   // Add or Search a Course
   // ---------------------------
-  const addCourse = useCallback(async (major: string, number: string | number | null | undefined) => {
+  const addCourse = async (major: string, number: string | number | null | undefined) => {
     // 1. Fetch data from server
+    console.log('MAKING A REQUEST WITH TERM CODE --', termCode)
     const data = await queryClient.fetchQuery<CourseOffering[], Error>({
       queryKey: [term.year, term.semester, major, number],
       queryFn: () => fetchCourseOfferings(term.year, term.semester, major, number),
@@ -93,7 +100,43 @@ export function useScheduler(termCode: string) {
     setCourses(prev => [...prev, courseObj]);
 
     return courseObj;
-  }, [queryClient, term]);
+  };
+
+  const addCourseByTerm = async (code: string, major: string, number: string | number | null | undefined) => {
+    // 1. Fetch data from server
+    console.log('MAKING A REQUEST WITH TERM CODE --', termCode)
+    const termObj = parseTermCode(code)
+    const data = await queryClient.fetchQuery<CourseOffering[], Error>({
+      queryKey: [termObj.year, termObj.semester, major, number],
+      queryFn: () => fetchCourseOfferings(termObj.year, termObj.semester, major, number),
+    });
+
+    // 2. Assign color if needed
+    const courseKey = data[0].specificData.info.name;
+    let classColor = courseColorMapRef.current[courseKey];
+    if (!classColor) {
+      if (availableColorsRef.current.length > 0) {
+        classColor = availableColorsRef.current.pop() as string;
+        courseColorMapRef.current[courseKey] = classColor;
+      } else {
+        console.error('No available colors left!');
+      }
+    }
+
+    // 3. Transform data
+    const courseObj = {
+      id: crypto.randomUUID(),
+      className: classColor,
+      name: data[0].specificData.info.name,
+      availableOfferings: transformCourseData(data),
+    } as Course;
+
+    // 4. Update allCourses and courses
+    setAllCourses(all => [...all, courseObj]);
+    setCourses(prev => [...prev, courseObj]);
+
+    return courseObj;
+  };
 
   // Same transform logic as your code
   const transformCourseData = useCallback((data: CourseOffering[]) => {
@@ -582,8 +625,8 @@ export function useScheduler(termCode: string) {
   // ---------------------------
   // loadSchedule
   // ---------------------------
-  const loadSchedule = useCallback(
-    async (savedSchedule: OutputSchedule) => {
+  const loadSchedule = 
+    async (savedSchedule: OutputSchedule, code: string) => {
       // Loop through each course we want to schedule
       clearAll();
 
@@ -594,7 +637,8 @@ export function useScheduler(termCode: string) {
   
         // 2) Add the course programmatically (simulating user search)
         //    IMPORTANT: addCourse should return a newly created Course or null
-        const newCourse = await addCourse(major, num);
+        console.log("TERMCODE IN LOADSCHEDULE", termCode)
+        const newCourse = await addCourseByTerm(code, major, num);
         console.log(newCourse)
         if (!newCourse) {
           console.error(`Could not add course for: ${major} ${num}`);
@@ -649,15 +693,7 @@ export function useScheduler(termCode: string) {
       }
   
       console.log('Finished loading schedule:', savedSchedule.name);
-    },
-    [
-      addCourse,
-      scheduleRemoteCourse,
-      scheduleInPersonCourse,
-      switchLab,
-      switchTutorial,
-    ],
-  );
+    }
 
   // ---------------------------
   // Reset / Clear
@@ -681,6 +717,7 @@ export function useScheduler(termCode: string) {
 
   // Return everything needed
   return {
+    term,
     // States
     allCourses,
     courses,

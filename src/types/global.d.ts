@@ -53,6 +53,7 @@ declare global {
 
     interface ScheduleResponse {
         name: string;
+        term: { semester: string; year: string };
         course_ids: CourseIDs[];
     }
 
@@ -64,6 +65,7 @@ declare global {
 
     interface OutputSchedule {
         name: string;
+        term: { semester: string; year: string };
         course_ids: OutputCourse[];
     }
 

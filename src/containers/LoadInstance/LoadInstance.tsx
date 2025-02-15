@@ -25,6 +25,7 @@ const LoadInstance: React.FC<LoadInstanceProps> = props => {
   function transformData(data: ScheduleResponse[]): OutputSchedule[] {
     return data.map(schedule => ({
       name: schedule.name,
+      term: schedule.term,
       course_ids: schedule.course_ids.map(course => ({
         offering: transformOffering(course.offering),
         tutorial: course.tutorial || '',
@@ -131,6 +132,19 @@ const LoadInstance: React.FC<LoadInstanceProps> = props => {
                         "
                       >
                         {courseCount} {courseCount === 1 ? 'Course' : 'Courses'}
+                      </span>
+                      <span
+                        className="
+                          bg-blue-100 
+                          text-blue-600 
+                          text-xs 
+                          font-medium 
+                          px-2 
+                          py-0.5 
+                          rounded-full
+                        "
+                      >
+                        {`${schedule.term?.semester} ${schedule.term?.year}`}
                       </span>
                     </div>
 

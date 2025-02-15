@@ -81,6 +81,7 @@ const HeaderControls = ({
     <div className="flex justify-center items-center gap-4 flex-wrap p-4 w-full flex-none">
       <Select
         defaultValue={termCode}
+        value={termCode}
         className="w-32"
         onChange={handleSemesterChange}
         options={semesterOptions}
