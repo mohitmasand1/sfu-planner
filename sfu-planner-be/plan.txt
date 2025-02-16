@@ -1,0 +1,29 @@
+unprotected api's
+- get available termcodes -()
+- get majors - (termCode: string)
+- get course names for major - (major: string)
+- get course/Lab/Tut offerings for course name - (cnumber: string)
+- get course details by course offering - (section: string)
+
+protected api's (required session token?)
+- save schdule
+- delete schedule
+- get saved schedule
+
+authentication api's
+- login
+- logout
+
+sfu api helpers
+- convert data to easily usable format, remove unnecesarry values
+
+rmp helpers
+- get prof's rating and return values
+
+textbook helpers
+- get links for textbook which are required
+
+mongo helpers
+- GET, POST, DELETE from/to mongodb
+    - User information
+    - Schedules saved by users
