@@ -298,5 +298,5 @@ def process_course_number_and_section_data(course_number_data, year, term, major
         # Remove duplicates across all tutorial events
         cls['tutorials'] = remove_duplicates(all_tut_events)
 
-    print(nested_classes)
+    # print(nested_classes)
     return nested_classes

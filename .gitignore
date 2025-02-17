@@ -14,6 +14,7 @@ dist-ssr
 sfu-planner-be/venv
 sfu-planner-be/.env
 sfu-planner-be/plan.txt
+sfu-planner-be/zappa_settings.json
 *.env
 sfu-planner-fe/package-lock.json
 sfu-planner-fe/.env

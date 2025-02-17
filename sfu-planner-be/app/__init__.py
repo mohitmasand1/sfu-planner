@@ -32,11 +32,13 @@ def create_app():
     from app.routes.term_routes import term_bp
     from app.routes.cd_routes import cd_bp
     from app.routes.user_routes import user_bp
+    from app.routes.health_routes import health_bp
     
     app.register_blueprint(rmp_bp, url_prefix='/api/rmp')
     app.register_blueprint(sfuapi_bp, url_prefix='/api/sfuapi')
     app.register_blueprint(term_bp, url_prefix='/api/terms')
     app.register_blueprint(cd_bp, url_prefix='/api/cd')
     app.register_blueprint(user_bp, url_prefix='/api/user')
+    app.register_blueprint(health_bp)
     
     return app

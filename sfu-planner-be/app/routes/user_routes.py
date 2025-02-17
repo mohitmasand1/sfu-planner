@@ -34,7 +34,7 @@ def create_or_get_uuid():
 # Middleware to Ensure UUID Exists
 def ensure_uuid():
     user_uuid = request.cookies.get('user_uuid')
-    print(user_uuid)
+    # print(user_uuid)
     if not user_uuid:
         return jsonify({"error": "User UUID not found. Please reload the app."}), 400
     return user_uuid
