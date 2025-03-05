@@ -6,9 +6,9 @@ import { Statistic } from 'antd';
 import { LinkOutlined } from '@ant-design/icons';
 import { convertToIsbn13 } from './isbn-converter';
 
-const BACKEND_RMP_API_URL = import.meta.env.VITE_BACKEND_RMP_API_URL;
-const COURSEDIGGERS_URL = import.meta.env.VITE_COURSEDIGGERS_URL;
-const SFU_SHOP_URL = import.meta.env.VITE_SFU_SHOP_URL;
+const BACKEND_RMP_API_URL = import.meta.env.BACKEND_RMP_API_URL;
+const COURSEDIGGERS_URL = import.meta.env.COURSEDIGGERS_URL;
+const SFU_SHOP_URL = import.meta.env.SFU_SHOP_URL;
 
 interface CourseItemContentProps {
   course: { course: Course; offering: Offering };
