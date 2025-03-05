@@ -6,14 +6,14 @@ import clsx from 'clsx';
  * Variants your button might support.
  * Add more if needed (e.g., "primary", "secondary", "danger", etc.).
  */
-type Variant = 'red' | 'green' | 'blue';
+// type Variant = 'red' | 'green' | 'blue';
 
 export interface MyButtonProps extends Omit<AntButtonProps, 'type'> {
   /**
    * Which color variant to use for the button.
    * Defaults to "red" in this example.
    */
-  variant?: Variant;
+  customVariant?: 'red' | 'green' | 'blue';
 
   /**
    * Optionally pass any additional tailwind classes
@@ -24,7 +24,7 @@ export interface MyButtonProps extends Omit<AntButtonProps, 'type'> {
 
 const SFUButton: FC<MyButtonProps> = ({
   children,
-  variant = 'red',
+  customVariant = 'red',
   className,
   disabled,
   ...restProps
@@ -39,7 +39,7 @@ const SFUButton: FC<MyButtonProps> = ({
   /**
    * Define variant-specific classes
    */
-  const variantClasses: Record<Variant, string> = {
+  const variantClasses: Record<'red' | 'green' | 'blue', string> = {
     red: `
       !bg-red-600 
       !border-red-600 
@@ -70,7 +70,7 @@ const SFUButton: FC<MyButtonProps> = ({
    */
   const mergedClassName = clsx(
     !disabled && baseClasses,
-    !disabled && variantClasses[variant],
+    !disabled && variantClasses[customVariant],
     className,
   );
 
