@@ -2,7 +2,6 @@ import { Button } from 'antd';
 import React from 'react';
 import { useModals } from '../../hooks/ModalsContext';
 import Instructions from '../Instructions/Instructions';
-import ExternalLinkOutlined from '@ant-design/icons';
 
 interface NavBarProps {
   setTermCode: React.Dispatch<React.SetStateAction<string>>;
@@ -10,7 +9,7 @@ interface NavBarProps {
 }
 
 const NavBar: React.FC<NavBarProps> = () => {
-  const { openModal, closeModal } = useModals();
+  const { openModal } = useModals();
 
   return (
     <div className="flex justify-between items-center w-full border-b bg-red-700 flex-none">

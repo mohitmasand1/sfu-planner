@@ -1,10 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import React, { useState } from 'react';
 import { getSchedules } from '../NewSchedulePage/http';
-import { Button, Card, Checkbox, List, Space, Typography } from 'antd';
-import { DeleteOutlined } from '@ant-design/icons';
-
-const { Text } = Typography;
+import { Button, Card, Checkbox, List } from 'antd';
 
 interface LoadInstanceProps {
   onClickSchedule: (schedule: OutputSchedule) => void;

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Select, Button } from 'antd';
+import { Select } from 'antd';
 import { Option } from '../NewSchedulePage/types';
 import { useQuery } from '@tanstack/react-query';
 import { fetchMajorCourses, fetchMajors } from '../NewSchedulePage/http';

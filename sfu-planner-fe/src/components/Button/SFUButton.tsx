@@ -1,4 +1,4 @@
-import React, { FC } from 'react';
+import { FC } from 'react';
 import { Button, ButtonProps as AntButtonProps } from 'antd';
 import clsx from 'clsx';
 

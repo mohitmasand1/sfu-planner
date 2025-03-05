@@ -5,7 +5,6 @@ import RemoteOfferingsDropzone from '../../components/MyScheduler/RemoteOffering
 import type { Event as CustomEvent } from '../../components/MyScheduler/types';
 import CourseList from '../../components/MyScheduler/CourseList';
 import {
-  Button,
   Collapse,
   CollapseProps,
   // message,

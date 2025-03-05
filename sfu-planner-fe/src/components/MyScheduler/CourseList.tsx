@@ -27,7 +27,7 @@ const CourseList: React.FC<CourseListProps> = ({
   const [courseList1Height, setCourseList1Height] = useState<number>(198); // Initial height in pixels
 
   const handleResize = (
-    event: React.SyntheticEvent<Element>,
+    _event: React.SyntheticEvent<Element>,
     data: ResizeCallbackData,
   ) => {
     setCourseList1Height(data.size.height);
