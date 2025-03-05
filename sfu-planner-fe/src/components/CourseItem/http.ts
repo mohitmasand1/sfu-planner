@@ -1,6 +1,6 @@
 import { CourseGrade, ProfRating } from "./types";
 
-const BACKEND_API_BASE_URL = import.meta.env.BACKEND_API_BASE_URL;
+const BACKEND_API_BASE_URL = import.meta.env.VITE_BACKEND_API_BASE_URL;
 
 export async function fetchRateMyProfRating(name: string): Promise<ProfRating> {
     const response = await fetch(`${BACKEND_API_BASE_URL}/rmp?name=${name}`);

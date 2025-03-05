@@ -8,9 +8,9 @@ import {
   SaveScheduleResponse,
 } from './types';
 
-const BACKEND_API_URL = import.meta.env.BACKEND_API_URL;
-const BACKEND_TERMS_API_URL = import.meta.env.BACKEND_TERMS_API_URL;
-const BACKEND_USER_API_URL = import.meta.env.BACKEND_USER_API_URL;
+const BACKEND_API_URL = import.meta.env.VITE_BACKEND_API_URL;
+const BACKEND_TERMS_API_URL = import.meta.env.VITE_BACKEND_TERMS_API_URL;
+const BACKEND_USER_API_URL = import.meta.env.VITE_BACKEND_USER_API_URL;
 
 export async function fetchMajors(
   year: string,
